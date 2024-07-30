@@ -714,7 +714,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
         const tables = databaseServer.getTables();
-        const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets"];
+        const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
         for (const [name, temp] of Object.entries(tables.locations))
         {
             const mapdata:ILocation = temp;
@@ -751,7 +751,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
         const tables = databaseServer.getTables();
 
-        const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets"];
+        const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
         for (const [name, temp] of Object.entries(tables.locations))
         {
             const mapdata:ILocation = temp;
