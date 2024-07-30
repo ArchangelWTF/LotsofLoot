@@ -28,7 +28,6 @@ import { ITemplateItem, GridFilter } from "@spt/models/eft/common/tables/ITempla
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
-import { ILocationBase } from "@spt/models/eft/common/ILocationBase";
 
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
 {
@@ -500,9 +499,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
         }
 
-        
-        
-        //logger.info(`${items.length}`);
         return {
             "items": items,
             "width": width,
