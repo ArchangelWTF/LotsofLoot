@@ -29,8 +29,6 @@ import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
 
-//Todo: Generating loot in containers such as docs cases and backpacks is broke
-//Todo: loot overlap is broke
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
 {
     private static container: DependencyContainer;
