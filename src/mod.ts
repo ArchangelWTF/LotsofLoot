@@ -290,8 +290,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             const createItemResult = this.createStaticLootItem(chosenTpl, staticAmmoDist, undefined, spawnPointClone);
 
             // Root id can change when generating a weapon
-            spawnPointClone.template.Root = createItemResult[0].Items[0]._id;
-            spawnPointClone.template.Items = createItemResult[0].Items;
+            spawnPointClone.template.Root = createItemResult.items[0]._id;
+            spawnPointClone.template.Items = createItemResult.items;
 
             loot.push(spawnPointClone.template);
         }
