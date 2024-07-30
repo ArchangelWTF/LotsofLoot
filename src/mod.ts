@@ -91,6 +91,11 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 //Location does not have any static loot pools, skip this map.
                 if(!location.staticLoot)
                 {
+                    if(config.Debug)
+                    {
+                        logger.info(`Skipping ${locationId} as it has no static loot`);
+                    }
+
                     continue;
                 }
 
