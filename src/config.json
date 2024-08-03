@@ -42,7 +42,9 @@
     "shoreline": 15000,
     "woods": 5000,
     "tarkovstreets": 50000,
-    "lighthouse": 20000
+    "lighthouse": 20000,
+    "sandbox": 15000,
+    "sandbox_high": 15000
   },
 
   "markedMultiplier": {
