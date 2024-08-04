@@ -1,14 +1,14 @@
 {
-    "name": "LotsOfLoot",
-    "version": "2.2.3",
+    "name": "LotsOfLoot Redux",
+    "version": "2.3.0",
     "main": "src/mod.js",
     "license": "MIT",
-    "author": "RainbowPC",
+    "author": "Archangel",
     "sptVersion": "~3.9",
 	"loadBefore": [],
 	"loadAfter": [],
 	"incompatibilities": [],
-	"contributors": [],
+	"contributors": ["RainbowPC"],
 	"isBundleMod": false,
     "scripts": {
         "setup": "npm i",
@@ -26,6 +26,7 @@
         "os": "^0.1",
         "tsyringe": "4.8.0",
         "typescript": "5.4",
-        "winston": "3.12"
+        "winston": "3.12",
+        "json5": "2.2.3"
     }
 }
