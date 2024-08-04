@@ -16,7 +16,6 @@ import { ObjectId } from "@spt/utils/ObjectId";
 import { JsonUtil } from "@spt/utils/JsonUtil";
 import { PresetHelper } from "@spt/helpers/PresetHelper";
 import { BaseClasses } from "@spt/models/enums/BaseClasses";
-import { RagfairServerHelper } from "@spt/helpers/RagfairServerHelper";
 import { Item } from "@spt/models/eft/common/tables/IItem";
 import { RandomUtil } from "@spt/utils/RandomUtil";
 import { DatabaseServer } from "@spt/servers/DatabaseServer";
@@ -68,8 +67,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
         }, {frequency: "Always"});
     }
-
-
 
     public postDBLoad(container: DependencyContainer): void
     {
@@ -153,12 +150,11 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             tables.templates.prices[id] = Mod.config.general.priceCorrection[id];
         }
 
-        
         logger.info(`Finished loading: ${pkg.name}`);
         return 
     }
 
-    generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): SpawnpointTemplate[]
+    private generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): SpawnpointTemplate[]
     {
         const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
@@ -176,8 +172,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         // Build the list of forced loot from both `spawnpointsForced` and any point marked `IsAlwaysSpawn`
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpointsForced);
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpoints.filter((point) => point.template.IsAlwaysSpawn));
-
-        
 
         // Temporary cast to get rid of protected, add all forced loot to return array
         (locationGenerator as any).addForcedLoot(loot, dynamicLootDist.spawnpointsForced, locationName);
@@ -234,7 +228,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
         }
         
-
         if (!Mod.config.general.allowLootOverlay)
         {
             // Filter out duplicate locationIds
@@ -290,7 +283,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 continue;
             }
 
-
             // Draw a random item from spawn points possible items
             const spawnPointClone = jsonUtil.clone(spawnPoint);
             const chosenComposedKey = itemArray.draw(1)[0];
@@ -306,17 +298,15 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         }
 
         return loot;
-
     }
 
-    createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: Spawnpoint = undefined): IContainerItem
+    private createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: Spawnpoint = undefined): IContainerItem
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const presetHelper = Mod.container.resolve<PresetHelper>("PresetHelper");
-        const ragfairServerHelper = Mod.container.resolve<RagfairServerHelper>("RagfairServerHelper");
         const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const localisationService = Mod.container.resolve<LocalisationService>("LocalisationService");
@@ -409,7 +399,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
                     throw error;
                 }
-
 
                 // Here we should use generalized BotGenerators functions e.g. fillExistingMagazines in the future since
                 // it can handle revolver ammo (it's not restructured to be used here yet.)
@@ -519,7 +508,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     }
     
 
-    createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): Item[]
+    private createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): Item[]
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
@@ -566,8 +555,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 const h = this.findAndReturnChildrenByItems(items, content);
                 whitelist_new.push(...h);
             }
-            whitelist = whitelist_new;
 
+            whitelist = whitelist_new;
 
             //If blacklist contains a parent instead of items the parent gets repaced by all its children
             const blacklist_new: string[] = [];
@@ -576,6 +565,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 const h = this.findAndReturnChildrenByItems(items, content);
                 blacklist_new.push(...h);
             }
+
             blacklist = blacklist_new;
 
             //If any entrys of black and whitelist match the whitelist entry should be removed
@@ -616,7 +606,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             
         }
         
-
         if (whitelist.length == 0)
         {
             if (Mod.config.general.debug) logger.info(`${tpl} whitelist is empty`);
@@ -654,7 +643,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             itemArray.push(new ProbabilityObject(whitelist[i], weight[i]));
         }
         
-        
         while (true)
         {
             let cont: string;
@@ -685,7 +673,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         return rturn;
     }
 
-    findAndReturnChildrenByItems(items: Record<string, ITemplateItem>, itemID: string): string[]
+    private findAndReturnChildrenByItems(items: Record<string, ITemplateItem>, itemID: string): string[]
     {
         const stack: string[] = [itemID];
         const result: string[] = [];
@@ -721,7 +709,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     }
     
 
-    changeChanceInPool(itemtpl: string, mult: number)
+    private changeChanceInPool(itemtpl: string, mult: number) : void
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
@@ -757,7 +745,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         }
     }
 
-    changeChancePool(itemtpl: string, mult: number)
+    private changeChancePool(itemtpl: string, mult: number) : void
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
@@ -791,7 +779,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         }
     }
 
-    MarkedRoomChanges()
+    private MarkedRoomChanges() : void
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
@@ -799,7 +787,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         const spawnPointsreserve = databaseServer.getTables().locations.rezervbase.looseLoot.spawnpoints;
         const spawnPointsstreets = databaseServer.getTables().locations.tarkovstreets.looseLoot.spawnpoints;
         
-
         for (const spawnpoint of spawnPointscustoms)
         {
             //Dorms 314 Marked Room
@@ -860,7 +847,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     }
 
-    markedExtraItemsFunc(spawnpoint: Spawnpoint)
+    private markedExtraItemsFunc(spawnpoint: Spawnpoint) : void
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         
@@ -883,7 +870,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         }
     }
 
-    markedItemGroups(spawnpoint: Spawnpoint)
+    private markedItemGroups(spawnpoint: Spawnpoint) : void
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
@@ -909,9 +896,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         
     }
 
-    addToRustedKeyRoom()
+    private addToRustedKeyRoom() : void
     {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
