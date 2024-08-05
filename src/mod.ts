@@ -30,12 +30,14 @@ import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
 import { ILotsofLootConfig } from "./ILotsofLootConfig";
 import { VFS } from "@spt/utils/VFS";
+import { LotsofLootLogger } from "./LotsofLootLogger";
 
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
 {
     private static config: ILotsofLootConfig = null;
 
     private static container: DependencyContainer;
+    private logger: LotsofLootLogger;
     static filterIndex = [{
         tpl:"",
         entries:[""]
@@ -50,6 +52,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         // Load config statically so that we don't have to keep reloading this across the entire file.
         Mod.config = JSON5.parse(vfs.readFile(path.resolve(__dirname, "../config/config.json5")));
 
+        this.logger = new LotsofLootLogger(container.resolve<ILogger>("WinstonLogger"), Mod.config.general.debug)
         container.afterResolution("LocationGenerator", (_t, result: LocationGenerator) =>
         {
             //Temporary cast to get rid of protected error
