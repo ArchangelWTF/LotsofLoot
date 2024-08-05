@@ -31,6 +31,8 @@ import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation"
 import { ILotsofLootConfig } from "./ILotsofLootConfig";
 import { VFS } from "@spt/utils/VFS";
 import { LotsofLootLogger } from "./LotsofLootLogger";
+import { MarkedRoom } from "./markedRoom";
+import { HashUtil } from "@spt/utils/HashUtil";
 
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
 {
@@ -38,6 +40,9 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     private static container: DependencyContainer;
     private logger: LotsofLootLogger;
+
+    private markedRoom: MarkedRoom;
+
     static filterIndex = [{
         tpl:"",
         entries:[""]
@@ -53,6 +58,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         Mod.config = JSON5.parse(vfs.readFile(path.resolve(__dirname, "../config/config.json5")));
 
         this.logger = new LotsofLootLogger(container.resolve<ILogger>("WinstonLogger"), Mod.config.general.debug)
+        this.markedRoom = new MarkedRoom(Mod.config.markedRoom, container.resolve<DatabaseServer>("DatabaseServer"), container.resolve<ItemHelper>("ItemHelper"), container.resolve<HashUtil>("HashUtil"), this.logger);
+
         container.afterResolution("LocationGenerator", (_t, result: LocationGenerator) =>
         {
             //Temporary cast to get rid of protected error
@@ -81,7 +88,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         const locations = databaseServer.getTables().locations;
         const LocationConfig = configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
 
-        this.MarkedRoomChanges();
+        this.markedRoom.doMarkedRoomChanges();
         this.addToRustedKeyRoom();
         
         for (const map in Mod.config.looseLootMultiplier)
@@ -780,123 +787,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 }
             }
         }
-    }
-
-    private MarkedRoomChanges() : void
-    {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const spawnPointscustoms = databaseServer.getTables().locations.bigmap.looseLoot.spawnpoints;
-        const spawnPointsreserve = databaseServer.getTables().locations.rezervbase.looseLoot.spawnpoints;
-        const spawnPointsstreets = databaseServer.getTables().locations.tarkovstreets.looseLoot.spawnpoints;
-        
-        for (const spawnpoint of spawnPointscustoms)
-        {
-            //Dorms 314 Marked Room
-            if ((spawnpoint.template.Position.x > 180) && (spawnpoint.template.Position.x < 185) && (spawnpoint.template.Position.z > 180) && (spawnpoint.template.Position.z < 185) && (spawnpoint.template.Position.y > 6) && (spawnpoint.template.Position.y < 7))
-            {
-                if (Mod.config.general.debug) logger.info(`Customs ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= Mod.config.markedRoom.multiplier.customs;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-        }
-
-        for (const spawnpoint of spawnPointsreserve)
-        {
-            if ((spawnpoint.template.Position.x > -125) && (spawnpoint.template.Position.x < -120) && (spawnpoint.template.Position.z > 25) && (spawnpoint.template.Position.z < 30) && (spawnpoint.template.Position.y > -15) && (spawnpoint.template.Position.y < -14))
-            {
-                if (Mod.config.general.debug) logger.info(`Reserve ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= Mod.config.markedRoom.multiplier.reserve;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-                
-            }
-            else if ((spawnpoint.template.Position.x > -155) && (spawnpoint.template.Position.x < -150) && (spawnpoint.template.Position.z > 70) && (spawnpoint.template.Position.z < 75) && (spawnpoint.template.Position.y > -9) && (spawnpoint.template.Position.y < -8))
-            {
-                if (Mod.config.general.debug) logger.info(`Reserve ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= Mod.config.markedRoom.multiplier.reserve;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-            else if ((spawnpoint.template.Position.x > 190) && (spawnpoint.template.Position.x < 195) && (spawnpoint.template.Position.z > -230) && (spawnpoint.template.Position.z < -225) && (spawnpoint.template.Position.y > -6) && (spawnpoint.template.Position.y < -5))
-            {
-                if (Mod.config.general.debug) logger.info(`Reserve ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= Mod.config.markedRoom.multiplier.reserve;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-        }
-
-        for (const spawnpoint of spawnPointsstreets)
-        {
-            //Abandoned Factory Marked Room
-            if ((spawnpoint.template.Position.x > -133) && (spawnpoint.template.Position.x < -129) && (spawnpoint.template.Position.z > 265) && (spawnpoint.template.Position.z < 275) && (spawnpoint.template.Position.y > 8.5) && (spawnpoint.template.Position.y < 11))
-            {
-                if (Mod.config.general.debug) logger.info(`Streets ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= Mod.config.markedRoom.multiplier.streets;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-            //Chek 13 Marked Room
-            else if ((spawnpoint.template.Position.x > 186) && (spawnpoint.template.Position.x < 191) && (spawnpoint.template.Position.z > 224) && (spawnpoint.template.Position.z < 229) && (spawnpoint.template.Position.y > -0.5) && (spawnpoint.template.Position.y < 1.5))
-            {
-                if (Mod.config.general.debug) logger.info(`Streets ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= Mod.config.markedRoom.multiplier.streets;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-        }
-
-    }
-
-    private markedExtraItemsFunc(spawnpoint: Spawnpoint) : void
-    {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        
-        for (const ITEM of Object.entries(Mod.config.markedRoom.extraItems))
-        {
-            if (spawnpoint.template.Items.find(x => x._tpl === ITEM[0]))
-            {
-                continue;
-            }
-            const ID = Math.random()*10000;
-            spawnpoint.template.Items.push({
-                "_id": ID.toString(),
-                "_tpl": ITEM[0]
-            })
-            spawnpoint.itemDistribution.push({
-                "composedKey":{"key":ID.toString()},
-                "relativeProbability": ITEM[1]
-            });
-            if (Mod.config.general.debug) logger.info(`Added ${ITEM[0]} to ${spawnpoint.template.Id}`);
-        }
-    }
-
-    private markedItemGroups(spawnpoint: Spawnpoint) : void
-    {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
-
-        for (const item of spawnpoint.template.Items)
-        {
-            for (const group in Mod.config.markedRoom.itemGroups)
-            {
-                if (itemHelper.isOfBaseclass(item._tpl, group))
-                {
-                    for (const dist of spawnpoint.itemDistribution)
-                    {
-                        if (dist.composedKey.key == item._id)
-                        {
-                            dist.relativeProbability *= Mod.config.markedRoom.itemGroups[group];
-                            if (Mod.config.general.debug) logger.info(`Changed ${item._tpl} to ${dist.relativeProbability}`);
-                        }
-                    }
-                }
-            }
-            
-        }
-        
     }
 
     private addToRustedKeyRoom() : void
