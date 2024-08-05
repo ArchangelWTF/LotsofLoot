@@ -531,7 +531,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             item._props.Grids[0]._props.filters = wow;
         }
         let whitelist = jsonUtil.clone(item._props.Grids[0]._props.filters[0].Filter);
-        let blacklist = jsonUtil.clone(item._props.Grids[0]._props.filters[0].ExcludedFilter);
+        let blacklist = jsonUtil.clone(item._props?.Grids[0]._props.filters[0]?.ExcludedFilter) ?? [];
         const amount = randomUtil.getInt(1, item._props.Grids[0]._props.cellsH * item._props.Grids[0]._props.cellsV * modifier);
         let fill = 0;
         let match = 0;
