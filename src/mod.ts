@@ -40,6 +40,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     private static container: DependencyContainer;
     private logger: LotsofLootLogger;
+    private databaseServer: DatabaseServer
+    private itemHelper: ItemHelper;
 
     private markedRoom: MarkedRoom;
 
@@ -80,12 +82,12 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     public postDBLoad(container: DependencyContainer): void
     {
-        const logger = container.resolve<ILogger>("WinstonLogger");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
-        const tables = databaseServer.getTables();
+        this.databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
+        this.itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
+
+        const tables = this.databaseServer.getTables();
         const configServer = container.resolve<ConfigServer>("ConfigServer");
-        const locations = databaseServer.getTables().locations;
+        const locations = this.databaseServer.getTables().locations;
         const LocationConfig = configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
 
         this.markedRoom.doMarkedRoomChanges();
@@ -147,7 +149,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         {
             for (const item in tables.templates.items)
             {
-                if (itemHelper.isValidItem(tables.templates.items[item]._id))
+                if (this.itemHelper.isValidItem(tables.templates.items[item]._id))
                 {
                     tables.templates.items[item]._props.CanRequireOnRagfair = true;
                     tables.templates.items[item]._props.CanSellOnRagfair = true;
@@ -313,7 +315,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     private createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: Spawnpoint = undefined): IContainerItem
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const presetHelper = Mod.container.resolve<PresetHelper>("PresetHelper");
@@ -322,8 +323,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         const localisationService = Mod.container.resolve<LocalisationService>("LocalisationService");
         const configServer = Mod.container.resolve<ConfigServer>("ConfigServer");
         const LocationConfig = configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
-
-        const gotItem = itemHelper.getItem(tpl);
+        
+        const gotItem = this.itemHelper.getItem(tpl);
         let itemTemplate:ITemplateItem;
         if (gotItem[0])
         {
@@ -351,13 +352,13 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             items[0].parentId = parentId
         }
 
-        if (itemHelper.isOfBaseclass(tpl, BaseClasses.WEAPON))
+        if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.WEAPON))
         {
             if (spawnPoint != undefined)
             {
                 const chosenItem = spawnPoint.template.Items.find(x => x._tpl === tpl);
                 // Get item + children and add into array we return
-                const itemWithChildren = itemHelper.findAndReturnChildrenAsItems(spawnPoint.template.Items, chosenItem._id);
+                const itemWithChildren = this.itemHelper.findAndReturnChildrenAsItems(spawnPoint.template.Items, chosenItem._id);
                 // Temporary cast to get rid of protected error, we need to reparent to ensure ids are unique
                 (locationGenerator as any).reparentItemAndChildren(itemWithChildren);
                 items.splice(0,1);
@@ -371,7 +372,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 {
                     try
                     {
-                        children = itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
+                        children = this.itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
                     }
                     catch (error)
                     {
@@ -400,7 +401,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 {
                     if (children?.length > 0)
                     {
-                        items = itemHelper.reparentItemAndChildren(rootItem, children);
+                        items = this.itemHelper.reparentItemAndChildren(rootItem, children);
                     }
                 }
                 catch (error)
@@ -418,39 +419,39 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 // some weapon presets come without magazine; only fill the mag if it exists
                 if (magazine)
                 {
-                    const magTemplate = itemHelper.getItem(magazine._tpl)[1];
-                    const weaponTemplate = itemHelper.getItem(tpl)[1];
+                    const magTemplate = this.itemHelper.getItem(magazine._tpl)[1];
+                    const weaponTemplate = this.itemHelper.getItem(tpl)[1];
 
                     // Create array with just magazine
                     const magazineWithCartridges = [magazine];
-                    itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, magTemplate, staticAmmoDist, weaponTemplate._props.ammoCaliber);
+                    this.itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, magTemplate, staticAmmoDist, weaponTemplate._props.ammoCaliber);
 
                     // Replace existing magazine with above array
                     items.splice(items.indexOf(magazine), 1, ...magazineWithCartridges);
                 }
 
-                const size = itemHelper.getItemSize(items, rootItem._id);
+                const size = this.itemHelper.getItemSize(items, rootItem._id);
                 width = size.width;
                 height = size.height;
             }
             
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.MONEY) || itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO)) 
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.MONEY) || this.itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO)) 
         {
             const stackCount = randomUtil.getInt(itemTemplate._props.StackMinRandom, itemTemplate._props.StackMaxRandom);
             items[0].upd = { "StackObjectsCount": stackCount };
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO_BOX))
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO_BOX))
         {
-            itemHelper.addCartridgesToAmmoBox(items, itemTemplate);
+            this.itemHelper.addCartridgesToAmmoBox(items, itemTemplate);
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.MAGAZINE))
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.MAGAZINE))
         {
             if (randomUtil.getChance100(LocationConfig.magazineLootHasAmmoChancePercent))
             {
                 // Create array with just magazine
                 const magazineWithCartridges = [items[0]];
-                itemHelper.fillMagazineWithRandomCartridge(
+                this.itemHelper.fillMagazineWithRandomCartridge(
                     magazineWithCartridges,
                     itemTemplate,
                     staticAmmoDist,
@@ -463,7 +464,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
 
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.SIMPLE_CONTAINER) && (tpl != "5c093e3486f77430cb02e593"))
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.SIMPLE_CONTAINER) && (tpl != "5c093e3486f77430cb02e593"))
         {
             const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, Mod.config.general.looseContainerModifier);
             if (Mod.config.general.debug) logger.info(`Container ${tpl} with`);
@@ -473,7 +474,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 items.push(cont);
             }
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.BACKPACK))
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.BACKPACK))
         {
             const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, Mod.config.general.looseBackpackModifier);
             if (Mod.config.general.debug) logger.info(`Backpack ${tpl} with`);
@@ -483,13 +484,13 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 items.push(cont);
             }
         }
-        else if (itemHelper.armorItemCanHoldMods(tpl))
+        else if (this.itemHelper.armorItemCanHoldMods(tpl))
         {
             const defaultPreset = presetHelper.getDefaultPreset(tpl);
             if (defaultPreset)
             {
-                const presetAndMods: Item[] = itemHelper.replaceIDs(defaultPreset._items);
-                itemHelper.remapRootItemId(presetAndMods);
+                const presetAndMods: Item[] = this.itemHelper.replaceIDs(defaultPreset._items);
+                this.itemHelper.remapRootItemId(presetAndMods);
 
                 // Use original items parentId otherwise item doesnt get added to container correctly
                 presetAndMods[0].parentId = items[0].parentId;
@@ -500,7 +501,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 // We make base item above, at start of function, no need to do it here
                 if (itemTemplate._props.Slots?.length > 0)
                 {
-                    items = itemHelper.addChildSlotItems(
+                    items = this.itemHelper.addChildSlotItems(
                         items,
                         itemTemplate,
                         LocationConfig.equipmentLootSettings.modSpawnChancePercent,
@@ -722,8 +723,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     private changeChanceInPool(itemtpl: string, mult: number) : void
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const tables = databaseServer.getTables();
+        const tables = this.databaseServer.getTables();
         const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
         for (const [name, temp] of Object.entries(tables.locations))
         {
@@ -758,8 +758,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     private changeChancePool(itemtpl: string, mult: number) : void
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const tables = databaseServer.getTables();
+        const tables = this.databaseServer.getTables();
 
         const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
         for (const [name, temp] of Object.entries(tables.locations))
@@ -791,11 +790,9 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     private addToRustedKeyRoom() : void
     {
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const tables = databaseServer.getTables();
+        const tables = this.databaseServer.getTables();
         const streetsloot = tables.locations.tarkovstreets.looseLoot;
         const items = tables.templates.items;
         let keys:string[] = [];
@@ -806,19 +803,19 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             try {
                 if(Mod.config.general.rustedKeyRoomIncludesKeycards)
                 {
-                    if(itemHelper.isOfBaseclass(item,BaseClasses.KEY))
+                    if(this.itemHelper.isOfBaseclass(item,BaseClasses.KEY))
                     {
                         keys.push(item);
                     }
                 }
                 else
                 {
-                    if(itemHelper.isOfBaseclass(item,BaseClasses.KEY_MECHANICAL))
+                    if(this.itemHelper.isOfBaseclass(item,BaseClasses.KEY_MECHANICAL))
                     {
                         keys.push(item);
                     }
                 }
-                if(itemHelper.isOfBaseclass(item,BaseClasses.JEWELRY))
+                if(this.itemHelper.isOfBaseclass(item,BaseClasses.JEWELRY))
                 {
                     valuables.push(item);
                 }
