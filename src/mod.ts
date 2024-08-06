@@ -31,7 +31,7 @@ import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation"
 import { ILotsofLootConfig } from "./ILotsofLootConfig";
 import { VFS } from "@spt/utils/VFS";
 import { LotsofLootLogger } from "./LotsofLootLogger";
-import { MarkedRoom } from "./markedRoom";
+import { MarkedRoom } from "./MarkedRoom";
 import { HashUtil } from "@spt/utils/HashUtil";
 
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
