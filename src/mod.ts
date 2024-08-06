@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable no-constant-condition */
 /* eslint-disable prefer-spread */
-import pkg from "../package.json"
 import JSON5 from "json5";
 import path from "path";
 import { DependencyContainer } from "tsyringe";
@@ -33,6 +32,7 @@ import { VFS } from "@spt/utils/VFS";
 import { LotsofLootLogger } from "./LotsofLootLogger";
 import { MarkedRoom } from "./MarkedRoom";
 import { HashUtil } from "@spt/utils/HashUtil";
+import { ICloner } from "@spt/utils/cloners/ICloner";
 
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
 {
@@ -42,6 +42,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     private logger: LotsofLootLogger;
     private databaseServer: DatabaseServer
     private itemHelper: ItemHelper;
+    private cloner: ICloner;
 
     private markedRoom: MarkedRoom;
 
@@ -84,6 +85,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     {
         this.databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
         this.itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
+        this.cloner = Mod.container.resolve<ICloner>("PrimaryCloner");
 
         const tables = this.databaseServer.getTables();
         const configServer = container.resolve<ConfigServer>("ConfigServer");
@@ -296,7 +298,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
 
             // Draw a random item from spawn points possible items
-            const spawnPointClone = jsonUtil.clone(spawnPoint);
+            const spawnPointClone = this.cloner.clone(spawnPoint);
             const chosenComposedKey = itemArray.draw(1)[0];
             const chosenItem = spawnPointClone.template.Items.find(x => x._id === chosenComposedKey);
             const chosenTpl = chosenItem._tpl;
@@ -316,7 +318,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     {
         const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
-        const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const presetHelper = Mod.container.resolve<PresetHelper>("PresetHelper");
         const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
@@ -367,7 +368,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             else
             {
                 let children: Item[] = [];
-                const defaultPreset = jsonUtil.clone(presetHelper.getDefaultPreset(tpl));
+                const defaultPreset = this.cloner.clone(presetHelper.getDefaultPreset(tpl));
                 if (defaultPreset)
                 {
                     try
@@ -791,7 +792,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     private addToRustedKeyRoom() : void
     {
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
-        const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const tables = this.databaseServer.getTables();
         const streetsloot = tables.locations.tarkovstreets.looseLoot;
         const items = tables.templates.items;
@@ -861,7 +861,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 "relativeProbability":1
             })
         }
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
         
         point.template.Root = objectId.generate();
         point.template.Id = "Keys2";
@@ -871,7 +871,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 63.186
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys3";
@@ -881,7 +881,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 62.241
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys4";
@@ -891,7 +891,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 62.686
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys5";
@@ -901,7 +901,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.860
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys6";
@@ -911,7 +911,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.560
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys7";
@@ -921,7 +921,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.857
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys8";
@@ -931,7 +931,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.562
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys9";
@@ -941,7 +941,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.551
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys10";
@@ -951,7 +951,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.872
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys11";
@@ -961,7 +961,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 57.813
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys12";
@@ -971,7 +971,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.073
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Val1";
@@ -994,7 +994,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             });
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Val2";
@@ -1004,7 +1004,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 53.767
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Val3";
@@ -1014,7 +1014,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.114
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Val4";
@@ -1024,7 +1024,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 65.393
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
     }
 }
 
