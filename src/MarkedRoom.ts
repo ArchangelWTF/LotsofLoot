@@ -99,7 +99,7 @@ export class MarkedRoom
                 continue;
             }
 
-            const id = this.hashUtil.generate();
+            const id = Math.random()*10000;
             
             spawnpoint.template.Items.push({
                 "_id": id.toString(),
