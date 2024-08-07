@@ -46,11 +46,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     private markedRoom: MarkedRoom;
 
-    static filterIndex = [{
-        tpl:"",
-        entries:[""]
-    }];
-
     public preSptLoad(container: DependencyContainer): void
     {
         Mod.container = container;
@@ -518,84 +513,79 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         };
 
     }
-    
 
+    private looseContainerItemFilterIndex: Record<string, string[]> = {};
+    
     private createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): Item[]
     {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
 
-        const tables = databaseServer.getTables();
+        const tables = this.databaseServer.getTables();
 
         const items = tables.templates.items;
         const item = items[tpl];
-        const rturn:Item[] = [];
 
         if (item._props.Grids[0]._props.filters[0] === undefined)
         {
-            if (Mod.config.general.debug) logger.info(`${item._name} doesn't have a filter`);
-            const wow:GridFilter[] = [{Filter:["54009119af1c881c07000029"],
-                                       ExcludedFilter:[]}];
-            item._props.Grids[0]._props.filters = wow;
+            this.logger.logWarning(`${item._name} doesn't have a filter, setting default filter!`);
+            item._props.Grids[0]._props.filters =
+            [
+                {
+                    Filter: ["54009119af1c881c07000029"],
+                    ExcludedFilter: []
+                }
+            ];
         }
-        let whitelist = jsonUtil.clone(item._props.Grids[0]._props.filters[0].Filter);
-        let blacklist = jsonUtil.clone(item._props?.Grids[0]._props.filters[0]?.ExcludedFilter) ?? [];
+
+        let whitelist = this.cloner.clone(item._props.Grids[0]._props.filters[0].Filter);
+        let blacklist = this.cloner.clone(item._props?.Grids[0]._props.filters[0]?.ExcludedFilter) ?? [];
         const amount = randomUtil.getInt(1, item._props.Grids[0]._props.cellsH * item._props.Grids[0]._props.cellsV * modifier);
         let fill = 0;
-        let match = 0;
 
-        for (const filter of Mod.filterIndex)
+        if(this.looseContainerItemFilterIndex[tpl])
         {
-            if (filter.tpl == tpl)
-            {
-                whitelist = filter.entries;
-                match++;
-            }
+            whitelist = this.looseContainerItemFilterIndex[tpl];
         }
-
-        if (match == 0)
+        else
         {
-            if (Mod.config.general.debug) logger.info(`${tpl} is new, generating whitelist`);
-            //If whitelist contains a parent instead of items the parent gets repaced by all its children
-            const whitelist_new: string[] = [];
+            this.logger.logDebug(`${tpl} is new, generating whitelist`);
+
+            const newWhiteList: string[] = [];
+            const newBlackList: string[] = [];
+
+            //If whitelist contains a parent instead of items, replace the parent by all its children.
             for (const content of whitelist)
             {
-                const h = this.findAndReturnChildrenByItems(items, content);
-                whitelist_new.push(...h);
+                const childItems = this.findAndReturnChildrenByItems(items, content);
+                newWhiteList.push(...childItems);
             }
 
-            whitelist = whitelist_new;
+            whitelist = newWhiteList;
 
-            //If blacklist contains a parent instead of items the parent gets repaced by all its children
-            const blacklist_new: string[] = [];
+            //If blacklist contains a parent instead of items, replace the parent by all its children.
             for (const content of blacklist)
             {
-                const h = this.findAndReturnChildrenByItems(items, content);
-                blacklist_new.push(...h);
+                const childItems = this.findAndReturnChildrenByItems(items, content);
+                newBlackList.push(...childItems);
             }
 
-            blacklist = blacklist_new;
+            blacklist = newBlackList;
 
-            //If any entrys of black and whitelist match the whitelist entry should be removed
-            for (const white in whitelist)
+            for (const whitelistEntry in whitelist)
             {
-                for (const black in blacklist)
+                //If whitelist contains entries that are in the blacklist, remove them.
+                if(blacklist[whitelistEntry])
                 {
-                    if (whitelist[white] == blacklist[black])
-                    {
-                        whitelist.splice(whitelist.indexOf(white), 1);
-                    }
+                    whitelist.splice(whitelist.indexOf(whitelistEntry), 1);
                 }
             }
 
             //Extra restrictions to avoid errors
             for (let white = 0; white < whitelist.length; white++)
             {
-                if (!itemHelper.isValidItem(whitelist[white]))                                                              //Checks if the Item can be in your Stash
+                if (!this.itemHelper.isValidItem(whitelist[white])) //Checks if the Item can be in your Stash
                 {
                     if (whitelist[white] == "5449016a4bdc2d6f028b456f")
                     {
@@ -604,24 +594,21 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                     whitelist.splice(white, 1);
                     white--;
                 }
-                else if (items[whitelist[white]]._props.Prefab.path == "")                                                  //If the Item has no model it cant be valid
+                else if (items[whitelist[white]]._props.Prefab.path == "") //If the Item has no model it cant be valid
                 {
                     whitelist.splice(white, 1);
                     white--;
                 }
             }
-            
-            Mod.filterIndex.push({
-                tpl: tpl,
-                entries: whitelist
-            });
-            
+
+            //Write new entry for later re-use.
+            this.looseContainerItemFilterIndex[tpl] = whitelist;
         }
         
         if (whitelist.length == 0)
         {
-            if (Mod.config.general.debug) logger.info(`${tpl} whitelist is empty`);
-            return rturn;
+            this.logger.logWarning(`${tpl} whitelist is empty`);
+            return [];
         }
 
         const weight: number[] = [];
@@ -654,7 +641,9 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         {
             itemArray.push(new ProbabilityObject(whitelist[i], weight[i]));
         }
-        
+
+        const generatedItems:Item[] = [];
+
         while (true)
         {
             let cont: string;
@@ -678,11 +667,11 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             
             for (const itm of positem.items)
             {
-                rturn.push(itm);
+                generatedItems.push(itm);
             }
         }
 
-        return rturn;
+        return generatedItems;
     }
 
     private findAndReturnChildrenByItems(items: Record<string, ITemplateItem>, itemID: string): string[]
