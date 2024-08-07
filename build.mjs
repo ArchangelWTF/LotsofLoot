@@ -225,10 +225,9 @@ function createProjectName(packageJson) {
     // Remove any non-alphanumeric characters from the author and name.
     const author = packageJson.author.replace(/\W/g, "");
     const name = packageJson.name.replace(/\W/g, "");
-    const version = packageJson.version;
 
     // Ensure the name is lowercase, as per the package.json specification.
-    return `${author}-${name}-${version}`.toLowerCase();
+    return `${author}-${name}`.toLowerCase();
 }
 
 /**
