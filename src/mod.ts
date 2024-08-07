@@ -93,9 +93,9 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         for (const map in Mod.config.looseLootMultiplier)
         {
             LocationConfig.looseLootMultiplier[map] = Mod.config.looseLootMultiplier[map];
-            if (Mod.config.general.debug) logger.info(`${map} ${LocationConfig.looseLootMultiplier[map]}`);
+            this.logger.logDebug(`${map}: ${LocationConfig.looseLootMultiplier[map]}`);
             LocationConfig.staticLootMultiplier[map] = Mod.config.staticLootMultiplier[map];
-            if (Mod.config.general.debug) logger.info(`${map} ${LocationConfig.staticLootMultiplier[map]}`);
+            this.logger.logDebug(`${map}: ${LocationConfig.staticLootMultiplier[map]}`)
         }
 
         for(const locationId in locations)
@@ -106,10 +106,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 //Location does not have any static loot pools, skip this map.
                 if(!location.staticLoot)
                 {
-                    if(Mod.config.general.debug)
-                    {
-                        logger.info(`Skipping ${locationId} as it has no static loot`);
-                    }
+                    this.logger.logDebug(`Skipping ${locationId} as it has no static loot`);
 
                     continue;
                 }
@@ -123,7 +120,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                         if (staticLoot[container].itemcountDistribution[possItemCount].count == 0)
                         {
                             staticLoot[container].itemcountDistribution[possItemCount].relativeProbability = Math.round(staticLoot[container].itemcountDistribution[possItemCount].relativeProbability * Mod.config.containers[container]);
-                            if (Mod.config.general.debug) logger.info(`Changed  Container ${container} chance to ${staticLoot[container].itemcountDistribution[possItemCount].relativeProbability}`);
+                            
+                            this.logger.logDebug(`Changed container ${container} chance to ${staticLoot[container].itemcountDistribution[possItemCount].relativeProbability}`)
                         }
                     }
                 }
@@ -159,14 +157,12 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             tables.templates.prices[id] = Mod.config.general.priceCorrection[id];
         }
 
-        logger.info(`Finished loading: ${pkg.name}`);
-        return 
+        this.logger.logInfo(`Finished loading`);
     }
 
     private generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): SpawnpointTemplate[]
     {
         const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
@@ -205,7 +201,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         {
             if (blacklistedSpawnpoints?.includes(spawnpoint.template.Id))
             {
-                logger.debug(`Ignoring loose loot location: ${spawnpoint.template.Id}`);
+                this.logger.logDebug(`Ignoring loose loot location: ${spawnpoint.template.Id}`);
                 continue;
             }
 
@@ -246,7 +242,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             const tooManySpawnPointsRequested = (desiredSpawnpointCount - chosenSpawnpoints.length) > 0;
             if (tooManySpawnPointsRequested)
             {
-                logger.debug(
+                this.logger.logDebug(
                     localisationService.getText("location-spawn_point_count_requested_vs_found", {
                         requested: desiredSpawnpointCount + guaranteedLoosePoints.length,
                         found: chosenSpawnpoints.length,
@@ -263,13 +259,13 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         {
             if (!spawnPoint.template)
             {
-                logger.warning(localisationService.getText("location-missing_dynamic_template", spawnPoint.locationId));
+                this.logger.logWarning(localisationService.getText("location-missing_dynamic_template", spawnPoint.locationId));
                 continue;
             }
 
             if (!spawnPoint.template.Items || spawnPoint.template.Items.length === 0)
             {
-                logger.error(localisationService.getText("location-spawnpoint_missing_items", spawnPoint.template.Id));
+                this.logger.logError(localisationService.getText("location-spawnpoint_missing_items", spawnPoint.template.Id));
                 continue;
             }
 
@@ -287,7 +283,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
             if (itemArray.length === 0)
             {
-                logger.warning(`Loot pool for position: ${spawnPoint.template.Id} is empty. Skipping`);
+                this.logger.logWarning(`Loot pool for position: ${spawnPoint.template.Id} is empty. Skipping`);
 
                 continue;
             }
@@ -311,7 +307,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     private createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: Spawnpoint = undefined): IContainerItem
     {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const presetHelper = Mod.container.resolve<PresetHelper>("PresetHelper");
         const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
@@ -375,20 +370,20 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                         // this item already broke it once without being reproducible tpl = "5839a40f24597726f856b511"; AKS-74UB Default
                         // 5ea03f7400685063ec28bfa8 // ppsh default
                         // 5ba26383d4351e00334c93d9 //mp7_devgru
-                        logger.warning(localisationService.getText("location-preset_not_found", { tpl: tpl, defaultId: defaultPreset._id, defaultName: defaultPreset._name, parentId: parentId }));
+                        this.logger.logWarning(localisationService.getText("location-preset_not_found", { tpl: tpl, defaultId: defaultPreset._id, defaultName: defaultPreset._name, parentId: parentId }));
                         throw error;
                     }
                 }
                 else
                 {
                     // RSP30 (62178be9d0050232da3485d9/624c0b3340357b5f566e8766) doesnt have any default presets and kills this code below as it has no chidren to reparent
-                    logger.debug(`createItem() No preset found for weapon: ${tpl}`);
+                    this.logger.logDebug(`createItem() No preset found for weapon: ${tpl}`);
                 }
 
                 const rootItem = items[0];
                 if (!rootItem)
                 {
-                    logger.error(localisationService.getText("location-missing_root_item", { tpl: tpl, parentId: parentId }));
+                    this.logger.logError(localisationService.getText("location-missing_root_item", { tpl: tpl, parentId: parentId }));
 
                     throw new Error(localisationService.getText("location-critical_error_see_log"));
                 }
@@ -402,7 +397,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 }
                 catch (error)
                 {
-                    logger.error(localisationService.getText("location-unable_to_reparent_item", { tpl: tpl, parentId: parentId }));
+                    this.logger.logError(localisationService.getText("location-unable_to_reparent_item", { tpl: tpl, parentId: parentId }));
 
                     throw error;
                 }
@@ -463,20 +458,20 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.SIMPLE_CONTAINER) && (tpl != "5c093e3486f77430cb02e593"))
         {
             const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, Mod.config.general.looseContainerModifier);
-            if (Mod.config.general.debug) logger.info(`Container ${tpl} with`);
+            this.logger.logDebug(`Container ${tpl} with`);
             for (const cont of contloot) 
             {
-                if (Mod.config.general.debug) logger.info(`${cont._tpl}`);
+                this.logger.logDebug(`${cont._tpl}`);
                 items.push(cont);
             }
         }
         else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.BACKPACK))
         {
             const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, Mod.config.general.looseBackpackModifier);
-            if (Mod.config.general.debug) logger.info(`Backpack ${tpl} with`);
+            this.logger.logDebug(`Backpack ${tpl} with`);
             for (const cont of contloot) 
             {
-                if (Mod.config.general.debug) logger.info(`${cont._tpl}`);
+                this.logger.logDebug(`${cont._tpl}`);
                 items.push(cont);
             }
         }
@@ -712,7 +707,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     private changeChanceInPool(itemtpl: string, mult: number) : void
     {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const tables = this.databaseServer.getTables();
         const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
         for (const [name, temp] of Object.entries(tables.locations))
@@ -734,7 +728,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                                     if (dist.composedKey.key == itmID)
                                     {
                                         dist.relativeProbability *= mult
-                                        if (Mod.config.general.debug) logger.info(`${name}, ${point.template.Id}, ${itm._tpl}, ${dist.relativeProbability}`);
+                                        
+                                        this.logger.logDebug(`${name}, ${point.template.Id}, ${itm._tpl}, ${dist.relativeProbability}`);
                                     }
                                 }
                             }
@@ -747,7 +742,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
     private changeChancePool(itemtpl: string, mult: number) : void
     {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const tables = this.databaseServer.getTables();
 
         const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
@@ -769,7 +763,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                                 {
                                     point.probability = 1;
                                 }
-                                if (Mod.config.general.debug) logger.info(`${name},   Pool:${point.template.Id},    Chance:${point.probability}`);
+
+                                this.logger.logDebug(`${name},   Pool:${point.template.Id},    Chance:${point.probability}`);
                             }
                         }
                     }
