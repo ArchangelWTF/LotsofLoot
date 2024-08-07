@@ -133,17 +133,15 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
         }
         
-        /*
-        for (const id in config.ChanceInPool)
+        for (const itemId in Mod.config.changeRelativeProbabilityInPool)
         {
-            this.changeChanceInPool(id, config.ChanceInPool[id]);
+            this.lotsoflootHelper.changeRelativeProbabilityInPool(itemId, Mod.config.changeRelativeProbabilityInPool[itemId]);
         }
 
-        for (const id in config.ChangePool)
+        for (const itemId in Mod.config.changeProbabilityOfPool)
         {
-            this.changeChancePool(id, config.ChangePool[id]);
+            this.lotsoflootHelper.changeProbabilityOfPool(itemId, Mod.config.changeProbabilityOfPool[itemId]);
         }
-        */
 
         if (Mod.config.general.disableFleaRestrictions)
         {
@@ -709,75 +707,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         return result;
     }
     
-
-    private changeChanceInPool(itemtpl: string, mult: number) : void
-    {
-        const tables = this.databaseServer.getTables();
-        const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
-        for (const [name, temp] of Object.entries(tables.locations))
-        {
-            const mapdata:ILocation = temp;
-            for (const Map of maps)
-            {
-                if (name === Map)
-                {
-                    for (const point of mapdata.looseLoot.spawnpoints)
-                    {
-                        for (const itm of point.template.Items)
-                        {
-                            if (itm._tpl == itemtpl)
-                            {
-                                const itmID = itm._id;
-                                for (const dist of point.itemDistribution)
-                                {
-                                    if (dist.composedKey.key == itmID)
-                                    {
-                                        dist.relativeProbability *= mult
-
-                                        this.logger.logDebug(`${name}, ${point.template.Id}, ${itm._tpl}, ${dist.relativeProbability}`);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private changeChancePool(itemtpl: string, mult: number) : void
-    {
-        const tables = this.databaseServer.getTables();
-
-        const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
-        for (const [name, temp] of Object.entries(tables.locations))
-        {
-            const mapdata:ILocation = temp;
-            for (const Map of maps)
-            {
-                if (name === Map)
-                {
-                    for (const point of mapdata.looseLoot.spawnpoints)
-                    {
-                        for (const itm of point.template.Items)
-                        {
-                            if (itm._tpl == itemtpl)
-                            {
-                                point.probability *= mult;
-                                if (point.probability > 1)
-                                {
-                                    point.probability = 1;
-                                }
-
-                                this.logger.logDebug(`${name},   Pool:${point.template.Id},    Chance:${point.probability}`);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
     private addToRustedKeyRoom() : void
     {
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");

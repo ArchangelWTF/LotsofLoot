@@ -108,6 +108,16 @@
             "5422acb9af1c889c16000029": 0.2
         }
     },
+    //Multiplies the spawnchance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
+    "changeRelativeProbabilityInPool": {
+        //Graphics card
+        "57347ca924597744596b4e71": 2
+    },
+    //Multiplies the spawnchance of every pool with the specified item in it, Value: 0 - 1 
+    "changeProbabilityOfPool": {
+        //LEDX Skin Transilluminator
+        "5c0530ee86f774697952d952": 1
+    },
     //Relative chance multiplier that no items spawn in this container, values: 0 = items everytime, 1 = no change
     "containers": {
         //Jacket

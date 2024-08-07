@@ -4,6 +4,8 @@ export interface ILotsofLootConfig {
     staticLootMultiplier: Record<string, number>;
     limits: Record<string, number>;
     markedRoom: MarkedRoomConfig;
+    changeRelativeProbabilityInPool: Record<string, number>;
+    changeProbabilityOfPool: Record<string, number>;
     containers: Record<string, number>;
 }
 
