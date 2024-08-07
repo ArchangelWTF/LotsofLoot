@@ -2,8 +2,8 @@
 /* eslint-disable @typescript-eslint/indent */
 /* eslint-disable no-constant-condition */
 /* eslint-disable prefer-spread */
-import  config from "./config.json"
-import pkg from "../package.json"
+import JSON5 from "json5";
+import path from "path";
 import { DependencyContainer } from "tsyringe";
 import { IPreSptLoadMod } from "@spt/models/external/IPreSptLoadMod";
 import { IPostDBLoadMod } from "@spt/models/external/IPostDBLoadMod";
@@ -15,7 +15,6 @@ import { ObjectId } from "@spt/utils/ObjectId";
 import { JsonUtil } from "@spt/utils/JsonUtil";
 import { PresetHelper } from "@spt/helpers/PresetHelper";
 import { BaseClasses } from "@spt/models/enums/BaseClasses";
-import { RagfairServerHelper } from "@spt/helpers/RagfairServerHelper";
 import { Item } from "@spt/models/eft/common/tables/IItem";
 import { RandomUtil } from "@spt/utils/RandomUtil";
 import { DatabaseServer } from "@spt/servers/DatabaseServer";
@@ -24,23 +23,46 @@ import { LocalisationService } from "@spt/services/LocalisationService";
 import { ILooseLoot, Spawnpoint, SpawnpointsForced, SpawnpointTemplate } from "@spt/models/eft/common/ILooseLoot";
 import { ConfigServer } from "@spt/servers/ConfigServer";
 import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
-import { ITemplateItem, GridFilter } from "@spt/models/eft/common/tables/ITemplateItem";
+import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
+import { PreSptModLoader } from "@spt/loaders/PreSptModLoader";
+import { VFS } from "@spt/utils/VFS";
+import { MarkedRoom } from "./MarkedRoom";
+import { HashUtil } from "@spt/utils/HashUtil";
+import { ICloner } from "@spt/utils/cloners/ICloner";
+import { ILotsofLootConfig } from "./ILotsofLootConfig";
+import { LotsofLootLogger } from "./LotsofLootLogger";
+import { LotsofLootHelper } from "./LotsofLootHelper";
 
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
 {
+    private static config: ILotsofLootConfig = null;
+
     private static container: DependencyContainer;
-    static filterIndex = [{
-        tpl:"",
-        entries:[""]
-    }];
+    private logger: LotsofLootLogger;
+    private databaseServer: DatabaseServer
+    private itemHelper: ItemHelper;
+    private cloner: ICloner;
+
+    private markedRoom: MarkedRoom;
+    private lotsoflootHelper: LotsofLootHelper;
 
     public preSptLoad(container: DependencyContainer): void
     {
         Mod.container = container;
 
+        // Get VFS to read in configs
+        const vfs = container.resolve<VFS>("VFS");
+        const preSptModLoader = container.resolve<PreSptModLoader>("PreSptModLoader");
+        // Load config statically so that we don't have to keep reloading this across the entire file.
+        Mod.config = JSON5.parse(vfs.readFile(path.join(preSptModLoader.getModPath("archangelwtf-lotsoflootredux"), "config/config.json5")));
+
+        this.logger = new LotsofLootLogger(container.resolve<ILogger>("WinstonLogger"), Mod.config.general.debug)
+        this.markedRoom = new MarkedRoom(Mod.config.markedRoom, container.resolve<DatabaseServer>("DatabaseServer"), container.resolve<ItemHelper>("ItemHelper"), container.resolve<HashUtil>("HashUtil"), this.logger);
+        this.lotsoflootHelper = new LotsofLootHelper(Mod.config, container.resolve<DatabaseServer>("DatabaseServer"), container.resolve<ItemHelper>("ItemHelper"), this.logger);
+        
         container.afterResolution("LocationGenerator", (_t, result: LocationGenerator) =>
         {
             //Temporary cast to get rid of protected error
@@ -48,10 +70,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             {
                 return this.createStaticLootItem(tpl, staticAmmoDist, parentId);
             }
-        }, {frequency: "Always"});
 
-        container.afterResolution("LocationGenerator", (_t, result: LocationGenerator) => 
-        {
             result.generateDynamicLoot = (dynamicLootDist, staticAmmoDist, locationName) => 
             {
                 return this.generateDynamicLoot(dynamicLootDist, staticAmmoDist, locationName);
@@ -59,27 +78,31 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         }, {frequency: "Always"});
     }
 
-
-
     public postDBLoad(container: DependencyContainer): void
     {
-        const logger = container.resolve<ILogger>("WinstonLogger");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
-        const tables = databaseServer.getTables();
+        this.databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
+        this.itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
+        this.cloner = Mod.container.resolve<ICloner>("PrimaryCloner");
+
+        const tables = this.databaseServer.getTables();
         const configServer = container.resolve<ConfigServer>("ConfigServer");
-        const locations = databaseServer.getTables().locations;
+        const locations = this.databaseServer.getTables().locations;
         const LocationConfig = configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
 
-        this.MarkedRoomChanges();
+        this.markedRoom.doMarkedRoomChanges();
         this.addToRustedKeyRoom();
-        
-        for (const map in config.LooseLootMultiplier)
+
+        if(Mod.config.general.removeBackpackRestrictions)
         {
-            LocationConfig.looseLootMultiplier[map] = config.LooseLootMultiplier[map];
-            if (config.Debug) logger.info(`${map} ${LocationConfig.looseLootMultiplier[map]}`);
-            LocationConfig.staticLootMultiplier[map] = config.StaticLootMultiplier[map];
-            if (config.Debug) logger.info(`${map} ${LocationConfig.staticLootMultiplier[map]}`);
+            this.lotsoflootHelper.removeBackpackRestrictions();
+        }
+        
+        for (const map in Mod.config.looseLootMultiplier)
+        {
+            LocationConfig.looseLootMultiplier[map] = Mod.config.looseLootMultiplier[map];
+            this.logger.logDebug(`${map}: ${LocationConfig.looseLootMultiplier[map]}`);
+            LocationConfig.staticLootMultiplier[map] = Mod.config.staticLootMultiplier[map];
+            this.logger.logDebug(`${map}: ${LocationConfig.staticLootMultiplier[map]}`)
         }
 
         for(const locationId in locations)
@@ -90,10 +113,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 //Location does not have any static loot pools, skip this map.
                 if(!location.staticLoot)
                 {
-                    if(config.Debug)
-                    {
-                        logger.info(`Skipping ${locationId} as it has no static loot`);
-                    }
+                    this.logger.logDebug(`Skipping ${locationId} as it has no static loot`);
 
                     continue;
                 }
@@ -106,30 +126,30 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                     {
                         if (staticLoot[container].itemcountDistribution[possItemCount].count == 0)
                         {
-                            staticLoot[container].itemcountDistribution[possItemCount].relativeProbability = Math.round(staticLoot[container].itemcountDistribution[possItemCount].relativeProbability * config.containers[container]);
-                            if (config.Debug) logger.info(`Changed  Container ${container} chance to ${staticLoot[container].itemcountDistribution[possItemCount].relativeProbability}`);
+                            staticLoot[container].itemcountDistribution[possItemCount].relativeProbability = Math.round(staticLoot[container].itemcountDistribution[possItemCount].relativeProbability * Mod.config.containers[container]);
+                            
+                            this.logger.logDebug(`Changed container ${container} chance to ${staticLoot[container].itemcountDistribution[possItemCount].relativeProbability}`)
                         }
                     }
                 }
             }
         }
         
-
-        for (const id in config.ChanceInPool)
+        for (const itemId in Mod.config.changeRelativeProbabilityInPool)
         {
-            this.changeChanceInPool(id, config.ChanceInPool[id]);
+            this.lotsoflootHelper.changeRelativeProbabilityInPool(itemId, Mod.config.changeRelativeProbabilityInPool[itemId]);
         }
 
-        for (const id in config.ChangePool)
+        for (const itemId in Mod.config.changeProbabilityOfPool)
         {
-            this.changeChancePool(id, config.ChangePool[id]);
+            this.lotsoflootHelper.changeProbabilityOfPool(itemId, Mod.config.changeProbabilityOfPool[itemId]);
         }
 
-        if (config.disableFleaRestrictions)
+        if (Mod.config.general.disableFleaRestrictions)
         {
             for (const item in tables.templates.items)
             {
-                if (itemHelper.isValidItem(tables.templates.items[item]._id))
+                if (this.itemHelper.isValidItem(tables.templates.items[item]._id))
                 {
                     tables.templates.items[item]._props.CanRequireOnRagfair = true;
                     tables.templates.items[item]._props.CanSellOnRagfair = true;
@@ -137,20 +157,17 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
         }
 
-        for (const id in config.PriceCorrection)
+        for (const id in Mod.config.general.priceCorrection)
         {
-            tables.templates.prices[id] = config.PriceCorrection[id];
+            tables.templates.prices[id] = Mod.config.general.priceCorrection[id];
         }
 
-        
-        logger.info(`Finished loading: ${pkg.name}`);
-        return 
+        this.logger.logInfo(`Finished loading`);
     }
 
-    generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): SpawnpointTemplate[]
+    private generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): SpawnpointTemplate[]
     {
         const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
@@ -166,8 +183,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpointsForced);
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpoints.filter((point) => point.template.IsAlwaysSpawn));
 
-        
-
         // Temporary cast to get rid of protected, add all forced loot to return array
         (locationGenerator as any).addForcedLoot(loot, dynamicLootDist.spawnpointsForced, locationName);
 
@@ -176,9 +191,9 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         // Temporary cast to get rid of protected, draw from random distribution
         let desiredSpawnpointCount = Math.round((locationGenerator as any).getLooseLootMultiplerForLocation(locationName) * randomUtil.getNormallyDistributedRandomNumber(dynamicLootDist.spawnpointCount.mean, dynamicLootDist.spawnpointCount.std));
 
-        if (desiredSpawnpointCount > config.limits[locationName])
+        if (desiredSpawnpointCount > Mod.config.limits[locationName])
         {
-            desiredSpawnpointCount = config.limits[locationName];
+            desiredSpawnpointCount = Mod.config.limits[locationName];
         }
 
         // Positions not in forced but have 100% chance to spawn
@@ -191,7 +206,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         {
             if (blacklistedSpawnpoints?.includes(spawnpoint.template.Id))
             {
-                logger.debug(`Ignoring loose loot location: ${spawnpoint.template.Id}`);
+                this.logger.logDebug(`Ignoring loose loot location: ${spawnpoint.template.Id}`);
                 continue;
             }
 
@@ -223,8 +238,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
         }
         
-
-        if (!config.allowLootOverlay)
+        if (!Mod.config.general.allowLootOverlay)
         {
             // Filter out duplicate locationIds
             chosenSpawnpoints = [...new Map(chosenSpawnpoints.map((x) => [x.locationId, x])).values()];
@@ -233,7 +247,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             const tooManySpawnPointsRequested = (desiredSpawnpointCount - chosenSpawnpoints.length) > 0;
             if (tooManySpawnPointsRequested)
             {
-                logger.debug(
+                this.logger.logDebug(
                     localisationService.getText("location-spawn_point_count_requested_vs_found", {
                         requested: desiredSpawnpointCount + guaranteedLoosePoints.length,
                         found: chosenSpawnpoints.length,
@@ -250,13 +264,13 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         {
             if (!spawnPoint.template)
             {
-                logger.warning(localisationService.getText("location-missing_dynamic_template", spawnPoint.locationId));
+                this.logger.logWarning(localisationService.getText("location-missing_dynamic_template", spawnPoint.locationId));
                 continue;
             }
 
             if (!spawnPoint.template.Items || spawnPoint.template.Items.length === 0)
             {
-                logger.error(localisationService.getText("location-spawnpoint_missing_items", spawnPoint.template.Id));
+                this.logger.logError(localisationService.getText("location-spawnpoint_missing_items", spawnPoint.template.Id));
                 continue;
             }
 
@@ -274,14 +288,13 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
             if (itemArray.length === 0)
             {
-                logger.warning(`Loot pool for position: ${spawnPoint.template.Id} is empty. Skipping`);
+                this.logger.logWarning(`Loot pool for position: ${spawnPoint.template.Id} is empty. Skipping`);
 
                 continue;
             }
 
-
             // Draw a random item from spawn points possible items
-            const spawnPointClone = jsonUtil.clone(spawnPoint);
+            const spawnPointClone = this.cloner.clone(spawnPoint);
             const chosenComposedKey = itemArray.draw(1)[0];
             const chosenItem = spawnPointClone.template.Items.find(x => x._id === chosenComposedKey);
             const chosenTpl = chosenItem._tpl;
@@ -295,24 +308,19 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         }
 
         return loot;
-
     }
 
-    createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: Spawnpoint = undefined): IContainerItem
+    private createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: Spawnpoint = undefined): IContainerItem
     {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
-        const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const presetHelper = Mod.container.resolve<PresetHelper>("PresetHelper");
-        const ragfairServerHelper = Mod.container.resolve<RagfairServerHelper>("RagfairServerHelper");
         const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const localisationService = Mod.container.resolve<LocalisationService>("LocalisationService");
         const configServer = Mod.container.resolve<ConfigServer>("ConfigServer");
         const LocationConfig = configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
-
-        const gotItem = itemHelper.getItem(tpl);
+        
+        const gotItem = this.itemHelper.getItem(tpl);
         let itemTemplate:ITemplateItem;
         if (gotItem[0])
         {
@@ -340,13 +348,13 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             items[0].parentId = parentId
         }
 
-        if (itemHelper.isOfBaseclass(tpl, BaseClasses.WEAPON))
+        if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.WEAPON))
         {
             if (spawnPoint != undefined)
             {
                 const chosenItem = spawnPoint.template.Items.find(x => x._tpl === tpl);
                 // Get item + children and add into array we return
-                const itemWithChildren = itemHelper.findAndReturnChildrenAsItems(spawnPoint.template.Items, chosenItem._id);
+                const itemWithChildren = this.itemHelper.findAndReturnChildrenAsItems(spawnPoint.template.Items, chosenItem._id);
                 // Temporary cast to get rid of protected error, we need to reparent to ensure ids are unique
                 (locationGenerator as any).reparentItemAndChildren(itemWithChildren);
                 items.splice(0,1);
@@ -355,32 +363,32 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             else
             {
                 let children: Item[] = [];
-                const defaultPreset = jsonUtil.clone(presetHelper.getDefaultPreset(tpl));
+                const defaultPreset = this.cloner.clone(presetHelper.getDefaultPreset(tpl));
                 if (defaultPreset)
                 {
                     try
                     {
-                        children = itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
+                        children = this.itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
                     }
                     catch (error)
                     {
                         // this item already broke it once without being reproducible tpl = "5839a40f24597726f856b511"; AKS-74UB Default
                         // 5ea03f7400685063ec28bfa8 // ppsh default
                         // 5ba26383d4351e00334c93d9 //mp7_devgru
-                        logger.warning(localisationService.getText("location-preset_not_found", { tpl: tpl, defaultId: defaultPreset._id, defaultName: defaultPreset._name, parentId: parentId }));
+                        this.logger.logWarning(localisationService.getText("location-preset_not_found", { tpl: tpl, defaultId: defaultPreset._id, defaultName: defaultPreset._name, parentId: parentId }));
                         throw error;
                     }
                 }
                 else
                 {
                     // RSP30 (62178be9d0050232da3485d9/624c0b3340357b5f566e8766) doesnt have any default presets and kills this code below as it has no chidren to reparent
-                    logger.debug(`createItem() No preset found for weapon: ${tpl}`);
+                    this.logger.logDebug(`createItem() No preset found for weapon: ${tpl}`);
                 }
 
                 const rootItem = items[0];
                 if (!rootItem)
                 {
-                    logger.error(localisationService.getText("location-missing_root_item", { tpl: tpl, parentId: parentId }));
+                    this.logger.logError(localisationService.getText("location-missing_root_item", { tpl: tpl, parentId: parentId }));
 
                     throw new Error(localisationService.getText("location-critical_error_see_log"));
                 }
@@ -389,16 +397,15 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 {
                     if (children?.length > 0)
                     {
-                        items = itemHelper.reparentItemAndChildren(rootItem, children);
+                        items = this.itemHelper.reparentItemAndChildren(rootItem, children);
                     }
                 }
                 catch (error)
                 {
-                    logger.error(localisationService.getText("location-unable_to_reparent_item", { tpl: tpl, parentId: parentId }));
+                    this.logger.logError(localisationService.getText("location-unable_to_reparent_item", { tpl: tpl, parentId: parentId }));
 
                     throw error;
                 }
-
 
                 // Here we should use generalized BotGenerators functions e.g. fillExistingMagazines in the future since
                 // it can handle revolver ammo (it's not restructured to be used here yet.)
@@ -408,39 +415,39 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 // some weapon presets come without magazine; only fill the mag if it exists
                 if (magazine)
                 {
-                    const magTemplate = itemHelper.getItem(magazine._tpl)[1];
-                    const weaponTemplate = itemHelper.getItem(tpl)[1];
+                    const magTemplate = this.itemHelper.getItem(magazine._tpl)[1];
+                    const weaponTemplate = this.itemHelper.getItem(tpl)[1];
 
                     // Create array with just magazine
                     const magazineWithCartridges = [magazine];
-                    itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, magTemplate, staticAmmoDist, weaponTemplate._props.ammoCaliber);
+                    this.itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, magTemplate, staticAmmoDist, weaponTemplate._props.ammoCaliber);
 
                     // Replace existing magazine with above array
                     items.splice(items.indexOf(magazine), 1, ...magazineWithCartridges);
                 }
 
-                const size = itemHelper.getItemSize(items, rootItem._id);
+                const size = this.itemHelper.getItemSize(items, rootItem._id);
                 width = size.width;
                 height = size.height;
             }
             
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.MONEY) || itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO)) 
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.MONEY) || this.itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO)) 
         {
             const stackCount = randomUtil.getInt(itemTemplate._props.StackMinRandom, itemTemplate._props.StackMaxRandom);
             items[0].upd = { "StackObjectsCount": stackCount };
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO_BOX))
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO_BOX))
         {
-            itemHelper.addCartridgesToAmmoBox(items, itemTemplate);
+            this.itemHelper.addCartridgesToAmmoBox(items, itemTemplate);
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.MAGAZINE))
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.MAGAZINE))
         {
             if (randomUtil.getChance100(LocationConfig.magazineLootHasAmmoChancePercent))
             {
                 // Create array with just magazine
                 const magazineWithCartridges = [items[0]];
-                itemHelper.fillMagazineWithRandomCartridge(
+                this.itemHelper.fillMagazineWithRandomCartridge(
                     magazineWithCartridges,
                     itemTemplate,
                     staticAmmoDist,
@@ -453,33 +460,33 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             }
 
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.SIMPLE_CONTAINER) && (tpl != "5c093e3486f77430cb02e593"))
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.SIMPLE_CONTAINER) && (tpl != "5c093e3486f77430cb02e593"))
         {
-            const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, config.LooseContainerModifier);
-            if (config.Debug) logger.info(`Container ${tpl} with`);
+            const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, Mod.config.general.looseContainerModifier);
+            this.logger.logDebug(`Container ${tpl} with`);
             for (const cont of contloot) 
             {
-                if (config.Debug) logger.info(`${cont._tpl}`);
+                this.logger.logDebug(`${cont._tpl}`);
                 items.push(cont);
             }
         }
-        else if (itemHelper.isOfBaseclass(tpl, BaseClasses.BACKPACK))
+        else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.BACKPACK))
         {
-            const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, config.LooseBackpackModifier);
-            if (config.Debug) logger.info(`Backpack ${tpl} with`);
+            const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, Mod.config.general.looseBackpackModifier);
+            this.logger.logDebug(`Backpack ${tpl} with`);
             for (const cont of contloot) 
             {
-                if (config.Debug) logger.info(`${cont._tpl}`);
+                this.logger.logDebug(`${cont._tpl}`);
                 items.push(cont);
             }
         }
-        else if (itemHelper.armorItemCanHoldMods(tpl))
+        else if (this.itemHelper.armorItemCanHoldMods(tpl))
         {
             const defaultPreset = presetHelper.getDefaultPreset(tpl);
             if (defaultPreset)
             {
-                const presetAndMods: Item[] = itemHelper.replaceIDs(defaultPreset._items);
-                itemHelper.remapRootItemId(presetAndMods);
+                const presetAndMods: Item[] = this.itemHelper.replaceIDs(defaultPreset._items);
+                this.itemHelper.remapRootItemId(presetAndMods);
 
                 // Use original items parentId otherwise item doesnt get added to container correctly
                 presetAndMods[0].parentId = items[0].parentId;
@@ -490,7 +497,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 // We make base item above, at start of function, no need to do it here
                 if (itemTemplate._props.Slots?.length > 0)
                 {
-                    items = itemHelper.addChildSlotItems(
+                    items = this.itemHelper.addChildSlotItems(
                         items,
                         itemTemplate,
                         LocationConfig.equipmentLootSettings.modSpawnChancePercent,
@@ -506,83 +513,79 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         };
 
     }
-    
 
-    createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): Item[]
+    private looseContainerItemFilterIndex: Record<string, string[]> = {};
+    
+    private createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): Item[]
     {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
 
-        const tables = databaseServer.getTables();
+        const tables = this.databaseServer.getTables();
 
         const items = tables.templates.items;
         const item = items[tpl];
-        const rturn:Item[] = [];
 
         if (item._props.Grids[0]._props.filters[0] === undefined)
         {
-            if (config.Debug) logger.info(`${item._name} doesn't have a filter`);
-            const wow:GridFilter[] = [{Filter:["54009119af1c881c07000029"],
-                                       ExcludedFilter:[]}];
-            item._props.Grids[0]._props.filters = wow;
+            this.logger.logWarning(`${item._name} doesn't have a filter, setting default filter!`);
+            item._props.Grids[0]._props.filters =
+            [
+                {
+                    Filter: ["54009119af1c881c07000029"],
+                    ExcludedFilter: []
+                }
+            ];
         }
-        let whitelist = jsonUtil.clone(item._props.Grids[0]._props.filters[0].Filter);
-        let blacklist = jsonUtil.clone(item._props.Grids[0]._props.filters[0].ExcludedFilter);
+
+        let whitelist = this.cloner.clone(item._props.Grids[0]._props.filters[0].Filter);
+        let blacklist = this.cloner.clone(item._props?.Grids[0]._props.filters[0]?.ExcludedFilter) ?? [];
         const amount = randomUtil.getInt(1, item._props.Grids[0]._props.cellsH * item._props.Grids[0]._props.cellsV * modifier);
         let fill = 0;
-        let match = 0;
 
-        for (const filter of Mod.filterIndex)
+        if(this.looseContainerItemFilterIndex[tpl])
         {
-            if (filter.tpl == tpl)
-            {
-                whitelist = filter.entries;
-                match++;
-            }
+            whitelist = this.looseContainerItemFilterIndex[tpl];
         }
-
-        if (match == 0)
+        else
         {
-            if (config.Debug) logger.info(`${tpl} is new, generating whitelist`);
-            //If whitelist contains a parent instead of items the parent gets repaced by all its children
-            const whitelist_new: string[] = [];
+            this.logger.logDebug(`${tpl} is new, generating whitelist`);
+
+            const newWhiteList: string[] = [];
+            const newBlackList: string[] = [];
+
+            //If whitelist contains a parent instead of items, replace the parent by all its children.
             for (const content of whitelist)
             {
-                const h = this.findAndReturnChildrenByItems(items, content);
-                whitelist_new.push(...h);
+                const childItems = this.findAndReturnChildrenByItems(items, content);
+                newWhiteList.push(...childItems);
             }
-            whitelist = whitelist_new;
 
+            whitelist = newWhiteList;
 
-            //If blacklist contains a parent instead of items the parent gets repaced by all its children
-            const blacklist_new: string[] = [];
+            //If blacklist contains a parent instead of items, replace the parent by all its children.
             for (const content of blacklist)
             {
-                const h = this.findAndReturnChildrenByItems(items, content);
-                blacklist_new.push(...h);
+                const childItems = this.findAndReturnChildrenByItems(items, content);
+                newBlackList.push(...childItems);
             }
-            blacklist = blacklist_new;
 
-            //If any entrys of black and whitelist match the whitelist entry should be removed
-            for (const white in whitelist)
+            blacklist = newBlackList;
+
+            for (const whitelistEntry in whitelist)
             {
-                for (const black in blacklist)
+                //If whitelist contains entries that are in the blacklist, remove them.
+                if(blacklist[whitelistEntry])
                 {
-                    if (whitelist[white] == blacklist[black])
-                    {
-                        whitelist.splice(whitelist.indexOf(white), 1);
-                    }
+                    whitelist.splice(whitelist.indexOf(whitelistEntry), 1);
                 }
             }
 
             //Extra restrictions to avoid errors
             for (let white = 0; white < whitelist.length; white++)
             {
-                if (!itemHelper.isValidItem(whitelist[white]))                                                              //Checks if the Item can be in your Stash
+                if (!this.itemHelper.isValidItem(whitelist[white])) //Checks if the Item can be in your Stash
                 {
                     if (whitelist[white] == "5449016a4bdc2d6f028b456f")
                     {
@@ -591,25 +594,21 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                     whitelist.splice(white, 1);
                     white--;
                 }
-                else if (items[whitelist[white]]._props.Prefab.path == "")                                                  //If the Item has no model it cant be valid
+                else if (items[whitelist[white]]._props.Prefab.path == "") //If the Item has no model it cant be valid
                 {
                     whitelist.splice(white, 1);
                     white--;
                 }
             }
-            
-            Mod.filterIndex.push({
-                tpl: tpl,
-                entries: whitelist
-            });
-            
+
+            //Write new entry for later re-use.
+            this.looseContainerItemFilterIndex[tpl] = whitelist;
         }
         
-
         if (whitelist.length == 0)
         {
-            if (config.Debug) logger.info(`${tpl} whitelist is empty`);
-            return rturn;
+            this.logger.logWarning(`${tpl} whitelist is empty`);
+            return [];
         }
 
         const weight: number[] = [];
@@ -642,12 +641,13 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         {
             itemArray.push(new ProbabilityObject(whitelist[i], weight[i]));
         }
-        
-        
+
+        const generatedItems:Item[] = [];
+
         while (true)
         {
             let cont: string;
-            if (config.ItemWeights)
+            if (Mod.config.general.itemWeights)
             {
                 cont = itemArray.draw(1,true)[0];
             }
@@ -667,14 +667,14 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             
             for (const itm of positem.items)
             {
-                rturn.push(itm);
+                generatedItems.push(itm);
             }
         }
 
-        return rturn;
+        return generatedItems;
     }
 
-    findAndReturnChildrenByItems(items: Record<string, ITemplateItem>, itemID: string): string[]
+    private findAndReturnChildrenByItems(items: Record<string, ITemplateItem>, itemID: string): string[]
     {
         const stack: string[] = [itemID];
         const result: string[] = [];
@@ -709,203 +709,10 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         return result;
     }
     
-
-    changeChanceInPool(itemtpl: string, mult: number)
+    private addToRustedKeyRoom() : void
     {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const tables = databaseServer.getTables();
-        const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
-        for (const [name, temp] of Object.entries(tables.locations))
-        {
-            const mapdata:ILocation = temp;
-            for (const Map of maps)
-            {
-                if (name === Map)
-                {
-                    for (const point of mapdata.looseLoot.spawnpoints)
-                    {
-                        for (const itm of point.template.Items)
-                        {
-                            if (itm._tpl == itemtpl)
-                            {
-                                const itmID = itm._id;
-                                for (const dist of point.itemDistribution)
-                                {
-                                    if (dist.composedKey.key == itmID)
-                                    {
-                                        dist.relativeProbability *= mult
-                                        if (config.Debug) logger.info(`${name}, ${point.template.Id}, ${itm._tpl}, ${dist.relativeProbability}`);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    changeChancePool(itemtpl: string, mult: number)
-    {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const tables = databaseServer.getTables();
-
-        const maps = ["bigmap", "woods", "factory4_day", "factory4_night", "interchange", "laboratory", "lighthouse", "rezervbase", "shoreline", "tarkovstreets", "sandbox", "sandbox_high"];
-        for (const [name, temp] of Object.entries(tables.locations))
-        {
-            const mapdata:ILocation = temp;
-            for (const Map of maps)
-            {
-                if (name === Map)
-                {
-                    for (const point of mapdata.looseLoot.spawnpoints)
-                    {
-                        for (const itm of point.template.Items)
-                        {
-                            if (itm._tpl == itemtpl)
-                            {
-                                point.probability *= mult;
-                                if (point.probability > 1)
-                                {
-                                    point.probability = 1;
-                                }
-                                if (config.Debug) logger.info(`${name},   Pool:${point.template.Id},    Chance:${point.probability}`);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    MarkedRoomChanges()
-    {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const spawnPointscustoms = databaseServer.getTables().locations.bigmap.looseLoot.spawnpoints;
-        const spawnPointsreserve = databaseServer.getTables().locations.rezervbase.looseLoot.spawnpoints;
-        const spawnPointsstreets = databaseServer.getTables().locations.tarkovstreets.looseLoot.spawnpoints;
-        
-
-        for (const spawnpoint of spawnPointscustoms)
-        {
-            //Dorms 314 Marked Room
-            if ((spawnpoint.template.Position.x > 180) && (spawnpoint.template.Position.x < 185) && (spawnpoint.template.Position.z > 180) && (spawnpoint.template.Position.z < 185) && (spawnpoint.template.Position.y > 6) && (spawnpoint.template.Position.y < 7))
-            {
-                if (config.Debug) logger.info(`Customs ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= config.markedMultiplier.customs;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-        }
-
-        for (const spawnpoint of spawnPointsreserve)
-        {
-            if ((spawnpoint.template.Position.x > -125) && (spawnpoint.template.Position.x < -120) && (spawnpoint.template.Position.z > 25) && (spawnpoint.template.Position.z < 30) && (spawnpoint.template.Position.y > -15) && (spawnpoint.template.Position.y < -14))
-            {
-                if (config.Debug) logger.info(`Reserve ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= config.markedMultiplier.reserve;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-                
-            }
-            else if ((spawnpoint.template.Position.x > -155) && (spawnpoint.template.Position.x < -150) && (spawnpoint.template.Position.z > 70) && (spawnpoint.template.Position.z < 75) && (spawnpoint.template.Position.y > -9) && (spawnpoint.template.Position.y < -8))
-            {
-                if (config.Debug) logger.info(`Reserve ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= config.markedMultiplier.reserve;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-            else if ((spawnpoint.template.Position.x > 190) && (spawnpoint.template.Position.x < 195) && (spawnpoint.template.Position.z > -230) && (spawnpoint.template.Position.z < -225) && (spawnpoint.template.Position.y > -6) && (spawnpoint.template.Position.y < -5))
-            {
-                if (config.Debug) logger.info(`Reserve ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= config.markedMultiplier.reserve;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-        }
-
-        for (const spawnpoint of spawnPointsstreets)
-        {
-            //Abandoned Factory Marked Room
-            if ((spawnpoint.template.Position.x > -133) && (spawnpoint.template.Position.x < -129) && (spawnpoint.template.Position.z > 265) && (spawnpoint.template.Position.z < 275) && (spawnpoint.template.Position.y > 8.5) && (spawnpoint.template.Position.y < 11))
-            {
-                if (config.Debug) logger.info(`Streets ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= config.markedMultiplier.streets;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-            //Chek 13 Marked Room
-            else if ((spawnpoint.template.Position.x > 186) && (spawnpoint.template.Position.x < 191) && (spawnpoint.template.Position.z > 224) && (spawnpoint.template.Position.z < 229) && (spawnpoint.template.Position.y > -0.5) && (spawnpoint.template.Position.y < 1.5))
-            {
-                if (config.Debug) logger.info(`Streets ${spawnpoint.template.Id}`);
-                spawnpoint.probability *= config.markedMultiplier.streets;
-                this.markedExtraItemsFunc(spawnpoint);
-                this.markedItemGroups(spawnpoint);
-            }
-        }
-
-    }
-
-    markedExtraItemsFunc(spawnpoint: Spawnpoint)
-    {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        
-        for (const ITEM of Object.entries(config.markedExtraItems))
-        {
-            if (spawnpoint.template.Items.find(x => x._tpl === ITEM[0]))
-            {
-                continue;
-            }
-            const ID = Math.random()*10000;
-            spawnpoint.template.Items.push({
-                "_id": ID.toString(),
-                "_tpl": ITEM[0]
-            })
-            spawnpoint.itemDistribution.push({
-                "composedKey":{"key":ID.toString()},
-                "relativeProbability": ITEM[1]
-            });
-            if (config.Debug) logger.info(`Added ${ITEM[0]} to ${spawnpoint.template.Id}`);
-        }
-    }
-
-    markedItemGroups(spawnpoint: Spawnpoint)
-    {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
-
-        for (const item of spawnpoint.template.Items)
-        {
-            for (const group in config.markedItemGroups)
-            {
-                if (itemHelper.isOfBaseclass(item._tpl, group))
-                {
-                    for (const dist of spawnpoint.itemDistribution)
-                    {
-                        if (dist.composedKey.key == item._id)
-                        {
-                            dist.relativeProbability *= config.markedItemGroups[group];
-                            if (config.Debug) logger.info(`Changed ${item._tpl} to ${dist.relativeProbability}`);
-                        }
-                    }
-                }
-            }
-            
-        }
-        
-    }
-
-    addToRustedKeyRoom()
-    {
-        const logger = Mod.container.resolve<ILogger>("WinstonLogger");
-        const itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
-        const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
-        const databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
-        const tables = databaseServer.getTables();
+        const tables = this.databaseServer.getTables();
         const streetsloot = tables.locations.tarkovstreets.looseLoot;
         const items = tables.templates.items;
         let keys:string[] = [];
@@ -914,21 +721,21 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
         for (const item in items)
         {
             try {
-                if(config.RustedKeyRoomIncludesKeycards)
+                if(Mod.config.general.rustedKeyRoomIncludesKeycards)
                 {
-                    if(itemHelper.isOfBaseclass(item,BaseClasses.KEY))
+                    if(this.itemHelper.isOfBaseclass(item,BaseClasses.KEY))
                     {
                         keys.push(item);
                     }
                 }
                 else
                 {
-                    if(itemHelper.isOfBaseclass(item,BaseClasses.KEY_MECHANICAL))
+                    if(this.itemHelper.isOfBaseclass(item,BaseClasses.KEY_MECHANICAL))
                     {
                         keys.push(item);
                     }
                 }
-                if(itemHelper.isOfBaseclass(item,BaseClasses.JEWELRY))
+                if(this.itemHelper.isOfBaseclass(item,BaseClasses.JEWELRY))
                 {
                     valuables.push(item);
                 }
@@ -974,7 +781,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                 "relativeProbability":1
             })
         }
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
         
         point.template.Root = objectId.generate();
         point.template.Id = "Keys2";
@@ -984,7 +791,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 63.186
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys3";
@@ -994,7 +801,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 62.241
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys4";
@@ -1004,7 +811,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 62.686
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys5";
@@ -1014,7 +821,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.860
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys6";
@@ -1024,7 +831,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.560
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys7";
@@ -1034,7 +841,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.857
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys8";
@@ -1044,7 +851,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.562
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys9";
@@ -1054,7 +861,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.551
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys10";
@@ -1064,7 +871,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.872
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys11";
@@ -1074,7 +881,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 57.813
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Keys12";
@@ -1084,7 +891,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.073
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Val1";
@@ -1107,7 +914,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             });
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Val2";
@@ -1117,7 +924,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 53.767
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Val3";
@@ -1127,7 +934,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 60.114
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
 
         point.template.Root = objectId.generate();
         point.template.Id = "Val4";
@@ -1137,7 +944,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             "z": 65.393
         }
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(jsonUtil.clone(point));
+        streetsloot.spawnpoints.push(this.cloner.clone(point));
     }
 }
 
