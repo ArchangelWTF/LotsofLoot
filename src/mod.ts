@@ -23,16 +23,16 @@ import { LocalisationService } from "@spt/services/LocalisationService";
 import { ILooseLoot, Spawnpoint, SpawnpointsForced, SpawnpointTemplate } from "@spt/models/eft/common/ILooseLoot";
 import { ConfigServer } from "@spt/servers/ConfigServer";
 import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
-import { ITemplateItem, GridFilter } from "@spt/models/eft/common/tables/ITemplateItem";
+import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
-import { ILotsofLootConfig } from "./ILotsofLootConfig";
 import { VFS } from "@spt/utils/VFS";
-import { LotsofLootLogger } from "./LotsofLootLogger";
 import { MarkedRoom } from "./MarkedRoom";
 import { HashUtil } from "@spt/utils/HashUtil";
 import { ICloner } from "@spt/utils/cloners/ICloner";
+import { ILotsofLootConfig } from "./ILotsofLootConfig";
+import { LotsofLootLogger } from "./LotsofLootLogger";
 import { LotsofLootHelper } from "./LotsofLootHelper";
 
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
@@ -68,10 +68,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
             {
                 return this.createStaticLootItem(tpl, staticAmmoDist, parentId);
             }
-        }, {frequency: "Always"});
 
-        container.afterResolution("LocationGenerator", (_t, result: LocationGenerator) => 
-        {
             result.generateDynamicLoot = (dynamicLootDist, staticAmmoDist, locationName) => 
             {
                 return this.generateDynamicLoot(dynamicLootDist, staticAmmoDist, locationName);
@@ -736,7 +733,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
                                     if (dist.composedKey.key == itmID)
                                     {
                                         dist.relativeProbability *= mult
-                                        
+
                                         this.logger.logDebug(`${name}, ${point.template.Id}, ${itm._tpl}, ${dist.relativeProbability}`);
                                     }
                                 }
