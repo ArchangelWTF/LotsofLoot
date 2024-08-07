@@ -3,7 +3,7 @@
     "version": "2.3.0",
     "main": "src/mod.js",
     "license": "MIT",
-    "author": "Archangel",
+    "author": "ArchangelWTF",
     "sptVersion": "~3.9",
 	"loadBefore": [],
 	"loadAfter": [],
