@@ -10,6 +10,7 @@ export interface ILotsofLootConfig {
 export interface GeneralOptions {
     debug: boolean;
     allowLootOverlay: boolean;
+    removeBackpackRestrictions: boolean;
     disableFleaRestrictions: boolean;
     rustedKeyRoomIncludesKeycards: boolean;
     looseContainerModifier: number;

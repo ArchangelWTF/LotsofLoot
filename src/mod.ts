@@ -33,6 +33,7 @@ import { LotsofLootLogger } from "./LotsofLootLogger";
 import { MarkedRoom } from "./MarkedRoom";
 import { HashUtil } from "@spt/utils/HashUtil";
 import { ICloner } from "@spt/utils/cloners/ICloner";
+import { LotsofLootHelper } from "./LotsofLootHelper";
 
 class Mod implements IPreSptLoadMod, IPostDBLoadMod
 {
@@ -45,6 +46,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
     private cloner: ICloner;
 
     private markedRoom: MarkedRoom;
+    private lotsoflootHelper: LotsofLootHelper;
 
     public preSptLoad(container: DependencyContainer): void
     {
@@ -57,7 +59,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
         this.logger = new LotsofLootLogger(container.resolve<ILogger>("WinstonLogger"), Mod.config.general.debug)
         this.markedRoom = new MarkedRoom(Mod.config.markedRoom, container.resolve<DatabaseServer>("DatabaseServer"), container.resolve<ItemHelper>("ItemHelper"), container.resolve<HashUtil>("HashUtil"), this.logger);
-
+        this.lotsoflootHelper = new LotsofLootHelper(Mod.config, container.resolve<DatabaseServer>("DatabaseServer"), container.resolve<ItemHelper>("ItemHelper"), this.logger);
+        
         container.afterResolution("LocationGenerator", (_t, result: LocationGenerator) =>
         {
             //Temporary cast to get rid of protected error
@@ -89,6 +92,11 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
         this.markedRoom.doMarkedRoomChanges();
         this.addToRustedKeyRoom();
+
+        if(Mod.config.general.removeBackpackRestrictions)
+        {
+            this.lotsoflootHelper.removeBackpackRestrictions();
+        }
         
         for (const map in Mod.config.looseLootMultiplier)
         {

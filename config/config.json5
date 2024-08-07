@@ -3,6 +3,8 @@
         "debug": false,
         //Allows loose loot to spawn on top of one another.
         "allowLootOverlay": true,
+        //Removes backpack restrictions, allowing you to pick up T H I C C item cases that you find in raid.
+        "removeBackpackRestrictions": true,
         //Disables the BSG flea blacklist
         "disableFleaRestrictions": false,
         //Allows the rusted key room in Streets of Tarkov to also spawn keycards
