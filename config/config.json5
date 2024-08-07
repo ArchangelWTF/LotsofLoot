@@ -76,7 +76,8 @@
         "multiplier": {
             "customs": 1,
             "reserve": 1,
-            "streets": 1
+            "streets": 1,
+            "lighthouse": 1
         },
         //Adds these items to the marked room loot pool, lower number = rarer item
         "extraItems": {

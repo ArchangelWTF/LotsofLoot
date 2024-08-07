@@ -17,6 +17,7 @@ export class MarkedRoom
         const spawnPointscustoms = this.databaseServer.getTables().locations.bigmap.looseLoot.spawnpoints;
         const spawnPointsreserve = this.databaseServer.getTables().locations.rezervbase.looseLoot.spawnpoints;
         const spawnPointsstreets = this.databaseServer.getTables().locations.tarkovstreets.looseLoot.spawnpoints;
+        const spawnPointsLighthouse = this.databaseServer.getTables().locations.lighthouse.looseLoot.spawnpoints;
         
         for (const spawnpoint of spawnPointscustoms)
         {
@@ -75,8 +76,17 @@ export class MarkedRoom
                 this.markedItemGroups(spawnpoint);
             }
         }
-
-        //Todo: Add marked room for lighthouse here.
+        
+        for (const spawnpoint of spawnPointsLighthouse)
+        {
+            if ((spawnpoint.template.Position.x > 319) && (spawnpoint.template.Position.x < 330) && (spawnpoint.template.Position.z > 482) && (spawnpoint.template.Position.z < 489) && (spawnpoint.template.Position.y > 5) && (spawnpoint.template.Position.y < 6.5))
+            {
+                this.logger.logDebug(`Marked room (Lighthouse) ${spawnpoint.template.Id}`);
+                spawnpoint.probability *= this.markedRoomConfig.multiplier.lighthouse;
+                this.markedAddExtraItems(spawnpoint);
+                this.markedItemGroups(spawnpoint);
+            }
+        }
 
     }
 
