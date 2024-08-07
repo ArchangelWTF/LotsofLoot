@@ -1,5 +1,6 @@
 {
     "general": {
+        //Enables debug logging
         "debug": false,
         //Allows loose loot to spawn on top of one another.
         "allowLootOverlay": true,
@@ -7,7 +8,7 @@
         "removeBackpackRestrictions": true,
         //Disables the BSG flea blacklist
         "disableFleaRestrictions": false,
-        //Allows the rusted key room in Streets of Tarkov to also spawn keycards
+        //Allows the rusted key room on Streets of Tarkov to also spawn keycards
         "rustedKeyRoomIncludesKeycards": false,
         //Changes the max amount of items in Loose Containers, Value: 0 - 1
         "looseContainerModifier": 1,
@@ -55,6 +56,7 @@
         "sandbox": 2,
         "sandbox_high": 2
     },
+    //Maximum loot generation limits, higher number = higher limit (Would recommend leaving this as is)
     "limits": {
         "bigmap": 10000,
         "factory4_day": 1500,
@@ -63,7 +65,7 @@
         "laboratory": 25000,
         "rezervbase": 40000,
         "shoreline": 15000,
-        "woods": 5000,
+        "woods": 7500,
         "tarkovstreets": 50000,
         "lighthouse": 20000,
         "sandbox": 15000,
