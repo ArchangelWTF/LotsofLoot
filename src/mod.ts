@@ -27,6 +27,7 @@ import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
+import { PreSptModLoader } from "@spt/loaders/PreSptModLoader";
 import { VFS } from "@spt/utils/VFS";
 import { MarkedRoom } from "./MarkedRoom";
 import { HashUtil } from "@spt/utils/HashUtil";
@@ -54,8 +55,9 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod
 
         // Get VFS to read in configs
         const vfs = container.resolve<VFS>("VFS");
+        const preSptModLoader = container.resolve<PreSptModLoader>("PreSptModLoader");
         // Load config statically so that we don't have to keep reloading this across the entire file.
-        Mod.config = JSON5.parse(vfs.readFile(path.resolve(__dirname, "../config/config.json5")));
+        Mod.config = JSON5.parse(vfs.readFile(path.join(preSptModLoader.getModPath("archangelwtf-lotsoflootredux"), "config/config.json5")));
 
         this.logger = new LotsofLootLogger(container.resolve<ILogger>("WinstonLogger"), Mod.config.general.debug)
         this.markedRoom = new MarkedRoom(Mod.config.markedRoom, container.resolve<DatabaseServer>("DatabaseServer"), container.resolve<ItemHelper>("ItemHelper"), container.resolve<HashUtil>("HashUtil"), this.logger);
