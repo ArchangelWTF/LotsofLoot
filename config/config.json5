@@ -72,7 +72,7 @@
         "sandbox_high": 15000
     },
     "markedRoom":{
-        //Marked room loot multiplier, higher = more loot
+        //Marked room loot multiplier, higher = more loot probability
         "multiplier": {
             "customs": 1,
             "reserve": 1,
