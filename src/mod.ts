@@ -277,7 +277,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
     private createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: Spawnpoint = undefined): IContainerItem {
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const presetHelper = Mod.container.resolve<PresetHelper>("PresetHelper");
-        const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const localisationService = Mod.container.resolve<LocalisationService>("LocalisationService");
         const configServer = Mod.container.resolve<ConfigServer>("ConfigServer");
@@ -304,7 +303,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
             },
         ];
 
-        // container item has container's id as parentId
+        // container item has the container's id as the parentId
         if (parentId) {
             items[0].parentId = parentId;
         }
@@ -314,23 +313,14 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
                 const chosenItem = spawnPoint.template.Items.find((x) => x._tpl === tpl);
                 // Get item + children and add into array we return
                 const itemWithChildren = this.itemHelper.findAndReturnChildrenAsItems(spawnPoint.template.Items, chosenItem._id);
-                // Temporary cast to get rid of protected error, we need to reparent to ensure ids are unique
-                (locationGenerator as any).reparentItemAndChildren(itemWithChildren);
+
                 items.splice(0, 1);
                 items.push(...itemWithChildren);
             } else {
                 let children: Item[] = [];
                 const defaultPreset = this.cloner.clone(presetHelper.getDefaultPreset(tpl));
                 if (defaultPreset) {
-                    try {
-                        children = this.itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
-                    } catch (error) {
-                        // this item already broke it once without being reproducible tpl = "5839a40f24597726f856b511"; AKS-74UB Default
-                        // 5ea03f7400685063ec28bfa8 // ppsh default
-                        // 5ba26383d4351e00334c93d9 //mp7_devgru
-                        this.logger.logWarning(localisationService.getText("location-preset_not_found", { tpl: tpl, defaultId: defaultPreset._id, defaultName: defaultPreset._name, parentId: parentId }));
-                        throw error;
-                    }
+                    children = this.itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
                 } else {
                     // RSP30 (62178be9d0050232da3485d9/624c0b3340357b5f566e8766) doesnt have any default presets and kills this code below as it has no chidren to reparent
                     this.logger.logDebug(`createItem() No preset found for weapon: ${tpl}`);
@@ -343,29 +333,21 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
                     throw new Error(localisationService.getText("location-critical_error_see_log"));
                 }
 
-                try {
-                    if (children?.length > 0) {
-                        items = this.itemHelper.reparentItemAndChildren(rootItem, children);
-                    }
-                } catch (error) {
-                    this.logger.logError(localisationService.getText("location-unable_to_reparent_item", { tpl: tpl, parentId: parentId }));
-
-                    throw error;
+                if (children?.length > 0) {
+                    items = this.itemHelper.reparentItemAndChildren(rootItem, children);
                 }
-
-                // Here we should use generalized BotGenerators functions e.g. fillExistingMagazines in the future since
-                // it can handle revolver ammo (it's not restructured to be used here yet.)
-                // General: Make a WeaponController for Ragfair preset stuff and the generating weapons and ammo stuff from
-                // BotGenerator
+                
                 const magazine = items.filter((x) => x.slotId === "mod_magazine")[0];
-                // some weapon presets come without magazine; only fill the mag if it exists
-                if (magazine) {
+                // some weapon presets come without magazine; only fill the mag if it exists and if it has a good roll.
+                if (magazine && randomUtil.getChance100(LocationConfig.magazineLootHasAmmoChancePercent)) {
                     const magTemplate = this.itemHelper.getItem(magazine._tpl)[1];
                     const weaponTemplate = this.itemHelper.getItem(tpl)[1];
 
                     // Create array with just magazine
-                    const magazineWithCartridges = [magazine];
-                    this.itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, magTemplate, staticAmmoDist, weaponTemplate._props.ammoCaliber);
+                    const magazineWithCartridges: Item[] = [];
+                    magazineWithCartridges.push(magazine);
+
+                    this.itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, magTemplate, staticAmmoDist, weaponTemplate._props.ammoCaliber, LocationConfig.minFillStaticMagazinePercent / 100);
 
                     // Replace existing magazine with above array
                     items.splice(items.indexOf(magazine), 1, ...magazineWithCartridges);
@@ -383,7 +365,9 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         } else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.MAGAZINE)) {
             if (randomUtil.getChance100(LocationConfig.magazineLootHasAmmoChancePercent)) {
                 // Create array with just magazine
-                const magazineWithCartridges = [items[0]];
+                const magazineWithCartridges: Item[] = [];
+                magazineWithCartridges.push(items[0]);
+
                 this.itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, itemTemplate, staticAmmoDist, null, LocationConfig.minFillStaticMagazinePercent / 100);
 
                 // Replace existing magazine with above array
