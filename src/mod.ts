@@ -1,11 +1,11 @@
 import path from "path";
-import { IContainerItem, LocationGenerator } from "@spt/generators/LocationGenerator";
+import { IContainerItem, LocationLootGenerator } from "@spt/generators/LocationLootGenerator";
 import { ItemHelper } from "@spt/helpers/ItemHelper";
 import { PresetHelper } from "@spt/helpers/PresetHelper";
 import { PreSptModLoader } from "@spt/loaders/PreSptModLoader";
 import { ILocation, IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
-import { ILooseLoot, Spawnpoint, SpawnpointTemplate, SpawnpointsForced } from "@spt/models/eft/common/ILooseLoot";
-import { Item } from "@spt/models/eft/common/tables/IItem";
+import { ILooseLoot, ISpawnpoint, ISpawnpointTemplate, ISpawnpointsForced } from "@spt/models/eft/common/ILooseLoot";
+import { IItem } from "@spt/models/eft/common/tables/IItem";
 import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { BaseClasses } from "@spt/models/enums/BaseClasses";
 import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
@@ -58,8 +58,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         this.lotsoflootHelper = new LotsofLootHelper(Mod.config, container.resolve<DatabaseServer>("DatabaseServer"), container.resolve<ItemHelper>("ItemHelper"), this.logger);
 
         container.afterResolution(
-            "LocationGenerator",
-            (_t, result: LocationGenerator) => {
+            "LocationLootGenerator",
+            (_t, result: LocationLootGenerator) => {
                 //Temporary cast to get rid of protected error
                 (result as any).createStaticLootItem = (tpl, staticAmmoDist, parentId) => {
                     return this.createStaticLootItem(tpl, staticAmmoDist, parentId);
@@ -145,8 +145,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         this.logger.logInfo(`Finished loading`);
     }
 
-    private generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): SpawnpointTemplate[] {
-        const locationGenerator = Mod.container.resolve<LocationGenerator>("LocationGenerator");
+    private generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): ISpawnpointTemplate[] {
+        const LocationLootGenerator = Mod.container.resolve<LocationLootGenerator>("LocationLootGenerator");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
@@ -155,30 +155,30 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         const configServer = Mod.container.resolve<ConfigServer>("ConfigServer");
         const LocationConfig = configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
 
-        const loot: SpawnpointTemplate[] = [];
-        const dynamicForcedSpawnPoints: SpawnpointsForced[] = [];
+        const loot: ISpawnpointTemplate[] = [];
+        const dynamicForcedSpawnPoints: ISpawnpointsForced[] = [];
 
-        // Build the list of forced loot from both `spawnpointsForced` and any point marked `IsAlwaysSpawn`
+        // Build the list of forced loot from both `ISpawnpointsForced` and any point marked `IsAlwaysSpawn`
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpointsForced);
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpoints.filter((point) => point.template.IsAlwaysSpawn));
 
         // Temporary cast to get rid of protected, add all forced loot to return array
-        (locationGenerator as any).addForcedLoot(loot, dynamicLootDist.spawnpointsForced, locationName);
+        (LocationLootGenerator as any).addForcedLoot(loot, dynamicLootDist.spawnpointsForced, locationName);
 
         const allDynamicSpawnpoints = dynamicLootDist.spawnpoints;
 
         // Temporary cast to get rid of protected, draw from random distribution
-        let desiredSpawnpointCount = Math.round((locationGenerator as any).getLooseLootMultiplerForLocation(locationName) * randomUtil.getNormallyDistributedRandomNumber(dynamicLootDist.spawnpointCount.mean, dynamicLootDist.spawnpointCount.std));
+        let desiredSpawnpointCount = Math.round((LocationLootGenerator as any).getLooseLootMultiplerForLocation(locationName) * randomUtil.getNormallyDistributedRandomNumber(dynamicLootDist.spawnpointCount.mean, dynamicLootDist.spawnpointCount.std));
 
         if (desiredSpawnpointCount > Mod.config.limits[locationName]) {
             desiredSpawnpointCount = Mod.config.limits[locationName];
         }
 
         // Positions not in forced but have 100% chance to spawn
-        const guaranteedLoosePoints: Spawnpoint[] = [];
+        const guaranteedLoosePoints: ISpawnpoint[] = [];
 
         const blacklistedSpawnpoints = LocationConfig.looseLootBlacklist[locationName];
-        const spawnpointArray = new ProbabilityObjectArray<string, Spawnpoint>(mathUtil, jsonUtil);
+        const spawnpointArray = new ProbabilityObjectArray<string, ISpawnpoint>(mathUtil, jsonUtil);
 
         for (const spawnpoint of allDynamicSpawnpoints) {
             if (blacklistedSpawnpoints?.includes(spawnpoint.template.Id)) {
@@ -200,7 +200,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
 
         // Select a number of spawn points to add loot to
         // Add ALL loose loot with 100% chance to pool
-        let chosenSpawnpoints: Spawnpoint[] = [...guaranteedLoosePoints];
+        let chosenSpawnpoints: ISpawnpoint[] = [...guaranteedLoosePoints];
 
         const randomSpawnpointCount = desiredSpawnpointCount - chosenSpawnpoints.length;
         // Add randomly chosen spawn points
@@ -274,7 +274,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         return loot;
     }
 
-    private createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: Spawnpoint = undefined): IContainerItem {
+    private createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: ISpawnpoint = undefined): IContainerItem {
         const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const presetHelper = Mod.container.resolve<PresetHelper>("PresetHelper");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
@@ -296,7 +296,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
 
         let width = itemTemplate._props.Width;
         let height = itemTemplate._props.Height;
-        let items: Item[] = [
+        let items: IItem[] = [
             {
                 _id: objectId.generate(),
                 _tpl: tpl,
@@ -317,7 +317,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
                 items.splice(0, 1);
                 items.push(...itemWithChildren);
             } else {
-                let children: Item[] = [];
+                let children: IItem[] = [];
                 const defaultPreset = this.cloner.clone(presetHelper.getDefaultPreset(tpl));
                 if (defaultPreset) {
                     children = this.itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
@@ -344,7 +344,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
                     const weaponTemplate = this.itemHelper.getItem(tpl)[1];
 
                     // Create array with just magazine
-                    const magazineWithCartridges: Item[] = [];
+                    const magazineWithCartridges: IItem[] = [];
                     magazineWithCartridges.push(magazine);
 
                     this.itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, magTemplate, staticAmmoDist, weaponTemplate._props.ammoCaliber, LocationConfig.minFillStaticMagazinePercent / 100);
@@ -365,7 +365,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         } else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.MAGAZINE)) {
             if (randomUtil.getChance100(LocationConfig.magazineLootHasAmmoChancePercent)) {
                 // Create array with just magazine
-                const magazineWithCartridges: Item[] = [];
+                const magazineWithCartridges: IItem[] = [];
                 magazineWithCartridges.push(items[0]);
 
                 this.itemHelper.fillMagazineWithRandomCartridge(magazineWithCartridges, itemTemplate, staticAmmoDist, null, LocationConfig.minFillStaticMagazinePercent / 100);
@@ -390,7 +390,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         } else if (this.itemHelper.armorItemCanHoldMods(tpl)) {
             const defaultPreset = presetHelper.getDefaultPreset(tpl);
             if (defaultPreset) {
-                const presetAndMods: Item[] = this.itemHelper.replaceIDs(defaultPreset._items);
+                const presetAndMods: IItem[] = this.itemHelper.replaceIDs(defaultPreset._items);
                 this.itemHelper.remapRootItemId(presetAndMods);
 
                 // Use original items parentId otherwise item doesnt get added to container correctly
@@ -413,7 +413,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
 
     private looseContainerItemFilterIndex: Record<string, string[]> = {};
 
-    private createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): Item[] {
+    private createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): IItem[] {
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
         const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
@@ -514,7 +514,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
             itemArray.push(new ProbabilityObject(whitelist[i], weight[i]));
         }
 
-        const generatedItems: Item[] = [];
+        const generatedItems: IItem[] = [];
 
         while (true) {
             let cont: string;
@@ -590,7 +590,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
                 valuables.push(item);
             }
         }
-        let point: Spawnpoint = {
+        let point: ISpawnpoint = {
             locationId: "(185.087, 6.554, 63.721)",
             probability: 0.25,
             template: {

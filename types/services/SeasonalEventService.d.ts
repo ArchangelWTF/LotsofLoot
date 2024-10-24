@@ -1,7 +1,7 @@
 import { BotHelper } from "@spt/helpers/BotHelper";
 import { ProfileHelper } from "@spt/helpers/ProfileHelper";
 import { IConfig } from "@spt/models/eft/common/IGlobals";
-import { Inventory } from "@spt/models/eft/common/tables/IBotType";
+import { IInventory } from "@spt/models/eft/common/tables/IBotType";
 import { Season } from "@spt/models/enums/Season";
 import { SeasonalEventType } from "@spt/models/enums/SeasonalEventType";
 import { IHttpConfig } from "@spt/models/spt/config/IHttpConfig";
@@ -109,7 +109,7 @@ export declare class SeasonalEventService {
      * @param botInventory Bots inventory to iterate over
      * @param botRole the role of the bot being processed
      */
-    removeChristmasItemsFromBotInventory(botInventory: Inventory, botRole: string): void;
+    removeChristmasItemsFromBotInventory(botInventory: IInventory, botRole: string): void;
     /**
      * Make adjusted to server code based on the name of the event passed in
      * @param sessionId Player id
@@ -117,8 +117,18 @@ export declare class SeasonalEventService {
      * @param eventName Name of the event to enable. e.g. Christmas
      */
     protected updateGlobalEvents(sessionId: string, globalConfig: IConfig, eventType: SeasonalEventType): void;
+    /**
+     * Force zryachiy to always have a melee weapon
+     */
     protected adjustZryachiyMeleeChance(): void;
+    /**
+     * Enable the halloween zryachiy summon event
+     */
     protected enableHalloweenSummonEvent(): void;
+    /**
+     * Add event bosses to maps
+     * @param eventType Seasonal event, e.g. HALLOWEEN/CHRISTMAS
+     */
     protected addEventBossesToMaps(eventType: SeasonalEventType): void;
     /**
      * Change trader icons to be more event themed (Halloween only so far)
@@ -134,6 +144,9 @@ export declare class SeasonalEventService {
      * @param eventName Name of the event to read equipment in from config
      */
     protected addEventGearToBots(eventType: SeasonalEventType): void;
+    /**
+     * Add pumpkin loot boxes to scavs
+     */
     protected addPumpkinsToScavBackpacks(): void;
     /**
      * Set Khorovod(dancing tree) chance to 100% on all maps that support it
@@ -155,5 +168,8 @@ export declare class SeasonalEventService {
      * @returns Bot role as string
      */
     getBaseRoleForEventBot(eventBotRole: string): string;
+    /**
+     * Force the weather to be snow
+     */
     enableSnow(): void;
 }

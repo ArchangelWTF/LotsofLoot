@@ -1,5 +1,5 @@
 import { ItemHelper } from "@spt/helpers/ItemHelper";
-import { Spawnpoint } from "@spt/models/eft/common/ILooseLoot";
+import { ISpawnpoint } from "@spt/models/eft/common/ILooseLoot";
 import { DatabaseServer } from "@spt/servers/DatabaseServer";
 import { HashUtil } from "@spt/utils/HashUtil";
 import { MarkedRoomConfig } from "./ILotsofLootConfig";
@@ -76,7 +76,7 @@ export class MarkedRoom {
         }
     }
 
-    private markedAddExtraItems(spawnpoint: Spawnpoint): void {
+    private markedAddExtraItems(spawnpoint: ISpawnpoint): void {
         for (const item of Object.entries(this.markedRoomConfig.extraItems)) {
             if (spawnpoint.template.Items.find((x) => x._tpl === item[0])) {
                 continue;
@@ -98,7 +98,7 @@ export class MarkedRoom {
         }
     }
 
-    private markedItemGroups(spawnpoint: Spawnpoint): void {
+    private markedItemGroups(spawnpoint: ISpawnpoint): void {
         for (const item of spawnpoint.template.Items) {
             for (const group in this.markedRoomConfig.itemGroups) {
                 if (this.itemHelper.isOfBaseclass(item._tpl, group)) {
