@@ -336,7 +336,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
                 if (children?.length > 0) {
                     items = this.itemHelper.reparentItemAndChildren(rootItem, children);
                 }
-                
+
                 const magazine = items.filter((x) => x.slotId === "mod_magazine")[0];
                 // some weapon presets come without magazine; only fill the mag if it exists and if it has a good roll.
                 if (magazine && randomUtil.getChance100(LocationConfig.magazineLootHasAmmoChancePercent)) {

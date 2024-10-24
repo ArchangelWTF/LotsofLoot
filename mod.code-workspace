@@ -1,12 +1,10 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"extensions": {
-		"recommendations": [
-			"biomejs.biome"
-		]
-	}
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "extensions": {
+        "recommendations": ["biomejs.biome"]
+    }
 }
