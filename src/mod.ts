@@ -145,24 +145,27 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         this.logger.logInfo(`Finished loading`);
     }
 
+    // This method is pretty much a carbon copy of SPT's generateDynamicLoot.
+    // However the key differences are the override for allowLootOverlay and createStaticLootItem
     private generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): ISpawnpointTemplate[] {
         const LocationLootGenerator = Mod.container.resolve<LocationLootGenerator>("LocationLootGenerator");
-        const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
+        const itemFilterService = Mod.container.resolve<ItemFilterService>("ItemFilterService");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
         const localisationService = Mod.container.resolve<LocalisationService>("LocalisationService");
         const seasonalEventService = Mod.container.resolve<SeasonalEventService>("SeasonalEventService");
         const configServer = Mod.container.resolve<ConfigServer>("ConfigServer");
-        const LocationConfig = configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
+        const locationConfig = configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
 
         const loot: ISpawnpointTemplate[] = [];
         const dynamicForcedSpawnPoints: ISpawnpointsForced[] = [];
 
-        // Build the list of forced loot from both `ISpawnpointsForced` and any point marked `IsAlwaysSpawn`
+        // Build the list of forced loot from both `spawnpointsForced` and any point marked `IsAlwaysSpawn`
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpointsForced);
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpoints.filter((point) => point.template.IsAlwaysSpawn));
 
-        // Temporary cast to get rid of protected, add all forced loot to return array
+        // Temporary cast to get rid of the protected error
+        // Add forced loot
         (LocationLootGenerator as any).addForcedLoot(loot, dynamicLootDist.spawnpointsForced, locationName);
 
         const allDynamicSpawnpoints = dynamicLootDist.spawnpoints;
@@ -177,10 +180,11 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         // Positions not in forced but have 100% chance to spawn
         const guaranteedLoosePoints: ISpawnpoint[] = [];
 
-        const blacklistedSpawnpoints = LocationConfig.looseLootBlacklist[locationName];
-        const spawnpointArray = new ProbabilityObjectArray<string, ISpawnpoint>(mathUtil, jsonUtil);
+        const blacklistedSpawnpoints = locationConfig.looseLootBlacklist[locationName];
+        const spawnpointArray = new ProbabilityObjectArray<string, ISpawnpoint>(mathUtil, this.cloner);
 
         for (const spawnpoint of allDynamicSpawnpoints) {
+            // Point is blacklisted, skip
             if (blacklistedSpawnpoints?.includes(spawnpoint.template.Id)) {
                 this.logger.logDebug(`Ignoring loose loot location: ${spawnpoint.template.Id}`);
                 continue;
@@ -191,8 +195,10 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
                 continue;
             }
 
+            // 100%, add it to guaranteed
             if (spawnpoint.probability === 1) {
                 guaranteedLoosePoints.push(spawnpoint);
+                continue;
             }
 
             spawnpointArray.push(new ProbabilityObject(spawnpoint.template.Id, spawnpoint.probability, spawnpoint));
@@ -203,16 +209,17 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         let chosenSpawnpoints: ISpawnpoint[] = [...guaranteedLoosePoints];
 
         const randomSpawnpointCount = desiredSpawnpointCount - chosenSpawnpoints.length;
-        // Add randomly chosen spawn points
-        if (randomSpawnpointCount) {
-            for (const si of spawnpointArray.draw(randomSpawnpointCount, true)) {
+        // Only draw random spawn points if needed
+        if (randomSpawnpointCount > 0 && spawnpointArray.length > 0) {
+            // Add randomly chosen spawn points
+            for (const si of spawnpointArray.draw(randomSpawnpointCount, false)) {
                 chosenSpawnpoints.push(spawnpointArray.data(si));
             }
         }
 
         if (!Mod.config.general.allowLootOverlay) {
             // Filter out duplicate locationIds
-            chosenSpawnpoints = [...new Map(chosenSpawnpoints.map((x) => [x.locationId, x])).values()];
+            chosenSpawnpoints = [...new Map(chosenSpawnpoints.map((spawnPoint) => [spawnPoint.locationId, spawnPoint])).values()];
 
             // Do we have enough items in pool to fulfill requirement
             const tooManySpawnPointsRequested = desiredSpawnpointCount - chosenSpawnpoints.length > 0;
@@ -231,20 +238,35 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         const seasonalEventActive = seasonalEventService.seasonalEventEnabled();
         const seasonalItemTplBlacklist = seasonalEventService.getInactiveSeasonalEventItems();
         for (const spawnPoint of chosenSpawnpoints) {
+            // Spawnpoint is invalid, skip it
             if (!spawnPoint.template) {
                 this.logger.logWarning(localisationService.getText("location-missing_dynamic_template", spawnPoint.locationId));
+
                 continue;
             }
 
+            // Ensure no blacklisted lootable items are in pool
+            spawnPoint.template.Items = spawnPoint.template.Items.filter((item) => !itemFilterService.isLootableItemBlacklisted(item._tpl));
+
+            // Ensure no seasonal items are in pool if not in-season
+            if (!seasonalEventActive) {
+                spawnPoint.template.Items = spawnPoint.template.Items.filter((item) => !seasonalItemTplBlacklist.includes(item._tpl));
+            }
+
+            // Spawn point has no items after filtering, skip
             if (!spawnPoint.template.Items || spawnPoint.template.Items.length === 0) {
-                this.logger.logError(localisationService.getText("location-spawnpoint_missing_items", spawnPoint.template.Id));
+                this.logger.logWarning(localisationService.getText("location-spawnpoint_missing_items", spawnPoint.template.Id));
+
                 continue;
             }
 
-            const itemArray = new ProbabilityObjectArray<string>(mathUtil, jsonUtil);
+            // Get an array of allowed IDs after above filtering has occured
+            const validItemIds = spawnPoint.template.Items.map((item) => item._id);
+
+            // Construct container to hold above filtered items, letting us pick an item for the spot
+            const itemArray = new ProbabilityObjectArray<string>(mathUtil, this.cloner);
             for (const itemDist of spawnPoint.itemDistribution) {
-                if (!seasonalEventActive && seasonalItemTplBlacklist.includes(spawnPoint.template.Items.find((x) => x._id === itemDist.composedKey.key)._tpl)) {
-                    // Skip seasonal event items if they're not enabled
+                if (!validItemIds.includes(itemDist.composedKey.key)) {
                     continue;
                 }
 
@@ -252,23 +274,24 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
             }
 
             if (itemArray.length === 0) {
-                this.logger.logWarning(`Loot pool for position: ${spawnPoint.template.Id} is empty. Skipping`);
+                this.logger.logWarning(localisationService.getText("location-loot_pool_is_empty_skipping", spawnPoint.template.Id));
 
                 continue;
             }
 
             // Draw a random item from spawn points possible items
-            const spawnPointClone = this.cloner.clone(spawnPoint);
             const chosenComposedKey = itemArray.draw(1)[0];
-            const chosenItem = spawnPointClone.template.Items.find((x) => x._id === chosenComposedKey);
+            const chosenItem = spawnPoint.template.Items.find((x) => x._id === chosenComposedKey);
             const chosenTpl = chosenItem._tpl;
-            const createItemResult = this.createStaticLootItem(chosenTpl, staticAmmoDist, undefined, spawnPointClone);
+            const createItemResult = this.createStaticLootItem(chosenTpl, staticAmmoDist, undefined, spawnPoint);
 
-            // Root id can change when generating a weapon
-            spawnPointClone.template.Root = createItemResult.items[0]._id;
-            spawnPointClone.template.Items = createItemResult.items;
+            // Root id can change when generating a weapon, ensure ids match
+            spawnPoint.template.Root = createItemResult.items[0]._id;
 
-            loot.push(spawnPointClone.template);
+            // Overwrite entire pool with chosen item
+            spawnPoint.template.Items = createItemResult.items;
+
+            loot.push(spawnPoint.template);
         }
 
         return loot;
