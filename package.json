@@ -12,21 +12,19 @@
 	"isBundleMod": false,
     "scripts": {
         "setup": "npm i",
+        "lint": "npx @biomejs/biome lint ./",
+        "format": "npx @biomejs/biome check --write ./",
         "build": "node ./build.mjs",
         "buildinfo": "node ./build.mjs --verbose"
     },
     "devDependencies": {
-        "@types/node": "20.11",
-        "@typescript-eslint/eslint-plugin": "7.2",
-        "@typescript-eslint/parser": "7.2",
-        "archiver": "^6.0",
-        "eslint": "8.57",
-        "fs-extra": "11.2",
+        "@types/node": "~20.11",
+        "@biomejs/biome": "1.8.3",
+        "fs-extra": "~11.2",
         "ignore": "^5.2",
-        "os": "^0.1",
-        "tsyringe": "4.8.0",
-        "typescript": "5.4",
-        "winston": "3.12",
-        "json5": "2.2.3"
+        "tsyringe": "~4.8",
+        "typescript": "~5.4",
+        "winston": "~3.13",
+        "json5": "~2.2"
     }
 }

@@ -1,8 +1,6 @@
 /.buildignore
 /.DS_Store
 /.editorconfig
-/.eslintignore
-/.eslintrc.json
 /.git
 /.github
 /.gitignore

@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/indent */
-/* eslint-disable no-constant-condition */
-/* eslint-disable prefer-spread */
 import JSON5 from "json5";
 import path from "path";
 import { DependencyContainer } from "tsyringe";
