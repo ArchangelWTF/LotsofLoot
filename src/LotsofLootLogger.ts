@@ -13,7 +13,11 @@ export class LotsofLootLogger {
         this.logger.info(this.loggerPrefix + log);
     }
 
-    public logWarning(log: string): void {
+    public warning(log: string): void {
+        this.logWarning(log);
+    }
+
+    protected logWarning(log: string): void {
         this.logger.warning(this.loggerPrefix + log);
     }
 
@@ -21,7 +25,11 @@ export class LotsofLootLogger {
         this.logger.error(this.loggerPrefix + log);
     }
 
-    public logDebug(log: string): void {
+    public debug(log: string): void {
+        this.logDebug(log);
+    }
+
+    protected logDebug(log: string): void {
         if (this.debugEnabled) {
             this.logger.logWithColor(this.loggerPrefix + log, LogTextColor.YELLOW);
         }

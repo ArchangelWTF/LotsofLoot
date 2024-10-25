@@ -34,7 +34,7 @@ export class LotsofLootHelper {
                 const location: ILocation = locations[locationId];
 
                 if (!location.looseLoot) {
-                    this.logger.logDebug(`Skipping ${locationId} as it has no loose loot!`);
+                    this.logger.debug(`Skipping ${locationId} as it has no loose loot!`);
                     continue;
                 }
 
@@ -47,7 +47,7 @@ export class LotsofLootHelper {
                         if (itemDistribution) {
                             itemDistribution.relativeProbability *= mult;
 
-                            this.logger.logDebug(`${locationId}, ${spawnpoint.template.Id}, ${item._tpl}, ${itemDistribution.relativeProbability}`);
+                            this.logger.debug(`${locationId}, ${spawnpoint.template.Id}, ${item._tpl}, ${itemDistribution.relativeProbability}`);
                         }
                     }
                 });
@@ -63,7 +63,7 @@ export class LotsofLootHelper {
                 const location: ILocation = locations[locationId];
 
                 if (!location.looseLoot) {
-                    this.logger.logDebug(`Skipping ${locationId} as it has no loose loot!`);
+                    this.logger.debug(`Skipping ${locationId} as it has no loose loot!`);
                     continue;
                 }
 
@@ -78,7 +78,7 @@ export class LotsofLootHelper {
                             spawnpoint.probability = 1;
                         }
 
-                        this.logger.logDebug(`${locationId},   Pool:${spawnpoint.template.Id},    Chance:${spawnpoint.probability}`);
+                        this.logger.debug(`${locationId},   Pool:${spawnpoint.template.Id},    Chance:${spawnpoint.probability}`);
                     }
                 });
             }

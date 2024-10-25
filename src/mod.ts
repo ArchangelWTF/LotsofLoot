@@ -94,9 +94,9 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
 
         for (const map in Mod.config.looseLootMultiplier) {
             LocationConfig.looseLootMultiplier[map] = Mod.config.looseLootMultiplier[map];
-            this.logger.logDebug(`${map}: ${LocationConfig.looseLootMultiplier[map]}`);
+            this.logger.debug(`${map}: ${LocationConfig.looseLootMultiplier[map]}`);
             LocationConfig.staticLootMultiplier[map] = Mod.config.staticLootMultiplier[map];
-            this.logger.logDebug(`${map}: ${LocationConfig.staticLootMultiplier[map]}`);
+            this.logger.debug(`${map}: ${LocationConfig.staticLootMultiplier[map]}`);
         }
 
         for (const locationId in locations) {
@@ -104,7 +104,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
                 const location: ILocation = locations[locationId];
                 //Location does not have any static loot pools, skip this map.
                 if (!location.staticLoot) {
-                    this.logger.logDebug(`Skipping ${locationId} as it has no static loot`);
+                    this.logger.debug(`Skipping ${locationId} as it has no static loot`);
 
                     continue;
                 }
@@ -116,7 +116,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
                         if (staticLoot[container].itemcountDistribution[possItemCount].count == 0) {
                             staticLoot[container].itemcountDistribution[possItemCount].relativeProbability = Math.round(staticLoot[container].itemcountDistribution[possItemCount].relativeProbability * Mod.config.containers[container]);
 
-                            this.logger.logDebug(`Changed container ${container} chance to ${staticLoot[container].itemcountDistribution[possItemCount].relativeProbability}`);
+                            this.logger.debug(`Changed container ${container} chance to ${staticLoot[container].itemcountDistribution[possItemCount].relativeProbability}`);
                         }
                     }
                 }
@@ -236,7 +236,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
         const seasonalItemTplBlacklist = seasonalEventService.getInactiveSeasonalEventItems();
         for (const spawnPoint of chosenSpawnpoints) {
             if (!spawnPoint.template) {
-                this.logger.logWarning(localisationService.getText("location-missing_dynamic_template", spawnPoint.locationId));
+                this.logger.warning(localisationService.getText("location-missing_dynamic_template", spawnPoint.locationId));
                 continue;
             }
 
@@ -256,7 +256,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
             }
 
             if (itemArray.length === 0) {
-                this.logger.logWarning(`Loot pool for position: ${spawnPoint.template.Id} is empty. Skipping`);
+                this.logger.warning(`Loot pool for position: ${spawnPoint.template.Id} is empty. Skipping`);
 
                 continue;
             }
@@ -326,7 +326,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
                     children = this.itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
                 } else {
                     // RSP30 (62178be9d0050232da3485d9/624c0b3340357b5f566e8766) doesnt have any default presets and kills this code below as it has no chidren to reparent
-                    this.logger.logDebug(`createItem() No preset found for weapon: ${tpl}`);
+                    this.logger.debug(`createItem() No preset found for weapon: ${tpl}`);
                 }
 
                 const rootItem = items[0];
@@ -378,16 +378,16 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
             }
         } else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.SIMPLE_CONTAINER) && tpl != "5c093e3486f77430cb02e593") {
             const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, Mod.config.general.looseContainerModifier);
-            this.logger.logDebug(`Container ${tpl} with`);
+            this.logger.debug(`Container ${tpl} with`);
             for (const cont of contloot) {
-                this.logger.logDebug(`${cont._tpl}`);
+                this.logger.debug(`${cont._tpl}`);
                 items.push(cont);
             }
         } else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.BACKPACK)) {
             const contloot = this.createLooseContainerLoot(items[0]._tpl, items[0]._id, staticAmmoDist, Mod.config.general.looseBackpackModifier);
-            this.logger.logDebug(`Backpack ${tpl} with`);
+            this.logger.debug(`Backpack ${tpl} with`);
             for (const cont of contloot) {
-                this.logger.logDebug(`${cont._tpl}`);
+                this.logger.debug(`${cont._tpl}`);
                 items.push(cont);
             }
         } else if (this.itemHelper.armorItemCanHoldMods(tpl)) {
@@ -427,7 +427,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
         const item = items[tpl];
 
         if (item._props.Grids[0]._props.filters[0] === undefined) {
-            this.logger.logWarning(`${item._name} doesn't have a filter, setting default filter!`);
+            this.logger.warning(`${item._name} doesn't have a filter, setting default filter!`);
             item._props.Grids[0]._props.filters = [
                 {
                     Filter: ["54009119af1c881c07000029"],
@@ -444,7 +444,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
         if (this.looseContainerItemFilterIndex[tpl]) {
             whitelist = this.looseContainerItemFilterIndex[tpl];
         } else {
-            this.logger.logDebug(`${tpl} is new, generating whitelist`);
+            this.logger.debug(`${tpl} is new, generating whitelist`);
 
             const newWhiteList: string[] = [];
             const newBlackList: string[] = [];
@@ -493,7 +493,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
         }
 
         if (whitelist.length == 0) {
-            this.logger.logWarning(`${tpl} whitelist is empty`);
+            this.logger.warning(`${tpl} whitelist is empty`);
             return [];
         }
 
