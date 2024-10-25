@@ -9,18 +9,18 @@ import { IItem } from "@spt/models/eft/common/tables/IItem";
 import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { BaseClasses } from "@spt/models/enums/BaseClasses";
 import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
-import { IPostDBLoadMod } from "@spt/models/external/IPostDBLoadMod";
-import { IPreSptLoadMod } from "@spt/models/external/IPreSptLoadMod";
+import { IPostDBLoadModAsync } from "@spt/models/external/IPostDBLoadModAsync";
+import { IPreSptLoadModAsync } from "@spt/models/external/IPreSptLoadModAsync";
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { ILogger } from "@spt/models/spt/utils/ILogger";
 import { ConfigServer } from "@spt/servers/ConfigServer";
 import { DatabaseServer } from "@spt/servers/DatabaseServer";
+import { ItemFilterService } from "@spt/services/ItemFilterService";
 import { LocalisationService } from "@spt/services/LocalisationService";
 import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { HashUtil } from "@spt/utils/HashUtil";
 import { JsonUtil } from "@spt/utils/JsonUtil";
 import { MathUtil } from "@spt/utils/MathUtil";
-import { ObjectId } from "@spt/utils/ObjectId";
 import { ProbabilityObject, ProbabilityObjectArray } from "@spt/utils/RandomUtil";
 import { RandomUtil } from "@spt/utils/RandomUtil";
 import { VFS } from "@spt/utils/VFS";
@@ -32,7 +32,7 @@ import { LotsofLootHelper } from "./LotsofLootHelper";
 import { LotsofLootLogger } from "./LotsofLootLogger";
 import { MarkedRoom } from "./MarkedRoom";
 
-class Mod implements IPreSptLoadMod, IPostDBLoadMod {
+class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
     private static config: ILotsofLootConfig = null;
 
     private static container: DependencyContainer;
@@ -45,7 +45,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
     private markedRoom: MarkedRoom;
     private lotsoflootHelper: LotsofLootHelper;
 
-    public preSptLoad(container: DependencyContainer): void {
+    public async preSptLoadAsync(container: DependencyContainer): Promise<void> {
         Mod.container = container;
 
         // Get VFS to read in configs
@@ -74,7 +74,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         );
     }
 
-    public postDBLoad(container: DependencyContainer): void {
+    public async postDBLoadAsync(container: DependencyContainer): Promise<void> {
         this.databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
         this.itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         this.cloner = Mod.container.resolve<ICloner>("PrimaryCloner");
