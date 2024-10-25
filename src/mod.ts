@@ -40,6 +40,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
     private databaseServer: DatabaseServer;
     private itemHelper: ItemHelper;
     private cloner: ICloner;
+    private hashUtil: HashUtil;
 
     private markedRoom: MarkedRoom;
     private lotsoflootHelper: LotsofLootHelper;
@@ -77,6 +78,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         this.databaseServer = Mod.container.resolve<DatabaseServer>("DatabaseServer");
         this.itemHelper = Mod.container.resolve<ItemHelper>("ItemHelper");
         this.cloner = Mod.container.resolve<ICloner>("PrimaryCloner");
+        this.hashUtil = Mod.container.resolve<HashUtil>("HashUtil");
 
         const tables = this.databaseServer.getTables();
         const configServer = container.resolve<ConfigServer>("ConfigServer");
@@ -276,7 +278,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
     }
 
     private createStaticLootItem(tpl: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, parentId: string = undefined, spawnPoint: ISpawnpoint = undefined): IContainerItem {
-        const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const presetHelper = Mod.container.resolve<PresetHelper>("PresetHelper");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const localisationService = Mod.container.resolve<LocalisationService>("LocalisationService");
@@ -299,7 +300,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         let height = itemTemplate._props.Height;
         let items: IItem[] = [
             {
-                _id: objectId.generate(),
+                _id: this.hashUtil.generate(),
                 _tpl: tpl,
             },
         ];
@@ -312,8 +313,8 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.WEAPON)) {
             if (spawnPoint != undefined) {
                 const chosenItem = spawnPoint.template.Items.find((x) => x._tpl === tpl);
-                // Get item + children and add into array we return
-                const itemWithChildren = this.itemHelper.findAndReturnChildrenAsItems(spawnPoint.template.Items, chosenItem._id);
+                // Get item + it's children, then replace ids of children with valid MongoIDs before returning them to the items arrray.
+                const itemWithChildren = this.itemHelper.replaceIDs(this.itemHelper.findAndReturnChildrenAsItems(spawnPoint.template.Items, chosenItem._id));
 
                 items.splice(0, 1);
                 items.push(...itemWithChildren);
@@ -570,7 +571,6 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
     }
 
     private addToRustedKeyRoom(): void {
-        const objectId = Mod.container.resolve<ObjectId>("ObjectId");
         const tables = this.databaseServer.getTables();
         const streetsloot = tables.locations.tarkovstreets.looseLoot;
         const items = tables.templates.items;
@@ -612,7 +612,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
                 IsGroupPosition: false,
                 GroupPositions: [],
                 IsAlwaysSpawn: false,
-                Root: objectId.generate(),
+                Root: this.hashUtil.generate(),
                 Items: [],
             },
             itemDistribution: [],
@@ -629,7 +629,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         }
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys2";
         point.template.Position = {
             x: 185.125,
@@ -639,7 +639,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys3";
         point.template.Position = {
             x: 185.164,
@@ -649,7 +649,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys4";
         point.template.Position = {
             x: 185.154,
@@ -659,7 +659,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys5";
         point.template.Position = {
             x: 185.21,
@@ -669,7 +669,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys6";
         point.template.Position = {
             x: 185.205,
@@ -679,7 +679,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys7";
         point.template.Position = {
             x: 185.208,
@@ -689,7 +689,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys8";
         point.template.Position = {
             x: 185.211,
@@ -699,7 +699,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys9";
         point.template.Position = {
             x: 185.202,
@@ -709,7 +709,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys10";
         point.template.Position = {
             x: 185.2,
@@ -719,7 +719,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys11";
         point.template.Position = {
             x: 182.683,
@@ -729,7 +729,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Keys12";
         point.template.Position = {
             x: 182.683,
@@ -739,7 +739,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Val1";
         point.template.Position = {
             x: 185.037,
@@ -761,7 +761,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Val2";
         point.template.Position = {
             x: 183.064,
@@ -771,7 +771,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Val3";
         point.template.Position = {
             x: 185.146,
@@ -781,7 +781,7 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
         streetsloot.spawnpoints.push(this.cloner.clone(point));
 
-        point.template.Root = objectId.generate();
+        point.template.Root = this.hashUtil.generate();
         point.template.Id = "Val4";
         point.template.Position = {
             x: 185.085,

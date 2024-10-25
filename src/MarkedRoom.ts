@@ -82,15 +82,15 @@ export class MarkedRoom {
                 continue;
             }
 
-            const id = Math.random() * 10000;
+            const key = this.hashUtil.generate();
 
             spawnpoint.template.Items.push({
-                _id: id.toString(),
+                _id: key,
                 _tpl: item[0],
             });
 
             spawnpoint.itemDistribution.push({
-                composedKey: { key: id.toString() },
+                composedKey: { key: key },
                 relativeProbability: item[1],
             });
 
