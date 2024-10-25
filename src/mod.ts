@@ -203,8 +203,9 @@ class Mod implements IPreSptLoadMod, IPostDBLoadMod {
         let chosenSpawnpoints: ISpawnpoint[] = [...guaranteedLoosePoints];
 
         const randomSpawnpointCount = desiredSpawnpointCount - chosenSpawnpoints.length;
-        // Add randomly chosen spawn points
+        // Only draw random spawn points if needed
         if (randomSpawnpointCount) {
+            // Add randomly chosen spawn points
             for (const si of spawnpointArray.draw(randomSpawnpointCount, true)) {
                 chosenSpawnpoints.push(spawnpointArray.data(si));
             }
