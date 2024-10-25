@@ -147,9 +147,10 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
         this.logger.logInfo(`Finished loading`);
     }
 
+    // This method closely mirrors that of SPT
+    // The only difference being the bypass for loot overlay and using createStaticLootItem
     private generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): ISpawnpointTemplate[] {
         const LocationLootGenerator = Mod.container.resolve<LocationLootGenerator>("LocationLootGenerator");
-        const jsonUtil = Mod.container.resolve<JsonUtil>("JsonUtil");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
         const localisationService = Mod.container.resolve<LocalisationService>("LocalisationService");
@@ -180,11 +181,11 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
         const guaranteedLoosePoints: ISpawnpoint[] = [];
 
         const blacklistedSpawnpoints = LocationConfig.looseLootBlacklist[locationName];
-        const spawnpointArray = new ProbabilityObjectArray<string, ISpawnpoint>(mathUtil, jsonUtil);
+        const spawnpointArray = new ProbabilityObjectArray<string, ISpawnpoint>(mathUtil, this.cloner);
 
         for (const spawnpoint of allDynamicSpawnpoints) {
             if (blacklistedSpawnpoints?.includes(spawnpoint.template.Id)) {
-                this.logger.logDebug(`Ignoring loose loot location: ${spawnpoint.template.Id}`);
+                this.logger.debug(`Ignoring loose loot location: ${spawnpoint.template.Id}`);
                 continue;
             }
 
@@ -215,12 +216,12 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
 
         if (!Mod.config.general.allowLootOverlay) {
             // Filter out duplicate locationIds
-            chosenSpawnpoints = [...new Map(chosenSpawnpoints.map((x) => [x.locationId, x])).values()];
+            chosenSpawnpoints = [...new Map(chosenSpawnpoints.map((spawnPoint) => [spawnPoint.locationId, spawnPoint])).values()];
 
             // Do we have enough items in pool to fulfill requirement
             const tooManySpawnPointsRequested = desiredSpawnpointCount - chosenSpawnpoints.length > 0;
             if (tooManySpawnPointsRequested) {
-                this.logger.logDebug(
+                this.logger.debug(
                     localisationService.getText("location-spawn_point_count_requested_vs_found", {
                         requested: desiredSpawnpointCount + guaranteedLoosePoints.length,
                         found: chosenSpawnpoints.length,
@@ -244,7 +245,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
                 continue;
             }
 
-            const itemArray = new ProbabilityObjectArray<string>(mathUtil, jsonUtil);
+            const itemArray = new ProbabilityObjectArray<string>(mathUtil, this.cloner);
             for (const itemDist of spawnPoint.itemDistribution) {
                 if (!seasonalEventActive && seasonalItemTplBlacklist.includes(spawnPoint.template.Items.find((x) => x._id === itemDist.composedKey.key)._tpl)) {
                     // Skip seasonal event items if they're not enabled
