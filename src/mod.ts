@@ -151,6 +151,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
     // The only difference being the bypass for loot overlay and using createStaticLootItem
     private generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): ISpawnpointTemplate[] {
         const LocationLootGenerator = Mod.container.resolve<LocationLootGenerator>("LocationLootGenerator");
+        const itemFilterService = Mod.container.resolve<ItemFilterService>("ItemFilterService");
         const randomUtil = Mod.container.resolve<RandomUtil>("RandomUtil");
         const mathUtil = Mod.container.resolve<MathUtil>("MathUtil");
         const localisationService = Mod.container.resolve<LocalisationService>("LocalisationService");
@@ -240,15 +241,28 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
                 continue;
             }
 
+            // Ensure no blacklisted lootable items are in pool
+            spawnPoint.template.Items = spawnPoint.template.Items.filter((item) => !itemFilterService.isLootableItemBlacklisted(item._tpl));
+
+            // Ensure no seasonal items are in pool if not in-season
+            if (!seasonalEventActive) {
+                spawnPoint.template.Items = spawnPoint.template.Items.filter((item) => !seasonalItemTplBlacklist.includes(item._tpl));
+            }
+
+            // Spawn point has no items after filtering, skip
             if (!spawnPoint.template.Items || spawnPoint.template.Items.length === 0) {
-                this.logger.logError(localisationService.getText("location-spawnpoint_missing_items", spawnPoint.template.Id));
+                this.logger.warning(localisationService.getText("location-spawnpoint_missing_items", spawnPoint.template.Id));
+
                 continue;
             }
 
+            // Get an array of allowed IDs after above filtering has occured
+            const validItemIds = spawnPoint.template.Items.map((item) => item._id);
+
+            // Spawn point has no items after filtering, skip
             const itemArray = new ProbabilityObjectArray<string>(mathUtil, this.cloner);
             for (const itemDist of spawnPoint.itemDistribution) {
-                if (!seasonalEventActive && seasonalItemTplBlacklist.includes(spawnPoint.template.Items.find((x) => x._id === itemDist.composedKey.key)._tpl)) {
-                    // Skip seasonal event items if they're not enabled
+                if (!validItemIds.includes(itemDist.composedKey.key)) {
                     continue;
                 }
 
@@ -256,7 +270,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
             }
 
             if (itemArray.length === 0) {
-                this.logger.warning(`Loot pool for position: ${spawnPoint.template.Id} is empty. Skipping`);
+                this.logger.warning(localisationService.getText("location-loot_pool_is_empty_skipping", spawnPoint.template.Id));
 
                 continue;
             }
