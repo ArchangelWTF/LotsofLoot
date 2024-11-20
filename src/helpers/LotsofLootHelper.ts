@@ -1,33 +1,36 @@
-import { ItemHelper } from "@spt/helpers/ItemHelper";
-import { ILocation } from "@spt/models/eft/common/ILocation";
-import { DatabaseServer } from "@spt/servers/DatabaseServer";
-import { ILotsofLootConfig } from "./ILotsofLootConfig";
-import { LotsofLootLogger } from "./LotsofLootLogger";
+import { inject, injectable } from "tsyringe";
 
+import { ILocation } from "@spt/models/eft/common/ILocation";
+import { DatabaseService } from "@spt/services/DatabaseService";
+
+import { LotsofLootLogger } from "../utils/LotsofLootLogger";
+import { LotsofLootConfig } from "../utils/LotsofLootConfig";
+
+@injectable()
 export class LotsofLootHelper {
     constructor(
-        private config: ILotsofLootConfig,
-        private databaseServer: DatabaseServer,
-        private itemHelper: ItemHelper,
-        private logger: LotsofLootLogger,
-    ) {}
+        @inject("DatabaseService") protected databaseService: DatabaseService,
+        @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
+        @inject("LotsofLootConfig") protected config: LotsofLootConfig,
+    ) {
+    }
 
     //This function is heavily based off of SVM's 'RemoveBackpacksRestrictions'
-    //Huge credit to GhostFenixx for this
+    //Huge credit to GhostFenixx (SVM) for this
     public removeBackpackRestrictions(): void {
-        const items = this.databaseServer.getTables().templates.items;
+        const items = this.databaseService.getTables().templates.items;
 
         for (let key in items) {
             let value = items[key];
 
-            if (value._parent == "5448e53e4bdc2d60728b4567" && value._props.Grids[0]._props.filters !== undefined) {
+            if (value._parent === "5448e53e4bdc2d60728b4567" && value._props.Grids[0]._props.filters !== undefined) {
                 value._props.Grids[0]._props.filters = [];
             }
         }
     }
 
     public changeRelativeProbabilityInPool(itemtpl: string, mult: number): void {
-        const locations = this.databaseServer.getTables().locations;
+        const locations = this.databaseService.getTables().locations;
 
         for (const locationId in locations) {
             if (locations.hasOwnProperty(locationId)) {
@@ -56,7 +59,7 @@ export class LotsofLootHelper {
     }
 
     public changeProbabilityOfPool(itemtpl: string, mult: number): void {
-        const locations = this.databaseServer.getTables().locations;
+        const locations = this.databaseService.getTables().locations;
 
         for (const locationId in locations) {
             if (locations.hasOwnProperty(locationId)) {
