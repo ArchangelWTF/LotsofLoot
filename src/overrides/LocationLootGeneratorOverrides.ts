@@ -230,7 +230,7 @@ export class LocationLootGeneratorOverrides {
                     children = this.itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
                 } else {
                     // RSP30 (62178be9d0050232da3485d9/624c0b3340357b5f566e8766) doesnt have any default presets and kills this code below as it has no chidren to reparent
-                    this.logger.debug(`createItem() No preset found for weapon: ${tpl}`);
+                    this.logger.warning(`LocationLootGeneratorOverrides::createStaticLootItem: No preset found for weapon: ${tpl}`);
                 }
 
                 const rootItem = items[0];
