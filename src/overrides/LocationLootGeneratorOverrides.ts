@@ -27,7 +27,7 @@ import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 
 @injectable()
 export class LocationLootGeneratorOverrides {
-    private looseContainerItemFilterIndex: Record<string, string[]> = {};
+    private looseContainerItemFilterIndexCache: Record<string, string[]> = {};
 
     constructor(
         @inject("LocationLootGenerator") protected locationLootGenerator: LocationLootGenerator,
@@ -341,8 +341,8 @@ export class LocationLootGeneratorOverrides {
         const amount = this.randomUtil.getInt(1, item._props.Grids[0]._props.cellsH * item._props.Grids[0]._props.cellsV * modifier);
         let fill = 0;
 
-        if (this.looseContainerItemFilterIndex[tpl]) {
-            whitelist = this.looseContainerItemFilterIndex[tpl];
+        if (this.looseContainerItemFilterIndexCache[tpl]) {
+            whitelist = this.looseContainerItemFilterIndexCache[tpl];
         } else {
             this.logger.debug(`${tpl} is new, generating whitelist`);
 
@@ -374,22 +374,21 @@ export class LocationLootGeneratorOverrides {
 
             //Extra restrictions to avoid errors
             for (let white = 0; white < whitelist.length; white++) {
-                if (!this.itemHelper.isValidItem(whitelist[white])) {
-                    //Checks if the Item can be in your Stash
-                    if (whitelist[white] == "5449016a4bdc2d6f028b456f") {
-                        continue;
-                    }
+                //Remove built in inserts, these can not be used.
+                if (this.itemHelper.isOfBaseclass(whitelist[white], BaseClasses.BUILT_IN_INSERTS)) {
                     whitelist.splice(white, 1);
                     white--;
-                } else if (items[whitelist[white]]._props.Prefab.path == "") {
-                    //If the Item has no model it cant be valid
+                }
+
+                //Validate if item is actually valid (Not a quest item or blacklisted) or if an item actually has a model.
+                if (!this.itemHelper.isValidItem(whitelist[white]) || items[whitelist[white]]._props.Prefab.path == "") {
                     whitelist.splice(white, 1);
                     white--;
                 }
             }
 
-            //Write new entry for later re-use.
-            this.looseContainerItemFilterIndex[tpl] = whitelist;
+            //Write new entry to cache for later re-use.
+            this.looseContainerItemFilterIndexCache[tpl] = whitelist;
         }
 
         if (whitelist.length == 0) {
@@ -397,7 +396,8 @@ export class LocationLootGeneratorOverrides {
             return [];
         }
 
-        const weight: number[] = [];
+        const itemArray = new ProbabilityObjectArray<string>(this.mathUtil, this.cloner);
+
         for (let i = 0; i < whitelist.length; i++) {
             let itemWeight = 1;
 
@@ -411,14 +411,9 @@ export class LocationLootGeneratorOverrides {
                 itemWeight = 100;
             }
 
-            this.logger.debug(`LocationLootGeneratorOverrides::createLooseContainerLoot: Weight of ${this.logger.writeItemName(whitelist[i], true)} is ${itemWeight}`)
+            this.logger.debug(`LocationLootGeneratorOverrides::createLooseContainerLoot: Weight of ${this.logger.writeItemName(whitelist[i], true)} is ${itemWeight} for ${tpl}`)
             
-            weight.push(itemWeight);
-        }
-
-        const itemArray = new ProbabilityObjectArray<string>(this.mathUtil, this.jsonUtil);
-        for (let i = 0; i < whitelist.length; i++) {
-            itemArray.push(new ProbabilityObject(whitelist[i], weight[i]));
+            itemArray.push(new ProbabilityObject(whitelist[i], itemWeight));
         }
 
         const generatedItems: IItem[] = [];
