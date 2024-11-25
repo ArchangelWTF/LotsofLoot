@@ -10,9 +10,9 @@
         "disableFleaRestrictions": false,
         //Allows the rusted key room on Streets of Tarkov to also spawn keycards
         "rustedKeyRoomIncludesKeycards": false,
-        //Changes the max amount of items spawned in Loose Containers, Value: 0 - 1
+        //Changes the max amount of items spawned in Loose Containers (things like T H I C C item cases, docs cases and such.. Setting this to 0 will turn this behavior off.) | Value: 0 - 1
         "looseContainerModifier": 1,
-        //Changes the max amount of items spawned in Backpacks, Value: 0 - 1
+        //Changes the max amount of items spawned in Backpacks spawned in the world (Setting this to 0 will turn this off.) | Value: 0 - 1
         "looseBackpackModifier": 1,
         //Cheaper items are more likely to spawn in containers
         "itemWeights": true,

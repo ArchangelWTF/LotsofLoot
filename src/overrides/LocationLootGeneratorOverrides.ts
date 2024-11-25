@@ -321,6 +321,11 @@ export class LocationLootGeneratorOverrides {
     }
 
     public createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): IItem[] {
+        if (modifier === 0)
+        {
+            return [];
+        }
+
         const tables = this.databaseService.getTables();
 
         const items = tables.templates.items;
