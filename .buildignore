@@ -8,6 +8,8 @@
 /.nvmrc
 /.prettierrc
 /.vscode
+/biome.json
+/README.md
 /build.mjs
 /dist
 /images
