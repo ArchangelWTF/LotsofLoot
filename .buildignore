@@ -1,8 +1,6 @@
 /.buildignore
 /.DS_Store
 /.editorconfig
-/.eslintignore
-/.eslintrc.json
 /.git
 /.github
 /.gitignore
@@ -10,6 +8,8 @@
 /.nvmrc
 /.prettierrc
 /.vscode
+/biome.json
+/README.md
 /build.mjs
 /dist
 /images
