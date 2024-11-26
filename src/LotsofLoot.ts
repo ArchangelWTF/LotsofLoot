@@ -34,8 +34,8 @@ export class LotsofLoot {
     }
 
     public async postDBLoadAsync(_container: DependencyContainer): Promise<void> {
-        this.lotsofLootController.applyLotsOfLootModifications();
-        this.lotsofLootMarkedRoomController.adjustMarkedRoomItems();
+        await this.lotsofLootController.applyLotsOfLootModifications();
+        await this.lotsofLootMarkedRoomController.adjustMarkedRoomItems();
 
         this.logger.logInfo(`Finished loading`);
     }

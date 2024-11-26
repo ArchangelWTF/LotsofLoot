@@ -29,62 +29,64 @@ export class LotsofLootHelper {
         }
     }
 
-    public changeRelativeProbabilityInPool(itemtpl: string, mult: number): void {
+    public async changeRelativeProbabilityInPoolAsync(itemtpl: string, mult: number): Promise<void> {
         const locations = this.databaseService.getTables().locations;
-
-        for (const locationId in locations) {
-            if (locations.hasOwnProperty(locationId)) {
-                const location: ILocation = locations[locationId];
-
-                if (!location.looseLoot) {
-                    this.logger.debug(`Skipping ${locationId} as it has no loose loot!`);
-                    continue;
-                }
-
-                location.looseLoot.spawnpoints.forEach((spawnpoint) => {
-                    const item = spawnpoint.template.Items.find((i) => i._tpl == itemtpl);
-
-                    if (item) {
-                        const itemDistribution = spawnpoint.itemDistribution.find((i) => i.composedKey.key == item._id);
-
-                        if (itemDistribution) {
-                            itemDistribution.relativeProbability *= mult;
-
-                            this.logger.debug(`${locationId}, ${spawnpoint.template.Id}, ${item._tpl}, ${itemDistribution.relativeProbability}`);
-                        }
-                    }
-                });
+        const locationIds = Object.keys(locations);
+    
+        //Process each location asynchronously
+        await Promise.all(locationIds.map(async (locationId) => {
+            const location: ILocation = locations[locationId];
+    
+            if (!location.looseLoot) {
+                this.logger.debug(`Skipping ${locationId} as it has no loose loot!`);
+                return; //Return skips this location, keeps the loop going.
             }
-        }
+    
+            //Process spawnpoints asynchronously
+            await Promise.all(location.looseLoot.spawnpoints.map(async (spawnpoint) => {
+                const item = spawnpoint.template.Items.find((i) => i._tpl == itemtpl);
+    
+                if (item) {
+                    const itemDistribution = spawnpoint.itemDistribution.find((i) => i.composedKey.key == item._id);
+    
+                    if (itemDistribution) {
+                        itemDistribution.relativeProbability *= mult;
+    
+                        this.logger.debug(`${locationId}, ${spawnpoint.template.Id}, ${item._tpl}, ${itemDistribution.relativeProbability}`);
+                    }
+                }
+            }));
+        }));
     }
 
-    public changeProbabilityOfPool(itemtpl: string, mult: number): void {
+    public async changeProbabilityOfPoolAsync(itemtpl: string, mult: number): Promise<void> {
         const locations = this.databaseService.getTables().locations;
-
-        for (const locationId in locations) {
-            if (locations.hasOwnProperty(locationId)) {
-                const location: ILocation = locations[locationId];
-
-                if (!location.looseLoot) {
-                    this.logger.debug(`Skipping ${locationId} as it has no loose loot!`);
-                    continue;
-                }
-
-                location.looseLoot.spawnpoints.forEach((spawnpoint) => {
-                    const item = spawnpoint.template.Items.find((i) => i._tpl == itemtpl);
-
-                    if (item) {
-                        spawnpoint.probability *= mult;
-
-                        //Clamp probability back down to 1
-                        if (spawnpoint.probability > 1) {
-                            spawnpoint.probability = 1;
-                        }
-
-                        this.logger.debug(`${locationId},   Pool:${spawnpoint.template.Id},    Chance:${spawnpoint.probability}`);
-                    }
-                });
+        const locationIds = Object.keys(locations);
+    
+        //Process each location asynchronously
+        await Promise.all(locationIds.map(async (locationId) => {
+            const location: ILocation = locations[locationId];
+    
+            if (!location.looseLoot) {
+                this.logger.debug(`Skipping ${locationId} as it has no loose loot!`);
+                return; //Return skips this location, keeps the loop going.
             }
-        }
+    
+            //Process spawnpoints asynchronously
+            await Promise.all(location.looseLoot.spawnpoints.map(async (spawnpoint) => {
+                const item = spawnpoint.template.Items.find((i) => i._tpl == itemtpl);
+    
+                if (item) {
+                    spawnpoint.probability *= mult;
+    
+                    //Clamp probability to 1 if it exceeds
+                    if (spawnpoint.probability > 1) {
+                        spawnpoint.probability = 1;
+                    }
+    
+                    this.logger.debug(`${locationId}, Pool:${spawnpoint.template.Id}, Chance:${spawnpoint.probability}`);
+                }
+            }));
+        }));
     }
 }

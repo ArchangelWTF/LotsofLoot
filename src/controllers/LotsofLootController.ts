@@ -30,7 +30,7 @@ export class LotsofLootController {
     ) {
     }
 
-    public applyLotsOfLootModifications(): void {
+    public async applyLotsOfLootModifications(): Promise<void> {
         const lotsofLootConfig = this.config.getConfig();
         const tables = this.databaseService.getTables();
         const locations = tables.locations;
@@ -75,11 +75,11 @@ export class LotsofLootController {
         }
 
         for (const itemId in lotsofLootConfig.changeRelativeProbabilityInPool) {
-            this.lotsofLootHelper.changeRelativeProbabilityInPool(itemId, lotsofLootConfig.changeRelativeProbabilityInPool[itemId]);
+            await this.lotsofLootHelper.changeRelativeProbabilityInPoolAsync(itemId, lotsofLootConfig.changeRelativeProbabilityInPool[itemId]);
         }
 
         for (const itemId in lotsofLootConfig.changeProbabilityOfPool) {
-            this.lotsofLootHelper.changeProbabilityOfPool(itemId, lotsofLootConfig.changeProbabilityOfPool[itemId]);
+            await this.lotsofLootHelper.changeProbabilityOfPoolAsync(itemId, lotsofLootConfig.changeProbabilityOfPool[itemId]);
         }
 
         if (lotsofLootConfig.general.disableFleaRestrictions) {
