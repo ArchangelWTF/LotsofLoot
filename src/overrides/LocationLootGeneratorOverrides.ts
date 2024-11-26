@@ -230,7 +230,7 @@ export class LocationLootGeneratorOverrides {
                     children = this.itemHelper.reparentItemAndChildren(defaultPreset._items[0], defaultPreset._items);
                 } else {
                     // RSP30 (62178be9d0050232da3485d9/624c0b3340357b5f566e8766) doesnt have any default presets and kills this code below as it has no chidren to reparent
-                    this.logger.warning(`LocationLootGeneratorOverrides::createStaticLootItem: No preset found for weapon: ${tpl}`);
+                    this.logger.debug(`LocationLootGeneratorOverrides::createStaticLootItem: No preset found for weapon: ${tpl}`);
                 }
 
                 const rootItem = items[0];
@@ -416,7 +416,7 @@ export class LocationLootGeneratorOverrides {
                 itemWeight = 100;
             }
 
-            this.logger.debug(`LocationLootGeneratorOverrides::createLooseContainerLoot: Weight of ${this.logger.writeItemName(whitelist[i], true)} is ${itemWeight} for ${tpl}`)
+            //this.logger.debug(`LocationLootGeneratorOverrides::createLooseContainerLoot: Weight of ${this.logger.writeItemName(whitelist[i], true)} is ${itemWeight} for ${tpl}`)
             
             itemArray.push(new ProbabilityObject(whitelist[i], itemWeight));
         }
@@ -424,22 +424,22 @@ export class LocationLootGeneratorOverrides {
         const generatedItems: IItem[] = [];
 
         while (true) {
-            let cont: string;
+            let drawnItemTpl: string;
             if (this.config.getConfig().general.itemWeights) {
-                cont = itemArray.draw(1, true)[0];
+                drawnItemTpl = itemArray.draw(1, true)[0];
             } else {
-                cont = whitelist[this.randomUtil.getInt(0, whitelist.length - 1)];
+                drawnItemTpl = whitelist[this.randomUtil.getInt(0, whitelist.length - 1)];
             }
 
-            const positem = this.createStaticLootItem(cont, staticAmmoDist, id);
-            positem.items[0].slotId = "main";
-            fill += positem.height * positem.width;
+            const lootItem = this.createStaticLootItem(drawnItemTpl, staticAmmoDist, id);
+            lootItem.items[0].slotId = "main";
+            fill += lootItem.height * lootItem.width;
 
             if (fill > amount) {
                 break;
             }
 
-            for (const item of positem.items) {
+            for (const item of lootItem.items) {
                 generatedItems.push(item);
             }
         }
