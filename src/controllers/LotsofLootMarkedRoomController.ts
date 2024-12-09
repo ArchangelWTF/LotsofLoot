@@ -86,7 +86,7 @@ export class LotsofLootMarkedRoomController {
     }
 
     private async markedAddExtraItemsAsync(spawnpoint: ISpawnpoint): Promise<void> {
-        const extraItems = Object.entries(await this.config.getConfig().markedRoom.extraItems);
+        const extraItems = Object.entries(this.config.getConfig().markedRoom.extraItems);
 
         await Promise.all(extraItems.map(async ([itemTpl, relativeProbability]) => {
             if (spawnpoint.template.Items.find((x) => x._tpl === itemTpl)) {
