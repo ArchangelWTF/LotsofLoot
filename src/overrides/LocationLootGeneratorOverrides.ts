@@ -332,7 +332,7 @@ export class LocationLootGeneratorOverrides {
         const item = items[tpl];
 
         if (item._props.Grids[0]._props.filters[0] === undefined) {
-            this.logger.warning(`${item._name} doesn't have a filter, setting default filter!`);
+            this.logger.debug(`${item._name} doesn't have a filter, setting default filter!`);
             item._props.Grids[0]._props.filters = [
                 {
                     Filter: ["54009119af1c881c07000029"],
