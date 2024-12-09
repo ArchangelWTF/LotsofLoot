@@ -14,17 +14,23 @@ export class LotsofLootHelper {
         @inject("LotsofLootConfig") protected config: LotsofLootConfig,
     ) {}
 
-    //This function is heavily based off of SVM's 'RemoveBackpacksRestrictions'
-    //Huge credit to GhostFenixx (SVM) for this
+    //Huge credit to GhostFenixx (SVM) for the initial example of this method
     public removeBackpackRestrictions(): void {
         const items = this.databaseService.getTables().templates.items;
 
-        for (let key in items) {
-            let value = items[key];
+        for (const key in items) {
+            const item = items[key];
 
-            if (value._parent === "5448e53e4bdc2d60728b4567" && value._props.Grids[0]._props.filters !== undefined) {
-                value._props.Grids[0]._props.filters = [];
+            //If the parent is anything else than the 'Backpack' (5448e53e4bdc2d60728b4567)
+            if (item._parent !== "5448e53e4bdc2d60728b4567") {
+                continue;
             }
+
+            if (!item._props?.Grids?.[0]?._props?.filters) {
+                continue;
+            }
+
+            item._props.Grids[0]._props.filters = [];
         }
     }
 
