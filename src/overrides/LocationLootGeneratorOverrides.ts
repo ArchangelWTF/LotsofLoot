@@ -446,36 +446,4 @@ export class LocationLootGeneratorOverrides {
 
         return generatedItems;
     }
-
-    /**
-     * @deprecated This method is deprecated for the one in LotsofLootItemHelper, that one should be used instead.. Leaving this here for now because the new one still needs some testing.
-     */
-    private findAndReturnChildrenByItems(items: Record<string, ITemplateItem>, itemID: string): string[] {
-        const stack: string[] = [itemID];
-        const result: string[] = [];
-        let i = 0;
-
-        if (itemID === "54009119af1c881c07000029") {
-            for (const childItem of Object.keys(items)) {
-                result.push(childItem);
-            }
-            return result;
-        }
-
-        while (stack.length > 0) {
-            i = 0;
-            const currentItemId = stack.pop();
-            for (const childItem of Object.keys(items)) {
-                if (items[childItem]._parent === currentItemId) {
-                    stack.push(childItem);
-                    i++;
-                }
-            }
-
-            if (i === 0) {
-                result.push(currentItemId);
-            }
-        }
-        return result;
-    }
 }
