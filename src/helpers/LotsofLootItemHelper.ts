@@ -1,10 +1,10 @@
 import { inject, injectable } from "tsyringe";
 
-import { DatabaseService } from "@spt/services/DatabaseService";
 import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
+import { DatabaseService } from "@spt/services/DatabaseService";
 
-import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
+import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
 @injectable()
 export class LotsofLootItemHelper {
@@ -12,8 +12,7 @@ export class LotsofLootItemHelper {
         @inject("DatabaseService") protected databaseService: DatabaseService,
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
         @inject("LotsofLootConfig") protected config: LotsofLootConfig,
-    ) {
-    }
+    ) {}
 
     public findAndReturnChildrenItemIdsByItems(items: Record<string, ITemplateItem>, itemID: string): string[] {
         const stack: string[] = [itemID];
@@ -53,7 +52,7 @@ export class LotsofLootItemHelper {
 
     private buildParentToChildrenMap(items: Record<string, ITemplateItem>): Record<string, string[]> {
         const parentToChildrenMap: Record<string, string[]> = {};
-    
+
         for (const itemId of Object.keys(items)) {
             const parentId = items[itemId]._parent;
 
@@ -64,8 +63,7 @@ export class LotsofLootItemHelper {
                 parentToChildrenMap[parentId].push(itemId);
             }
         }
-    
+
         return parentToChildrenMap;
     }
-
 }

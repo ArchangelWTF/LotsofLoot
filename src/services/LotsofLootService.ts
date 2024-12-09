@@ -1,20 +1,19 @@
 import { inject, injectable } from "tsyringe";
 
-import { ConfigServer } from "@spt/servers/ConfigServer";
-import { DatabaseService } from "@spt/services/DatabaseService";
 import { ItemHelper } from "@spt/helpers/ItemHelper";
-import { HashUtil } from "@spt/utils/HashUtil";
-import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
 import { ILocation } from "@spt/models/eft/common/ILocation";
-import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { ISpawnpoint } from "@spt/models/eft/common/ILooseLoot";
 import { BaseClasses } from "@spt/models/enums/BaseClasses";
+import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
+import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
+import { ConfigServer } from "@spt/servers/ConfigServer";
+import { DatabaseService } from "@spt/services/DatabaseService";
+import { HashUtil } from "@spt/utils/HashUtil";
 import { ICloner } from "@spt/utils/cloners/ICloner";
 
-import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 import { LotsofLootHelper } from "../helpers/LotsofLootHelper";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
-
+import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
 @injectable()
 export class LotsofLootService {
@@ -26,20 +25,18 @@ export class LotsofLootService {
         @inject("LotsofLootHelper") protected lotsofLootHelper: LotsofLootHelper,
         @inject("ItemHelper") protected itemHelper: ItemHelper,
         @inject("HashUtil") protected hashUtil: HashUtil,
-        @inject("PrimaryCloner") protected cloner: ICloner
-    ) {
-    }
+        @inject("PrimaryCloner") protected cloner: ICloner,
+    ) {}
 
     public async applyLotsOfLootModifications(): Promise<void> {
         const lotsofLootConfig = this.config.getConfig();
         const tables = this.databaseService.getTables();
         const locations = tables.locations;
-        const LocationConfig = this.configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION)
+        const LocationConfig = this.configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
 
         this.addToRustedKeyRoom();
 
-        if(this.config.getConfig().general.removeBackpackRestrictions)
-        {
+        if (this.config.getConfig().general.removeBackpackRestrictions) {
             this.lotsofLootHelper.removeBackpackRestrictions();
         }
 

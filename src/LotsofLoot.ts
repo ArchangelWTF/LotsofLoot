@@ -3,9 +3,9 @@ import { DependencyContainer, inject, injectable } from "tsyringe";
 import { LocationLootGenerator } from "@spt/generators/LocationLootGenerator";
 
 import { LocationLootGeneratorOverrides } from "./overrides/LocationLootGeneratorOverrides";
-import { LotsofLootLogger } from "./utils/LotsofLootLogger";
-import { LotsofLootService } from "./services/LotsofLootService";
 import { LotsofLootMarkedRoomService } from "./services/LotsfLootMarkedRoomService";
+import { LotsofLootService } from "./services/LotsofLootService";
+import { LotsofLootLogger } from "./utils/LotsofLootLogger";
 
 @injectable()
 export class LotsofLoot {
@@ -14,8 +14,7 @@ export class LotsofLoot {
         @inject("LotsofLootService") protected lotsofLootService: LotsofLootService,
         @inject("LotsofLootMarkedRoomService") protected lotsofLootMarkedRoomService: LotsofLootMarkedRoomService,
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
-    ) {
-    }
+    ) {}
 
     public async preSptLoadAsync(container: DependencyContainer): Promise<void> {
         container.afterResolution(

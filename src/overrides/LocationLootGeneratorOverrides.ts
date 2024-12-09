@@ -4,27 +4,27 @@ import { BaseClasses } from "@spt/models/enums/BaseClasses";
 import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
 
 import { IContainerItem, LocationLootGenerator } from "@spt/generators/LocationLootGenerator";
-import { ConfigServer } from "@spt/servers/ConfigServer";
-import { ItemFilterService } from "@spt/services/ItemFilterService";
-import { LocalisationService } from "@spt/services/LocalisationService";
-import { DatabaseService } from "@spt/services/DatabaseService";
-import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { ItemHelper } from "@spt/helpers/ItemHelper";
 import { PresetHelper } from "@spt/helpers/PresetHelper";
-import { ICloner } from "@spt/utils/cloners/ICloner";
-import { JsonUtil } from "@spt/utils/JsonUtil";
+import { ConfigServer } from "@spt/servers/ConfigServer";
+import { DatabaseService } from "@spt/services/DatabaseService";
+import { ItemFilterService } from "@spt/services/ItemFilterService";
+import { LocalisationService } from "@spt/services/LocalisationService";
+import { SeasonalEventService } from "@spt/services/SeasonalEventService";
 import { HashUtil } from "@spt/utils/HashUtil";
-import { RandomUtil, ProbabilityObject, ProbabilityObjectArray } from "@spt/utils/RandomUtil";
+import { JsonUtil } from "@spt/utils/JsonUtil";
 import { MathUtil } from "@spt/utils/MathUtil";
+import { ProbabilityObject, ProbabilityObjectArray, RandomUtil } from "@spt/utils/RandomUtil";
+import { ICloner } from "@spt/utils/cloners/ICloner";
 import { LotsofLootItemHelper } from "../helpers/LotsofLootItemHelper";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
-import { IItem } from "@spt/models/eft/common/tables/IItem";
-import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
-import { ILooseLoot, ISpawnpoint, ISpawnpointsForced, ISpawnpointTemplate } from "@spt/models/eft/common/ILooseLoot";
+import { ILooseLoot, ISpawnpoint, ISpawnpointTemplate, ISpawnpointsForced } from "@spt/models/eft/common/ILooseLoot";
+import { IItem } from "@spt/models/eft/common/tables/IItem";
 import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
+import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 
 @injectable()
 export class LocationLootGeneratorOverrides {
@@ -47,8 +47,7 @@ export class LocationLootGeneratorOverrides {
         @inject("LotsofLootItemHelper") protected lotsOfLootItemHelper: LotsofLootItemHelper,
         @inject("LotsofLootConfig") protected config: LotsofLootConfig,
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
-    ) {
-    }
+    ) {}
 
     // This method closely mirrors that of SPT
     // The only difference being the bypass for loot overlay and using createStaticLootItem
@@ -323,8 +322,7 @@ export class LocationLootGeneratorOverrides {
     }
 
     public createLooseContainerLoot(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): IItem[] {
-        if (modifier === 0)
-        {
+        if (modifier === 0) {
             return [];
         }
 
@@ -419,7 +417,7 @@ export class LocationLootGeneratorOverrides {
             }
 
             //this.logger.debug(`LocationLootGeneratorOverrides::createLooseContainerLoot: Weight of ${this.logger.writeItemName(whitelist[i], true)} is ${itemWeight} for ${tpl}`)
-            
+
             itemArray.push(new ProbabilityObject(whitelist[i], itemWeight));
         }
 
@@ -473,7 +471,7 @@ export class LocationLootGeneratorOverrides {
                     i++;
                 }
             }
-            
+
             if (i === 0) {
                 result.push(currentItemId);
             }

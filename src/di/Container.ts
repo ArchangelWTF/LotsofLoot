@@ -1,12 +1,12 @@
 import { DependencyContainer, Lifecycle } from "tsyringe";
 
-import { LotsofLootConfig } from "../utils/LotsofLootConfig";
-import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 import { LotsofLootHelper } from "../helpers/LotsofLootHelper";
 import { LotsofLootItemHelper } from "../helpers/LotsofLootItemHelper";
-import { LotsofLootService } from "../services/LotsofLootService";
-import { LotsofLootMarkedRoomService } from "../services/LotsfLootMarkedRoomService";
 import { LocationLootGeneratorOverrides } from "../overrides/LocationLootGeneratorOverrides";
+import { LotsofLootMarkedRoomService } from "../services/LotsfLootMarkedRoomService";
+import { LotsofLootService } from "../services/LotsofLootService";
+import { LotsofLootConfig } from "../utils/LotsofLootConfig";
+import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
 import { LotsofLoot } from "../LotsofLoot";
 

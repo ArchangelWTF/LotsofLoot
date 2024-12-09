@@ -1,14 +1,13 @@
 import { inject, injectable } from "tsyringe";
 
-import { DatabaseService } from "@spt/services/DatabaseService";
 import { ItemHelper } from "@spt/helpers/ItemHelper";
 import { ISpawnpoint } from "@spt/models/eft/common/ILooseLoot";
+import { DatabaseService } from "@spt/services/DatabaseService";
 import { HashUtil } from "@spt/utils/HashUtil";
 
-import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 import { LotsofLootHelper } from "../helpers/LotsofLootHelper";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
-
+import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
 @injectable()
 export class LotsofLootMarkedRoomService {
@@ -19,8 +18,7 @@ export class LotsofLootMarkedRoomService {
         @inject("LotsofLootHelper") protected lotsofLootHelper: LotsofLootHelper,
         @inject("ItemHelper") protected itemHelper: ItemHelper,
         @inject("HashUtil") protected hashUtil: HashUtil,
-    ) {
-    }
+    ) {}
 
     public async adjustMarkedRoomItems(): Promise<void> {
         const spawnPointsCustoms = this.databaseService.getTables().locations.bigmap.looseLoot.spawnpoints;
@@ -88,43 +86,50 @@ export class LotsofLootMarkedRoomService {
     private async markedAddExtraItemsAsync(spawnpoint: ISpawnpoint): Promise<void> {
         const extraItems = Object.entries(this.config.getConfig().markedRoom.extraItems);
 
-        await Promise.all(extraItems.map(async ([itemTpl, relativeProbability]) => {
-            if (spawnpoint.template.Items.find((x) => x._tpl === itemTpl)) {
-                return; // Skip if the item already exists
-            }
+        await Promise.all(
+            extraItems.map(async ([itemTpl, relativeProbability]) => {
+                if (spawnpoint.template.Items.find((x) => x._tpl === itemTpl)) {
+                    return; // Skip if the item already exists
+                }
 
-            const key = this.hashUtil.generate();
+                const key = this.hashUtil.generate();
 
-            spawnpoint.template.Items.push({
-                _id: key,
-                _tpl: itemTpl,
-            });
+                spawnpoint.template.Items.push({
+                    _id: key,
+                    _tpl: itemTpl,
+                });
 
-            spawnpoint.itemDistribution.push({
-                composedKey: { key: key },
-                relativeProbability: relativeProbability,
-            });
+                spawnpoint.itemDistribution.push({
+                    composedKey: { key: key },
+                    relativeProbability: relativeProbability,
+                });
 
-            this.logger.debug(`Added ${itemTpl} to ${spawnpoint.template.Id}`);
-        }));
+                this.logger.debug(`Added ${itemTpl} to ${spawnpoint.template.Id}`);
+            }),
+        );
     }
-    
 
     private async adjustMarkedItemGroupsAsync(spawnpoint: ISpawnpoint): Promise<void> {
         const itemGroups = this.config.getConfig().markedRoom.itemGroups;
-    
-        await Promise.all(spawnpoint.template.Items.map(async (item) => {
-            await Promise.all(Object.keys(itemGroups).map(async (group) => {
-                if (this.itemHelper.isOfBaseclass(item._tpl, group)) {
-                    await Promise.all(spawnpoint.itemDistribution.map(async (dist) => {
-                        if (dist.composedKey.key === item._id) {
-                            dist.relativeProbability *= itemGroups[group];
-                            
-                            this.logger.debug(`markedItemGroups: Changed ${item._tpl} to ${dist.relativeProbability}`);
+
+        await Promise.all(
+            spawnpoint.template.Items.map(async (item) => {
+                await Promise.all(
+                    Object.keys(itemGroups).map(async (group) => {
+                        if (this.itemHelper.isOfBaseclass(item._tpl, group)) {
+                            await Promise.all(
+                                spawnpoint.itemDistribution.map(async (dist) => {
+                                    if (dist.composedKey.key === item._id) {
+                                        dist.relativeProbability *= itemGroups[group];
+
+                                        this.logger.debug(`markedItemGroups: Changed ${item._tpl} to ${dist.relativeProbability}`);
+                                    }
+                                }),
+                            );
                         }
-                    }));
-                }
-            }));
-        }));
+                    }),
+                );
+            }),
+        );
     }
 }
