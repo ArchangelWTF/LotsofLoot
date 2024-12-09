@@ -16,6 +16,7 @@ import { JsonUtil } from "@spt/utils/JsonUtil";
 import { HashUtil } from "@spt/utils/HashUtil";
 import { RandomUtil, ProbabilityObject, ProbabilityObjectArray } from "@spt/utils/RandomUtil";
 import { MathUtil } from "@spt/utils/MathUtil";
+import { LotsofLootItemHelper } from "../helpers/LotsofLootItemHelper";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
@@ -43,6 +44,7 @@ export class LocationLootGeneratorOverrides {
         @inject("HashUtil") protected hashUtil: HashUtil,
         @inject("RandomUtil") protected randomUtil: RandomUtil,
         @inject("MathUtil") protected mathUtil: MathUtil,
+        @inject("LotsofLootItemHelper") protected lotsOfLootItemHelper: LotsofLootItemHelper,
         @inject("LotsofLootConfig") protected config: LotsofLootConfig,
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
     ) {
@@ -356,7 +358,7 @@ export class LocationLootGeneratorOverrides {
 
             //If whitelist contains a parent instead of items, replace the parent by all its children.
             for (const content of whitelist) {
-                const childItems = this.findAndReturnChildrenByItems(items, content);
+                const childItems = this.lotsOfLootItemHelper.findAndReturnChildrenItemIdsByItems(items, content);
                 newWhiteList.push(...childItems);
             }
 
@@ -364,7 +366,7 @@ export class LocationLootGeneratorOverrides {
 
             //If blacklist contains a parent instead of items, replace the parent by all its children.
             for (const content of blacklist) {
-                const childItems = this.findAndReturnChildrenByItems(items, content);
+                const childItems = this.lotsOfLootItemHelper.findAndReturnChildrenItemIdsByItems(items, content);
                 newBlackList.push(...childItems);
             }
 
@@ -447,6 +449,9 @@ export class LocationLootGeneratorOverrides {
         return generatedItems;
     }
 
+    /**
+     * @deprecated This method is deprecated for the one in LotsofLootItemHelper, that one should be used instead.. Leaving this here for now because the new one still needs some testing.
+     */
     private findAndReturnChildrenByItems(items: Record<string, ITemplateItem>, itemID: string): string[] {
         const stack: string[] = [itemID];
         const result: string[] = [];
