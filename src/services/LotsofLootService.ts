@@ -17,7 +17,7 @@ import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 
 
 @injectable()
-export class LotsofLootController {
+export class LotsofLootService {
     constructor(
         @inject("ConfigServer") protected configServer: ConfigServer,
         @inject("DatabaseService") protected databaseService: DatabaseService,

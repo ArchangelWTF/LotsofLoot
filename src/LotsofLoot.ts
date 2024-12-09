@@ -1,17 +1,18 @@
 import { DependencyContainer, inject, injectable } from "tsyringe";
 
+import { LocationLootGenerator } from "@spt/generators/LocationLootGenerator";
+
 import { LocationLootGeneratorOverrides } from "./overrides/LocationLootGeneratorOverrides";
 import { LotsofLootLogger } from "./utils/LotsofLootLogger";
-import { LotsofLootController } from "./controllers/LotsofLootController";
-import { LotsofLootMarkedRoomController } from "./controllers/LotsofLootMarkedRoomController";
-import { LocationLootGenerator } from "@spt/generators/LocationLootGenerator";
+import { LotsofLootService } from "./services/LotsofLootService";
+import { LotsofLootMarkedRoomService } from "./services/LotsfLootMarkedRoomService";
 
 @injectable()
 export class LotsofLoot {
     constructor(
         @inject("LocationLootGeneratorOverrides") protected locationLootGeneratorOverrides: LocationLootGeneratorOverrides,
-        @inject("LotsofLootController") protected lotsofLootController: LotsofLootController,
-        @inject("LotsofLootMarkedRoomController") protected lotsofLootMarkedRoomController: LotsofLootMarkedRoomController,
+        @inject("LotsofLootService") protected lotsofLootService: LotsofLootService,
+        @inject("LotsofLootMarkedRoomService") protected lotsofLootMarkedRoomService: LotsofLootMarkedRoomService,
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
     ) {
     }
@@ -34,8 +35,8 @@ export class LotsofLoot {
     }
 
     public async postDBLoadAsync(_container: DependencyContainer): Promise<void> {
-        await this.lotsofLootController.applyLotsOfLootModifications();
-        await this.lotsofLootMarkedRoomController.adjustMarkedRoomItems();
+        await this.lotsofLootService.applyLotsOfLootModifications();
+        await this.lotsofLootMarkedRoomService.adjustMarkedRoomItems();
 
         this.logger.logInfo(`Finished loading`);
     }
