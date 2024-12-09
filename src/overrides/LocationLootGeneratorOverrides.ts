@@ -236,7 +236,7 @@ export class LocationLootGeneratorOverrides {
 
                 const rootItem = items[0];
                 if (!rootItem) {
-                    this.logger.logError(this.localisationService.getText("location-missing_root_item", { tpl: tpl, parentId: parentId }));
+                    this.logger.error(this.localisationService.getText("location-missing_root_item", { tpl: tpl, parentId: parentId }));
 
                     throw new Error(this.localisationService.getText("location-critical_error_see_log"));
                 }

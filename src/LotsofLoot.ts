@@ -37,6 +37,6 @@ export class LotsofLoot {
         await this.lotsofLootService.applyLotsOfLootModifications();
         await this.lotsofLootMarkedRoomService.adjustMarkedRoomItems();
 
-        this.logger.logInfo(`Finished loading`);
+        this.logger.info(`Finished loading`);
     }
 }
