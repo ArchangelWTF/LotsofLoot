@@ -94,223 +94,61 @@ export class LotsofLootService {
     }
 
     private addToRustedKeyRoom(): void {
-        const streetsloot = this.databaseService.getTables().locations.tarkovstreets.looseLoot;
+        const streetsLoot = this.databaseService.getTables().locations.tarkovstreets.looseLoot;
         const items = this.databaseService.getTables().templates.items;
-        let keys: string[] = [];
-        let valuables: string[] = [];
 
-        for (const item in items) {
-            if (this.config.getConfig().general.rustedKeyRoomIncludesKeycards) {
-                if (this.itemHelper.isOfBaseclass(item, BaseClasses.KEY)) {
-                    keys.push(item);
-                }
-            } else {
-                if (this.itemHelper.isOfBaseclass(item, BaseClasses.KEY_MECHANICAL)) {
-                    keys.push(item);
-                }
-            }
-            if (this.itemHelper.isOfBaseclass(item, BaseClasses.JEWELRY)) {
-                valuables.push(item);
-            }
-        }
-        let point: ISpawnpoint = {
-            locationId: "(185.087, 6.554, 63.721)",
-            probability: 0.25,
-            template: {
-                Id: "Keys1",
-                IsContainer: false,
-                useGravity: true,
-                randomRotation: true,
-                Position: {
-                    x: 185.087,
-                    y: 6.554,
-                    z: 63.721,
+        const keys = Object.keys(items).filter((item) => (this.config.getConfig().general.rustedKeyRoomIncludesKeycards ? this.itemHelper.isOfBaseclass(item, BaseClasses.KEY) : this.itemHelper.isOfBaseclass(item, BaseClasses.KEY_MECHANICAL)));
+
+        const valuables = Object.keys(items).filter((item) => this.itemHelper.isOfBaseclass(item, BaseClasses.JEWELRY));
+
+        const spawnPoints = [
+            { id: "Keys1", position: { x: 185.087, y: 6.554, z: 63.721 }, items: keys },
+            { id: "Keys2", position: { x: 185.125, y: 6.554, z: 63.186 }, items: keys },
+            { id: "Keys3", position: { x: 185.164, y: 6.554, z: 62.241 }, items: keys },
+            { id: "Keys4", position: { x: 185.154, y: 6.554, z: 62.686 }, items: keys },
+            { id: "Keys5", position: { x: 185.21, y: 6.935, z: 60.86 }, items: keys },
+            { id: "Keys6", position: { x: 185.205, y: 6.935, z: 60.56 }, items: keys },
+            { id: "Keys7", position: { x: 185.208, y: 6.58, z: 60.857 }, items: keys },
+            { id: "Keys8", position: { x: 185.211, y: 6.562, z: 60.562 }, items: keys },
+            { id: "Keys9", position: { x: 185.202, y: 6.175, z: 60.551 }, items: keys },
+            { id: "Keys10", position: { x: 185.2, y: 6.234, z: 60.872 }, items: keys },
+            { id: "Keys11", position: { x: 182.683, y: 6.721, z: 57.813 }, items: keys },
+            { id: "Keys12", position: { x: 182.683, y: 6.721, z: 60.073 }, items: keys },
+            { id: "Val1", position: { x: 185.037, y: 5.831, z: 53.836 }, items: valuables },
+            { id: "Val2", position: { x: 183.064, y: 5.831, z: 53.767 }, items: valuables },
+            { id: "Val3", position: { x: 185.146, y: 5.831, z: 60.114 }, items: valuables },
+            { id: "Val4", position: { x: 185.085, y: 5.831, z: 65.393 }, items: valuables },
+        ];
+
+        spawnPoints.forEach(({ id, position, items }) => {
+            const mongoId = this.hashUtil.generate();
+
+            const spawnPoint: ISpawnpoint = {
+                locationId: `${position.x}${position.y}${position.z}`,
+                probability: 0.25,
+                template: {
+                    Id: id,
+                    IsContainer: false,
+                    useGravity: true,
+                    randomRotation: true,
+                    Position: position,
+                    Rotation: { x: 0, y: 0, z: 0 },
+                    IsGroupPosition: false,
+                    GroupPositions: [],
+                    IsAlwaysSpawn: false,
+                    Root: this.hashUtil.generate(),
+                    Items: items.map((tpl) => ({
+                        _id: mongoId,
+                        _tpl: tpl,
+                    })),
                 },
-                Rotation: {
-                    x: 0,
-                    y: 0,
-                    z: 0,
-                },
-                IsGroupPosition: false,
-                GroupPositions: [],
-                IsAlwaysSpawn: false,
-                Root: this.hashUtil.generate(),
-                Items: [],
-            },
-            itemDistribution: [],
-        };
-        for (let i = 0; i < keys.length; i++) {
-            point.template.Items.push({
-                _id: i.toString(),
-                _tpl: keys[i],
-            });
-            point.itemDistribution.push({
-                composedKey: { key: i.toString() },
-                relativeProbability: 1,
-            });
-        }
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
+                itemDistribution: items.map(() => ({
+                    composedKey: { key: mongoId },
+                    relativeProbability: 1,
+                })),
+            };
 
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys2";
-        point.template.Position = {
-            x: 185.125,
-            y: 6.554,
-            z: 63.186,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys3";
-        point.template.Position = {
-            x: 185.164,
-            y: 6.554,
-            z: 62.241,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys4";
-        point.template.Position = {
-            x: 185.154,
-            y: 6.554,
-            z: 62.686,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys5";
-        point.template.Position = {
-            x: 185.21,
-            y: 6.935,
-            z: 60.86,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys6";
-        point.template.Position = {
-            x: 185.205,
-            y: 6.935,
-            z: 60.56,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys7";
-        point.template.Position = {
-            x: 185.208,
-            y: 6.58,
-            z: 60.857,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys8";
-        point.template.Position = {
-            x: 185.211,
-            y: 6.562,
-            z: 60.562,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys9";
-        point.template.Position = {
-            x: 185.202,
-            y: 6.175,
-            z: 60.551,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys10";
-        point.template.Position = {
-            x: 185.2,
-            y: 6.234,
-            z: 60.872,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys11";
-        point.template.Position = {
-            x: 182.683,
-            y: 6.721,
-            z: 57.813,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Keys12";
-        point.template.Position = {
-            x: 182.683,
-            y: 6.721,
-            z: 60.073,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Val1";
-        point.template.Position = {
-            x: 185.037,
-            y: 5.831,
-            z: 53.836,
-        };
-        point.template.Items = [];
-        point.itemDistribution = [];
-        for (let i = 0; i < valuables.length; i++) {
-            point.template.Items.push({
-                _id: i.toString(),
-                _tpl: valuables[i],
-            });
-            point.itemDistribution.push({
-                composedKey: { key: i.toString() },
-                relativeProbability: 1,
-            });
-        }
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Val2";
-        point.template.Position = {
-            x: 183.064,
-            y: 5.831,
-            z: 53.767,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Val3";
-        point.template.Position = {
-            x: 185.146,
-            y: 5.831,
-            z: 60.114,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
-
-        point.template.Root = this.hashUtil.generate();
-        point.template.Id = "Val4";
-        point.template.Position = {
-            x: 185.085,
-            y: 5.831,
-            z: 65.393,
-        };
-        point.locationId = point.template.Position.x.toString() + point.template.Position.y.toString() + point.template.Position.z.toString();
-        streetsloot.spawnpoints.push(this.cloner.clone(point));
+            streetsLoot.spawnpoints.push(this.cloner.clone(spawnPoint));
+        });
     }
 }
