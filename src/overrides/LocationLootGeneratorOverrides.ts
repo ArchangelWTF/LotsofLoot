@@ -1,22 +1,15 @@
 import { inject, injectable } from "tsyringe";
 
-import { BaseClasses } from "@spt/models/enums/BaseClasses";
 import { ConfigTypes } from "@spt/models/enums/ConfigTypes";
 
 import { IContainerItem, LocationLootGenerator } from "@spt/generators/LocationLootGenerator";
-import { ItemHelper } from "@spt/helpers/ItemHelper";
-import { PresetHelper } from "@spt/helpers/PresetHelper";
 import { ConfigServer } from "@spt/servers/ConfigServer";
-import { DatabaseService } from "@spt/services/DatabaseService";
 import { ItemFilterService } from "@spt/services/ItemFilterService";
 import { LocalisationService } from "@spt/services/LocalisationService";
 import { SeasonalEventService } from "@spt/services/SeasonalEventService";
-import { HashUtil } from "@spt/utils/HashUtil";
-import { JsonUtil } from "@spt/utils/JsonUtil";
 import { MathUtil } from "@spt/utils/MathUtil";
 import { ProbabilityObject, ProbabilityObjectArray, RandomUtil } from "@spt/utils/RandomUtil";
 import { ICloner } from "@spt/utils/cloners/ICloner";
-import { LotsofLootItemHelper } from "../helpers/LotsofLootItemHelper";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
@@ -33,16 +26,10 @@ export class LocationLootGeneratorOverrides {
         @inject("ItemFilterService") protected itemFilterService: ItemFilterService,
         @inject("LocalisationService") protected localisationService: LocalisationService,
         @inject("SeasonalEventService") protected seasonalEventService: SeasonalEventService,
-        @inject("DatabaseService") protected databaseService: DatabaseService,
-        @inject("ItemHelper") protected itemHelper: ItemHelper,
-        @inject("PresetHelper") protected presetHelper: PresetHelper,
         @inject("PrimaryCloner") protected cloner: ICloner,
-        @inject("JsonUtil") protected jsonUtil: JsonUtil,
-        @inject("HashUtil") protected hashUtil: HashUtil,
         @inject("RandomUtil") protected randomUtil: RandomUtil,
         @inject("MathUtil") protected mathUtil: MathUtil,
         @inject("LotsofLootLocationLootGenerator") protected lotsOfLootLocationLootGenerator: LotsofLootLocationLootGenerator,
-        @inject("LotsofLootItemHelper") protected lotsOfLootItemHelper: LotsofLootItemHelper,
         @inject("LotsofLootConfig") protected config: LotsofLootConfig,
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
     ) {}
