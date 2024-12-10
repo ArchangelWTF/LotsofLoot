@@ -1,6 +1,7 @@
 import { DependencyContainer, Lifecycle } from "tsyringe";
 
 import { LotsofLoot } from "../LotsofLoot";
+import { LotsofLootLocationLootGenerator } from "../generators/LotsofLootLocationLootGenerator";
 import { LotsofLootHelper } from "../helpers/LotsofLootHelper";
 import { LotsofLootItemHelper } from "../helpers/LotsofLootItemHelper";
 import { LocationLootGeneratorOverrides } from "../overrides/LocationLootGeneratorOverrides";
@@ -15,6 +16,7 @@ export class Container {
         container.register<LotsofLootLogger>("LotsofLootLogger", LotsofLootLogger, { lifecycle: Lifecycle.Singleton });
         container.register<LotsofLootHelper>("LotsofLootHelper", LotsofLootHelper, { lifecycle: Lifecycle.Singleton });
         container.register<LotsofLootItemHelper>("LotsofLootItemHelper", LotsofLootItemHelper, { lifecycle: Lifecycle.Singleton });
+        container.register<LotsofLootLocationLootGenerator>("LotsofLootLocationLootGenerator", LotsofLootLocationLootGenerator, { lifecycle: Lifecycle.Singleton });
 
         container.register<LotsofLootService>("LotsofLootService", LotsofLootService, { lifecycle: Lifecycle.Singleton });
         container.register<LotsofLootMarkedRoomService>("LotsofLootMarkedRoomService", LotsofLootMarkedRoomService, { lifecycle: Lifecycle.Singleton });
