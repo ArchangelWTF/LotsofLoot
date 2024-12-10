@@ -48,7 +48,7 @@ export class LocationLootGeneratorOverrides {
     ) {}
 
     // This method closely mirrors that of SPT
-    // The only difference being the bypass for loot overlay and using createStaticLootItem
+    // The only difference being the bypass for loot overlay and using Lots of Loot's createStaticLootItem
     public generateDynamicLoot(dynamicLootDist: ILooseLoot, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, locationName: string): ISpawnpointTemplate[] {
         const LocationConfig = this.configServer.getConfig<ILocationConfig>(ConfigTypes.LOCATION);
 

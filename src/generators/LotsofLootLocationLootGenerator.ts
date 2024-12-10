@@ -207,9 +207,9 @@ export class LotsofLootLocationLootGenerator {
             const price = tables.templates.prices[itemId];
             if (price) {
                 itemWeight = Math.round(1000 / Math.pow(price, 1 / 3));
-            } else if (itemId === "5449016a4bdc2d6f028b456f") {
+            } else if (itemId === "5449016a4bdc2d6f028b456f") { // Roubles
                 itemWeight = 500;
-            } else if (["5696686a4bdc2da3298b456a", "569668774bdc2da2298b4568"].includes(itemId)) {
+            } else if (["5696686a4bdc2da3298b456a", "569668774bdc2da2298b4568"].includes(itemId)) { // Dollars, Euros
                 itemWeight = 100;
             }
 
@@ -219,7 +219,7 @@ export class LotsofLootLocationLootGenerator {
         // Generate loot items
         const generatedItems: IItem[] = [];
         while (fill <= amount) {
-            // Handle if we should draw randomly from the ProbabilityObjectArray or from the whitelist
+            // Handle if we should draw an item from the ProbabilityObjectArray (Weighted) or from the whitelist
             const drawnItemTpl = this.config.getConfig().general.itemWeights ? itemArray.draw(1, true)[0] : whitelist[this.randomUtil.getInt(0, whitelist.length - 1)];
 
             const lootItem = this.createStaticLootItem(drawnItemTpl, staticAmmoDist, id);
