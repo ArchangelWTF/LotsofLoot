@@ -1,18 +1,12 @@
 import { inject, injectable } from "tsyringe";
 
 import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
-import { DatabaseService } from "@spt/services/DatabaseService";
 
-import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
 @injectable()
 export class LotsofLootItemHelper {
-    constructor(
-        @inject("DatabaseService") protected databaseService: DatabaseService,
-        @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
-        @inject("LotsofLootConfig") protected config: LotsofLootConfig,
-    ) {}
+    constructor(@inject("LotsofLootLogger") protected logger: LotsofLootLogger) {}
 
     public findAndReturnChildrenItemIdsByItems(items: Record<string, ITemplateItem>, itemID: string): string[] {
         const stack: string[] = [itemID];
