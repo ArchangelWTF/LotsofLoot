@@ -207,9 +207,11 @@ export class LotsofLootLocationLootGenerator {
             const price = tables.templates.prices[itemId];
             if (price) {
                 itemWeight = Math.round(1000 / Math.pow(price, 1 / 3));
-            } else if (itemId === "5449016a4bdc2d6f028b456f") { // Roubles
+            } else if (itemId === "5449016a4bdc2d6f028b456f") {
+                // Roubles
                 itemWeight = 500;
-            } else if (["5696686a4bdc2da3298b456a", "569668774bdc2da2298b4568"].includes(itemId)) { // Dollars, Euros
+            } else if (["5696686a4bdc2da3298b456a", "569668774bdc2da2298b4568"].includes(itemId)) {
+                // Dollars, Euros
                 itemWeight = 100;
             }
 
