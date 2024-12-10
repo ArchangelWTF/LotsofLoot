@@ -1,5 +1,6 @@
 import { DependencyContainer, Lifecycle } from "tsyringe";
 
+import { LotsofLoot } from "../LotsofLoot";
 import { LotsofLootHelper } from "../helpers/LotsofLootHelper";
 import { LotsofLootItemHelper } from "../helpers/LotsofLootItemHelper";
 import { LocationLootGeneratorOverrides } from "../overrides/LocationLootGeneratorOverrides";
@@ -7,8 +8,6 @@ import { LotsofLootMarkedRoomService } from "../services/LotsfLootMarkedRoomServ
 import { LotsofLootService } from "../services/LotsofLootService";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 import { LotsofLootLogger } from "../utils/LotsofLootLogger";
-
-import { LotsofLoot } from "../LotsofLoot";
 
 export class Container {
     public static register(container: DependencyContainer): void {

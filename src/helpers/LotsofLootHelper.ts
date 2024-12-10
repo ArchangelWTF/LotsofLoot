@@ -14,14 +14,14 @@ export class LotsofLootHelper {
         @inject("LotsofLootConfig") protected config: LotsofLootConfig,
     ) {}
 
-    //Huge credit to GhostFenixx (SVM) for the initial example of this method
+    // Huge credit to GhostFenixx (SVM) for the initial example of this method
     public removeBackpackRestrictions(): void {
         const items = this.databaseService.getTables().templates.items;
 
         for (const key in items) {
             const item = items[key];
 
-            //If the parent is anything else than the 'Backpack' (5448e53e4bdc2d60728b4567)
+            // If the parent is anything else than the 'Backpack' (5448e53e4bdc2d60728b4567)
             if (item._parent !== "5448e53e4bdc2d60728b4567") {
                 continue;
             }
@@ -38,17 +38,17 @@ export class LotsofLootHelper {
         const locations = this.databaseService.getTables().locations;
         const locationIds = Object.keys(locations);
 
-        //Process each location asynchronously
+        // Process each location asynchronously
         await Promise.all(
             locationIds.map(async (locationId) => {
                 const location: ILocation = locations[locationId];
 
                 if (!location.looseLoot) {
                     this.logger.debug(`Skipping ${locationId} as it has no loose loot!`);
-                    return; //Return skips this location, keeps the loop going.
+                    return; // Return skips this location, keeps the loop going.
                 }
 
-                //Process spawnpoints asynchronously
+                // Process spawnpoints asynchronously
                 await Promise.all(
                     location.looseLoot.spawnpoints.map(async (spawnpoint) => {
                         const item = spawnpoint.template.Items.find((i) => i._tpl == itemtpl);
@@ -72,17 +72,17 @@ export class LotsofLootHelper {
         const locations = this.databaseService.getTables().locations;
         const locationIds = Object.keys(locations);
 
-        //Process each location asynchronously
+        // Process each location asynchronously
         await Promise.all(
             locationIds.map(async (locationId) => {
                 const location: ILocation = locations[locationId];
 
                 if (!location.looseLoot) {
                     this.logger.debug(`Skipping ${locationId} as it has no loose loot!`);
-                    return; //Return skips this location, keeps the loop going.
+                    return; // Return skips this location, keeps the loop going.
                 }
 
-                //Process spawnpoints asynchronously
+                // Process spawnpoints asynchronously
                 await Promise.all(
                     location.looseLoot.spawnpoints.map(async (spawnpoint) => {
                         const item = spawnpoint.template.Items.find((i) => i._tpl == itemtpl);

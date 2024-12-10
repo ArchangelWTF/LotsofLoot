@@ -19,7 +19,7 @@ export class LotsofLootItemHelper {
         const result: string[] = [];
         const processedItems: Set<string> = new Set();
 
-        //'Item (54009119af1c881c07000029)' Doesn't have a parent, return all of it's children instead.
+        // 'Item (54009119af1c881c07000029)' Doesn't have a parent, return all of it's children instead.
         if (itemID === "54009119af1c881c07000029") {
             return Object.keys(items);
         }
