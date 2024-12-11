@@ -1,16 +1,16 @@
 export interface ILotsofLootConfig {
-    general: GeneralOptions;
+    general: IGeneralOptions;
     looseLootMultiplier: Record<string, number>;
     staticLootMultiplier: Record<string, number>;
     limits: Record<string, number>;
-    markedRoom: MarkedRoomConfig;
+    markedRoom: IMarkedRoomConfig;
     lootinLooseContainer: ILootInLooseContainerConfig;
     changeRelativeProbabilityInPool: Record<string, number>;
     changeProbabilityOfPool: Record<string, number>;
     containers: Record<string, number>;
 }
 
-export interface GeneralOptions {
+export interface IGeneralOptions {
     debug: boolean;
     allowLootOverlay: boolean;
     removeBackpackRestrictions: boolean;
@@ -20,7 +20,7 @@ export interface GeneralOptions {
     priceCorrection: Record<string, number>;
 }
 
-export interface MarkedRoomConfig {
+export interface IMarkedRoomConfig {
     multiplier: Record<string, number>;
     extraItems: Record<string, number>;
     itemGroups: Record<string, number>;
