@@ -20,6 +20,7 @@ import { IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
 import { IItem } from "@spt/models/eft/common/tables/IItem";
 import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
+import { ILootInlooseContainerLimitConfig } from "../ILotsofLootConfig";
 
 @injectable()
 export class LotsofLootLocationLootGenerator {
@@ -71,9 +72,9 @@ export class LotsofLootLocationLootGenerator {
         } else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.MAGAZINE)) {
             this.handleMagazineItem(items, itemTemplate, staticAmmoDist);
         } else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.SIMPLE_CONTAINER) && tpl !== "5c093e3486f77430cb02e593") {
-            this.handleContainerOrBackpackItem(items, staticAmmoDist, this.config.getConfig().general.looseContainerModifier);
+            this.handleContainerOrBackpackItem(items, staticAmmoDist, this.config.getConfig().lootinLooseContainer.lootInContainerModifier);
         } else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.BACKPACK)) {
-            this.handleContainerOrBackpackItem(items, staticAmmoDist, this.config.getConfig().general.looseBackpackModifier);
+            this.handleContainerOrBackpackItem(items, staticAmmoDist, this.config.getConfig().lootinLooseContainer.lootInBackpackModifier);
         } else if (this.itemHelper.armorItemCanHoldMods(tpl)) {
             const defaultPreset = this.presetHelper.getDefaultPreset(tpl);
             if (defaultPreset) {
@@ -140,11 +141,11 @@ export class LotsofLootLocationLootGenerator {
     }
 
     private handleContainerOrBackpackItem(items: IItem[], staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier: number): void {
-        const containerLoot = this.createLooseLootInContainer(items[0]._tpl, items[0]._id, staticAmmoDist, modifier);
+        const containerLoot = this.createLootInLooseContainer(items[0]._tpl, items[0]._id, staticAmmoDist, modifier);
         containerLoot.forEach((containerItem) => items.push(containerItem));
     }
 
-    public createLooseLootInContainer(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): IItem[] {
+    public createLootInLooseContainer(tpl: string, id: string, staticAmmoDist: Record<string, IStaticAmmoDetails[]>, modifier = 0.5): IItem[] {
         if (modifier === 0) {
             return [];
         }
@@ -220,9 +221,40 @@ export class LotsofLootLocationLootGenerator {
 
         // Generate loot items
         const generatedItems: IItem[] = [];
-        while (fill <= amount) {
+        const limits: ILootInlooseContainerLimitConfig = this.config.getConfig().lootinLooseContainer.LootInlooseContainerLimitConfig[tpl] ?? null;
+        let attempts = 0;
+        let drawnKeys = 0;
+        let drawnKeycards = 0;
+        while (fill <= amount && attempts < 100) {
+            attempts++;
+
             // Handle if we should draw an item from the ProbabilityObjectArray (Weighted) or from the whitelist
             const drawnItemTpl = this.config.getConfig().general.itemWeights ? itemArray.draw(1, true)[0] : whitelist[this.randomUtil.getInt(0, whitelist.length - 1)];
+
+            if (limits) {
+                //Todo: Maybe we should filter out these items out of the itemArray and whitelist after we hit the limit?
+
+                if (limits.keys != null) {
+                    
+                    if (this.itemHelper.isOfBaseclass(drawnItemTpl, BaseClasses.KEY_MECHANICAL)) {
+                        if (drawnKeys >= limits.keys) {
+                            continue; // Skip keys if limit is reached
+                        }
+
+                        drawnKeys++;
+                    }
+                }
+
+                if (limits.keycards != null) {
+                    if (this.itemHelper.isOfBaseclass(drawnItemTpl, BaseClasses.KEYCARD)) {
+                        if (drawnKeycards >= limits.keycards) {
+                            continue; // Skip keycards if limit is reached
+                        }
+
+                        drawnKeycards++;
+                    }
+                }
+            }
 
             const lootItem = this.createStaticLootItem(drawnItemTpl, staticAmmoDist, id);
             lootItem.items[0].slotId = "main";

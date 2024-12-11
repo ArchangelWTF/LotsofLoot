@@ -4,6 +4,7 @@ export interface ILotsofLootConfig {
     staticLootMultiplier: Record<string, number>;
     limits: Record<string, number>;
     markedRoom: MarkedRoomConfig;
+    lootinLooseContainer: ILootInLooseContainerConfig;
     changeRelativeProbabilityInPool: Record<string, number>;
     changeProbabilityOfPool: Record<string, number>;
     containers: Record<string, number>;
@@ -15,8 +16,6 @@ export interface GeneralOptions {
     removeBackpackRestrictions: boolean;
     disableFleaRestrictions: boolean;
     rustedKeyRoomIncludesKeycards: boolean;
-    looseContainerModifier: number;
-    looseBackpackModifier: number;
     itemWeights: boolean;
     priceCorrection: Record<string, number>;
 }
@@ -25,4 +24,15 @@ export interface MarkedRoomConfig {
     multiplier: Record<string, number>;
     extraItems: Record<string, number>;
     itemGroups: Record<string, number>;
+}
+
+export interface ILootInLooseContainerConfig {
+    lootInContainerModifier: number;
+    lootInBackpackModifier: number;
+    LootInlooseContainerLimitConfig: Record<string, ILootInlooseContainerLimitConfig>;
+}
+
+export interface ILootInlooseContainerLimitConfig {
+    keys: number;
+    keycards: number;
 }

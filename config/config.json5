@@ -10,10 +10,6 @@
         "disableFleaRestrictions": false,
         //Allows the rusted key room on Streets of Tarkov to also spawn keycards
         "rustedKeyRoomIncludesKeycards": false,
-        //Changes the max amount of items spawned in Loose Containers (things like item cases, docs cases and such.. Setting this to 0 will turn this behavior off.) | Value: 0 - 1
-        "looseContainerModifier": 1,
-        //Changes the max amount of items spawned in Backpacks spawned in the world (Setting this to 0 will turn this off.) | Value: 0 - 1
-        "looseBackpackModifier": 1,
         //Cheaper items are more likely to spawn in containers
         "itemWeights": true,
         //Some items dont have good or accurate data set for their price points, this changes the pricing on these items to be more realistic
@@ -106,6 +102,39 @@
         "itemGroups": {
             //Weapons group
             "5422acb9af1c889c16000029": 0.2
+        }
+    },
+    "lootinLooseContainer": {
+        //Changes the max amount of items spawned in Loose Containers (things like item cases, docs cases and such.. Setting this to 0 will turn this behavior off.) | Value: 0 - 1
+        "lootInContainerModifier": 1,
+        //Changes the max amount of items spawned in Backpacks that are spawned in the world (Setting this to 0 will turn this off.) | Value: 0 - 1
+        "lootInBackpackModifier": 1,
+        //This changes the limits of items spawned in loose containers (Think wallets, keycard holders, sicc organizational pouches, docs cases and more) currently this only supports the keys and keycards as limits.
+        "LootInlooseContainerLimitConfig": {
+            //WZ Wallet
+            "60b0f6c058e0b0481a09ad11": {
+                "keys": 0,
+                "keycards": 0
+            },
+            //Simple wallet
+            "60b0f6c058e0b0481a09ad11": {
+                "keys": 0,
+                "keycards": 0
+            },
+            //Keycard holder case
+            "619cbf9e0a7c3a1a2731940a": {
+                "keycards": 2
+            },
+            //Document case
+            "590c60fc86f77412b13fddcf": {
+                "keys": 3,
+                "keycards": 1
+            },
+            //S I C C organizational pouch
+            "5d235bb686f77443f4331278": {
+                "keys": 3,
+                "keycards": 1
+            }
         }
     },
     //Multiplies the spawnchance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
