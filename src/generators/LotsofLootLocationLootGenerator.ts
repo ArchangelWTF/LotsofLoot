@@ -20,7 +20,7 @@ import { IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
 import { IItem } from "@spt/models/eft/common/tables/IItem";
 import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
-import { ILootInlooseContainerLimitConfig } from "../ILotsofLootConfig";
+import { ILootInlooseContainerLimitConfig } from "../models/ILotsofLootConfig";
 
 @injectable()
 export class LotsofLootLocationLootGenerator {

@@ -5,7 +5,7 @@ import { PreSptModLoader } from "@spt/loaders/PreSptModLoader";
 import { JsonUtil } from "@spt/utils/JsonUtil";
 import { VFS } from "@spt/utils/VFS";
 
-import { ILotsofLootConfig } from "../ILotsofLootConfig";
+import { ILotsofLootConfig } from "../models/ILotsofLootConfig";
 
 @injectable()
 export class LotsofLootConfig {
