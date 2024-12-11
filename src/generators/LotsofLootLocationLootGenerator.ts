@@ -201,7 +201,7 @@ export class LotsofLootLocationLootGenerator {
             return [];
         }
 
-        const itemArray = new ProbabilityObjectArray<string>(this.mathUtil, this.cloner);
+        const itemArray = new ProbabilityObjectArray<string, number>(this.mathUtil, this.cloner);
         whitelist.forEach((itemId) => {
             let itemWeight = 1;
 
