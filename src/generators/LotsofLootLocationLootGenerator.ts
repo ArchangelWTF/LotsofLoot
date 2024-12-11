@@ -203,7 +203,7 @@ export class LotsofLootLocationLootGenerator {
             return [];
         }
 
-        const itemArray = new ProbabilityObjectArray<string, number>(this.mathUtil, this.cloner);
+        let itemArray = new ProbabilityObjectArray<string, number>(this.mathUtil, this.cloner);
         whitelist.forEach((itemId) => {
             let itemWeight = 1;
 
@@ -224,22 +224,28 @@ export class LotsofLootLocationLootGenerator {
         // Generate loot items
         const generatedItems: IItem[] = [];
         const limits: ILootInlooseContainerLimitConfig = this.config.getConfig().lootinLooseContainer.LootInlooseContainerLimitConfig[tpl] ?? null;
-        let attempts = 0;
         let drawnKeys = 0;
         let drawnKeycards = 0;
-        while (fill <= amount && attempts < 100) {
-            attempts++;
+        while (fill <= amount) {
+            // Since we modify these with limits, check each loop if they are empty and if so break out from the while loop
+            if (itemArray.length === 0 || whitelist.length === 0) {
+                break;
+            }
 
             // Handle if we should draw an item from the ProbabilityObjectArray (Weighted) or from the whitelist
             const drawnItemTpl = this.config.getConfig().general.itemWeights ? itemArray.draw(1, true)[0] : whitelist[this.randomUtil.getInt(0, whitelist.length - 1)];
 
             if (limits) {
-                //Todo: Maybe we should filter out these items out of the itemArray and whitelist after we hit the limit?
-
                 if (limits.keys != null) {
                     if (this.itemHelper.isOfBaseclass(drawnItemTpl, BaseClasses.KEY_MECHANICAL)) {
                         if (drawnKeys >= limits.keys) {
-                            continue; // Skip keys if limit is reached
+                            if (this.config.getConfig().general.itemWeights) {
+                                itemArray = itemArray.filter((itemTpl) => !this.itemHelper.isOfBaseclass(itemTpl.key, BaseClasses.KEY_MECHANICAL));
+                            } else {
+                                whitelist = whitelist.filter((itemTpl) => !this.itemHelper.isOfBaseclass(itemTpl, BaseClasses.KEY_MECHANICAL));
+                            }
+
+                            continue;
                         }
 
                         drawnKeys++;
@@ -249,7 +255,13 @@ export class LotsofLootLocationLootGenerator {
                 if (limits.keycards != null) {
                     if (this.itemHelper.isOfBaseclass(drawnItemTpl, BaseClasses.KEYCARD)) {
                         if (drawnKeycards >= limits.keycards) {
-                            continue; // Skip keycards if limit is reached
+                            if (this.config.getConfig().general.itemWeights) {
+                                itemArray = itemArray.filter((itemTpl) => !this.itemHelper.isOfBaseclass(itemTpl.key, BaseClasses.KEYCARD));
+                            } else {
+                                whitelist = whitelist.filter((itemTpl) => !this.itemHelper.isOfBaseclass(itemTpl, BaseClasses.KEYCARD));
+                            }
+
+                            continue;
                         }
 
                         drawnKeycards++;
