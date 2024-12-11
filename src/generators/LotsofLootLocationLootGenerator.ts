@@ -8,6 +8,7 @@ import { ItemHelper } from "@spt/helpers/ItemHelper";
 import { PresetHelper } from "@spt/helpers/PresetHelper";
 import { ConfigServer } from "@spt/servers/ConfigServer";
 import { DatabaseService } from "@spt/services/DatabaseService";
+import { ItemFilterService } from "@spt/services/ItemFilterService";
 import { HashUtil } from "@spt/utils/HashUtil";
 import { MathUtil } from "@spt/utils/MathUtil";
 import { ProbabilityObject, ProbabilityObjectArray, RandomUtil } from "@spt/utils/RandomUtil";
@@ -30,6 +31,7 @@ export class LotsofLootLocationLootGenerator {
         @inject("LocationLootGenerator") protected locationLootGenerator: LocationLootGenerator,
         @inject("ConfigServer") protected configServer: ConfigServer,
         @inject("DatabaseService") protected databaseService: DatabaseService,
+        @inject("ItemFilterService") protected itemFilterService: ItemFilterService,
         @inject("ItemHelper") protected itemHelper: ItemHelper,
         @inject("PresetHelper") protected presetHelper: PresetHelper,
         @inject("PrimaryCloner") protected cloner: ICloner,
@@ -189,7 +191,7 @@ export class LotsofLootLocationLootGenerator {
             whitelist = whitelist.filter((item) => !blacklist.has(item));
 
             // Remove invalid items and built-in inserts from whitelist
-            whitelist = whitelist.filter((itemId) => !this.itemHelper.isOfBaseclass(itemId, BaseClasses.BUILT_IN_INSERTS) && this.itemHelper.isValidItem(itemId) && items[itemId]?._props.Prefab.path !== "");
+            whitelist = whitelist.filter((itemTpl) => !this.itemHelper.isOfBaseclass(itemTpl, BaseClasses.BUILT_IN_INSERTS) && !this.itemFilterService.isItemBlacklisted(itemTpl) && !this.itemFilterService.isItemRewardBlacklisted(itemTpl) && this.itemHelper.isValidItem(itemTpl) && items[itemTpl]?._props.Prefab.path !== "");
 
             // Cache the result for later reuse
             this.looseContainerItemFilterIndexCache[tpl] = whitelist;
