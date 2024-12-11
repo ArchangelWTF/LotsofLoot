@@ -229,7 +229,7 @@ export class LotsofLootLocationLootGenerator {
 
         // Generate loot items
         const generatedItems: IItem[] = [];
-        const limits: ILootInlooseContainerLimitConfig = this.config.getConfig().lootinLooseContainer.LootInlooseContainerLimitConfig[tpl] ?? null;
+        const limits: ILootInlooseContainerLimitConfig = this.config.getConfig().lootinLooseContainer.spawnLimits[tpl] ?? null;
         let drawnKeys = 0;
         let drawnKeycards = 0;
         while (fill <= amount) {

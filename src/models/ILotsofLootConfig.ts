@@ -29,7 +29,7 @@ export interface IMarkedRoomConfig {
 export interface ILootInLooseContainerConfig {
     lootInContainerModifier: number;
     lootInBackpackModifier: number;
-    LootInlooseContainerLimitConfig: Record<string, ILootInlooseContainerLimitConfig>;
+    spawnLimits: Record<string, ILootInlooseContainerLimitConfig>;
 }
 
 export interface ILootInlooseContainerLimitConfig {
