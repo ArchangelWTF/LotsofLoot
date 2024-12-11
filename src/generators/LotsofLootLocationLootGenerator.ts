@@ -191,7 +191,13 @@ export class LotsofLootLocationLootGenerator {
             whitelist = whitelist.filter((item) => !blacklist.has(item));
 
             // Remove invalid items and built-in inserts from whitelist
-            whitelist = whitelist.filter((itemTpl) => !this.itemHelper.isOfBaseclass(itemTpl, BaseClasses.BUILT_IN_INSERTS) && !this.itemFilterService.isItemBlacklisted(itemTpl) && !this.itemFilterService.isItemRewardBlacklisted(itemTpl) && this.itemHelper.isValidItem(itemTpl) && items[itemTpl]?._props.Prefab.path !== "");
+            // biome-ignore format: Readability
+            whitelist = whitelist.filter((itemTpl) => !this.itemHelper.isOfBaseclass(itemTpl, BaseClasses.BUILT_IN_INSERTS) && 
+                !this.itemFilterService.isItemBlacklisted(itemTpl) && 
+                !this.itemFilterService.isItemRewardBlacklisted(itemTpl) &&
+                this.itemHelper.isValidItem(itemTpl) &&
+                items[itemTpl]?._props.Prefab.path !== ""
+            );
 
             // Cache the result for later reuse
             this.looseContainerItemFilterIndexCache[tpl] = whitelist;
