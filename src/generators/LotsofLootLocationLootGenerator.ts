@@ -235,7 +235,6 @@ export class LotsofLootLocationLootGenerator {
                 //Todo: Maybe we should filter out these items out of the itemArray and whitelist after we hit the limit?
 
                 if (limits.keys != null) {
-                    
                     if (this.itemHelper.isOfBaseclass(drawnItemTpl, BaseClasses.KEY_MECHANICAL)) {
                         if (drawnKeys >= limits.keys) {
                             continue; // Skip keys if limit is reached
