@@ -41,7 +41,15 @@ export class LotsofLootService {
         }
 
         for (const map in lotsofLootConfig.looseLootMultiplier) {
-            LocationConfig.looseLootMultiplier[map] = lotsofLootConfig.looseLootMultiplier[map];
+            // When allow loot overlay is disabled, amplify the loose loot ever so slightly so more items spawn in other spawn points.
+            if(!this.config.getConfig().general.allowLootOverlay)
+            {
+                LocationConfig.looseLootMultiplier[map] = lotsofLootConfig.looseLootMultiplier[map] * 2.5;
+            }
+            else
+            {
+                LocationConfig.looseLootMultiplier[map] = lotsofLootConfig.looseLootMultiplier[map];
+            }
             this.logger.debug(`${map}: ${LocationConfig.looseLootMultiplier[map]}`);
             LocationConfig.staticLootMultiplier[map] = lotsofLootConfig.staticLootMultiplier[map];
             this.logger.debug(`${map}: ${LocationConfig.staticLootMultiplier[map]}`);
