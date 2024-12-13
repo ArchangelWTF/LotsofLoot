@@ -96,8 +96,9 @@ export class LocationLootGeneratorOverrides {
         }
 
         if (!this.config.getConfig().general.allowLootOverlay) {
-            // Filter out duplicate locationIds
-            chosenSpawnpoints = [...new Map(chosenSpawnpoints.map((spawnPoint) => [spawnPoint.locationId, spawnPoint])).values()];
+            // Filter out duplicate locationIds and remove that are null
+            // Archangel: This is custom and should be kept to prevent certain scenarios causing this to error out.
+            chosenSpawnpoints = [...new Map(chosenSpawnpoints.filter((spawnPoint) => spawnPoint && spawnPoint.locationId !== null).map((spawnPoint) => [spawnPoint.locationId, spawnPoint])).values()];
 
             // Do we have enough items in pool to fulfill requirement
             const tooManySpawnPointsRequested = desiredSpawnpointCount - chosenSpawnpoints.length > 0;
