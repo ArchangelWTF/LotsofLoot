@@ -30,6 +30,7 @@ export interface ILootInLooseContainerConfig {
     lootInContainerModifier: number;
     lootInBackpackModifier: number;
     spawnLimits: Record<string, ILootInlooseContainerLimitConfig>;
+    blacklist: Record<string, string[]>;
 }
 
 export interface ILootInlooseContainerLimitConfig {

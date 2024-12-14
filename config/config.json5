@@ -142,6 +142,53 @@
             "62a09d3bcf4a99369e262447": {
                 "keys": 2
             }
+        },
+        //This allows for adding items to the lootinLooseContainer blacklist, preventing these items from being selected for spawning
+        "blacklist": {
+            //Documents case
+            "590c60fc86f77412b13fddcf": [
+                //Shatun's hideout key
+                "664d3db6db5dea2bad286955",
+                //Grumpy's hideout key
+                "664d3dd590294949fe2d81b7",
+                //Voron's hideout key
+                "664d3ddfdda2e85aca370d75",
+                //Leon's hideout key
+                "664d3de85f2355673b09aed5"
+            ],
+            ///S I C C organizational pouch
+            "5d235bb686f77443f4331278": [
+                //Shatun's hideout key
+                "664d3db6db5dea2bad286955",
+                //Grumpy's hideout key
+                "664d3dd590294949fe2d81b7",
+                //Voron's hideout key
+                "664d3ddfdda2e85aca370d75",
+                //Leon's hideout key
+                "664d3de85f2355673b09aed5"
+            ],
+            //Key tool
+            "5d235bb686f77443f4331278": [
+                //Shatun's hideout key
+                "664d3db6db5dea2bad286955",
+                //Grumpy's hideout key
+                "664d3dd590294949fe2d81b7",
+                //Voron's hideout key
+                "664d3ddfdda2e85aca370d75",
+                //Leon's hideout key
+                "664d3de85f2355673b09aed5"
+            ],
+            //Gingy keychain
+            "62a09d3bcf4a99369e262447": [
+                //Shatun's hideout key
+                "664d3db6db5dea2bad286955",
+                //Grumpy's hideout key
+                "664d3dd590294949fe2d81b7",
+                //Voron's hideout key
+                "664d3ddfdda2e85aca370d75",
+                //Leon's hideout key
+                "664d3de85f2355673b09aed5"
+            ]
         }
     },
     //Multiplies the spawnchance of a specific item in its loose loot pool, giving this item a higher chance of spawning.

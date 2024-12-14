@@ -187,6 +187,14 @@ export class LotsofLootLocationLootGenerator {
             whitelist = newWhiteList;
             blacklist = new Set(newBlackList);
 
+            if(this.config.getConfig().lootinLooseContainer?.blacklist[tpl])
+            {
+                blacklist = new Set([
+                    ...blacklist, 
+                    ...this.config.getConfig().lootinLooseContainer.blacklist[tpl]
+                ]);
+            }
+
             // Remove blacklist items from whitelist
             whitelist = whitelist.filter((item) => !blacklist.has(item));
 
