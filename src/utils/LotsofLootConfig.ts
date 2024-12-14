@@ -5,7 +5,7 @@ import { PreSptModLoader } from "@spt/loaders/PreSptModLoader";
 import { JsonUtil } from "@spt/utils/JsonUtil";
 import { VFS } from "@spt/utils/VFS";
 
-import { ILotsofLootConfig } from "../ILotsofLootConfig";
+import { ILotsofLootConfig } from "../models/ILotsofLootConfig";
 
 @injectable()
 export class LotsofLootConfig {
@@ -16,7 +16,7 @@ export class LotsofLootConfig {
         @inject("VFS") protected vfs: VFS,
         @inject("JsonUtil") protected jsonUtil: JsonUtil,
     ) {
-        this.config = this.jsonUtil.deserializeJson5(vfs.readFile(path.join(preSptModLoader.getModPath("archangelwtf-lotsoflootredux"), "config/config.json5")));
+        this.config = this.jsonUtil.deserializeJson5(vfs.readFile(path.join(__dirname, "../../config/config.json5")));
     }
 
     public getConfig(): ILotsofLootConfig {

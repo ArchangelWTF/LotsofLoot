@@ -2,18 +2,14 @@
     "general": {
         //Enables debug logging
         "debug": false,
-        //Allows loose loot to spawn on top of one another.
+        //Allows the loot generator to pick multiple of the same spawnpoints so that loot can spawn on top of one another.
         "allowLootOverlay": true,
-        //Removes backpack restrictions, allowing you to pick up T H I C C item cases that you find in raid.
+        //Removes backpack restrictions, allowing you to pick itmes like the T H I C C item case that you might find in raid.
         "removeBackpackRestrictions": true,
         //Disables the BSG flea blacklist
         "disableFleaRestrictions": false,
         //Allows the rusted key room on Streets of Tarkov to also spawn keycards
         "rustedKeyRoomIncludesKeycards": false,
-        //Changes the max amount of items spawned in Loose Containers (things like item cases, docs cases and such.. Setting this to 0 will turn this behavior off.) | Value: 0 - 1
-        "looseContainerModifier": 1,
-        //Changes the max amount of items spawned in Backpacks spawned in the world (Setting this to 0 will turn this off.) | Value: 0 - 1
-        "looseBackpackModifier": 1,
         //Cheaper items are more likely to spawn in containers
         "itemWeights": true,
         //Some items dont have good or accurate data set for their price points, this changes the pricing on these items to be more realistic
@@ -106,6 +102,93 @@
         "itemGroups": {
             //Weapons group
             "5422acb9af1c889c16000029": 0.2
+        }
+    },
+    "lootinLooseContainer": {
+        //Changes the max amount of items spawned in Loose Containers (things like item cases, docs cases and such.. Setting this to 0 will turn this behavior off.) | Value: 0 - 1
+        "lootInContainerModifier": 1,
+        //Changes the max amount of items spawned in Backpacks that are spawned in the world (Setting this to 0 will turn this off.) | Value: 0 - 1
+        "lootInBackpackModifier": 1,
+        //This changes the limits of items spawned in loose containers (Think wallets, keycard holders, sicc organizational pouches, docs cases and more)
+        //Currently this only supports keys and keycards as limits.
+        "spawnLimits": {
+            //WZ Wallet
+            "60b0f6c058e0b0481a09ad11": {
+                "keycards": 0
+            },
+            //Simple wallet
+            "60b0f6c058e0b0481a09ad11": {
+                "keycards": 0
+            },
+            //Keycard holder case
+            "619cbf9e0a7c3a1a2731940a": {
+                "keycards": 2
+            },
+            //Document case
+            "590c60fc86f77412b13fddcf": {
+                "keys": 3,
+                "keycards": 1
+            },
+            //S I C C organizational pouch
+            "5d235bb686f77443f4331278": {
+                "keys": 3,
+                "keycards": 1
+            },
+            //Key tool
+            "5d235bb686f77443f4331278": {
+                "keys": 5
+            },
+            //Gingy keychain
+            "62a09d3bcf4a99369e262447": {
+                "keys": 2
+            }
+        },
+        //This allows for adding items to the lootinLooseContainer blacklist, preventing these items from being selected for spawning
+        "blacklist": {
+            //Documents case
+            "590c60fc86f77412b13fddcf": [
+                //Shatun's hideout key
+                "664d3db6db5dea2bad286955",
+                //Grumpy's hideout key
+                "664d3dd590294949fe2d81b7",
+                //Voron's hideout key
+                "664d3ddfdda2e85aca370d75",
+                //Leon's hideout key
+                "664d3de85f2355673b09aed5"
+            ],
+            ///S I C C organizational pouch
+            "5d235bb686f77443f4331278": [
+                //Shatun's hideout key
+                "664d3db6db5dea2bad286955",
+                //Grumpy's hideout key
+                "664d3dd590294949fe2d81b7",
+                //Voron's hideout key
+                "664d3ddfdda2e85aca370d75",
+                //Leon's hideout key
+                "664d3de85f2355673b09aed5"
+            ],
+            //Key tool
+            "5d235bb686f77443f4331278": [
+                //Shatun's hideout key
+                "664d3db6db5dea2bad286955",
+                //Grumpy's hideout key
+                "664d3dd590294949fe2d81b7",
+                //Voron's hideout key
+                "664d3ddfdda2e85aca370d75",
+                //Leon's hideout key
+                "664d3de85f2355673b09aed5"
+            ],
+            //Gingy keychain
+            "62a09d3bcf4a99369e262447": [
+                //Shatun's hideout key
+                "664d3db6db5dea2bad286955",
+                //Grumpy's hideout key
+                "664d3dd590294949fe2d81b7",
+                //Voron's hideout key
+                "664d3ddfdda2e85aca370d75",
+                //Leon's hideout key
+                "664d3de85f2355673b09aed5"
+            ]
         }
     },
     //Multiplies the spawnchance of a specific item in its loose loot pool, giving this item a higher chance of spawning.

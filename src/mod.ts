@@ -1,7 +1,7 @@
 import { DependencyContainer } from "tsyringe";
 
-import { IPreSptLoadModAsync } from "@spt/models/external/IPreSptLoadModAsync";
 import { IPostDBLoadModAsync } from "@spt/models/external/IPostDBLoadModAsync";
+import { IPreSptLoadModAsync } from "@spt/models/external/IPreSptLoadModAsync";
 
 import { LotsofLoot } from "./LotsofLoot";
 import { Container } from "./di/Container";
@@ -10,7 +10,7 @@ class Mod implements IPreSptLoadModAsync, IPostDBLoadModAsync {
     public async preSptLoadAsync(container: DependencyContainer): Promise<void> {
         Container.register(container);
 
-        await container.resolve<LotsofLoot>("LotsofLoot").preSptLoadAsync(container); 
+        await container.resolve<LotsofLoot>("LotsofLoot").preSptLoadAsync(container);
     }
 
     public async postDBLoadAsync(container: DependencyContainer): Promise<void> {

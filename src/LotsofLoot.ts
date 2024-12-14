@@ -1,20 +1,20 @@
 import { DependencyContainer, inject, injectable } from "tsyringe";
 
-import { LocationLootGeneratorOverrides } from "./overrides/LocationLootGeneratorOverrides";
-import { LotsofLootLogger } from "./utils/LotsofLootLogger";
-import { LotsofLootController } from "./controllers/LotsofLootController";
-import { LotsofLootMarkedRoomController } from "./controllers/LotsofLootMarkedRoomController";
 import { LocationLootGenerator } from "@spt/generators/LocationLootGenerator";
+
+import { LocationLootGeneratorOverrides } from "./overrides/LocationLootGeneratorOverrides";
+import { LotsofLootMarkedRoomService } from "./services/LotsfLootMarkedRoomService";
+import { LotsofLootService } from "./services/LotsofLootService";
+import { LotsofLootLogger } from "./utils/LotsofLootLogger";
 
 @injectable()
 export class LotsofLoot {
     constructor(
         @inject("LocationLootGeneratorOverrides") protected locationLootGeneratorOverrides: LocationLootGeneratorOverrides,
-        @inject("LotsofLootController") protected lotsofLootController: LotsofLootController,
-        @inject("LotsofLootMarkedRoomController") protected lotsofLootMarkedRoomController: LotsofLootMarkedRoomController,
+        @inject("LotsofLootService") protected lotsofLootService: LotsofLootService,
+        @inject("LotsofLootMarkedRoomService") protected lotsofLootMarkedRoomService: LotsofLootMarkedRoomService,
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
-    ) {
-    }
+    ) {}
 
     public async preSptLoadAsync(container: DependencyContainer): Promise<void> {
         container.afterResolution(
@@ -34,9 +34,9 @@ export class LotsofLoot {
     }
 
     public async postDBLoadAsync(_container: DependencyContainer): Promise<void> {
-        await this.lotsofLootController.applyLotsOfLootModifications();
-        await this.lotsofLootMarkedRoomController.adjustMarkedRoomItems();
+        await this.lotsofLootService.applyLotsOfLootModifications();
+        await this.lotsofLootMarkedRoomService.adjustMarkedRoomItems();
 
-        this.logger.logInfo(`Finished loading`);
+        this.logger.info(`Finished loading`);
     }
 }
