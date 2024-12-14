@@ -2,9 +2,9 @@
     "general": {
         //Enables debug logging
         "debug": false,
-        //Allows loose loot to spawn on top of one another.
+        //Allows the loot generator to pick multiple of the same spawnpoints so that loot can spawn on top of one another.
         "allowLootOverlay": true,
-        //Removes backpack restrictions, allowing you to pick up T H I C C item cases that you find in raid.
+        //Removes backpack restrictions, allowing you to pick itmes like the T H I C C item case that you might find in raid.
         "removeBackpackRestrictions": true,
         //Disables the BSG flea blacklist
         "disableFleaRestrictions": false,
@@ -133,6 +133,14 @@
             "5d235bb686f77443f4331278": {
                 "keys": 3,
                 "keycards": 1
+            },
+            //Key tool
+            "5d235bb686f77443f4331278": {
+                "keys": 5
+            },
+            //Gingy keychain
+            "62a09d3bcf4a99369e262447": {
+                "keys": 2
             }
         }
     },
