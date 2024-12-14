@@ -47,7 +47,7 @@ export class LocationLootGeneratorOverrides {
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpoints.filter((point) => point.template.IsAlwaysSpawn));
 
         // Temporary cast to get rid of protected, add all forced loot to return array
-        (this.locationLootGenerator as any).addForcedLoot(loot, dynamicLootDist.spawnpointsForced, locationName);
+        this.locationLootGenerator.addForcedLoot(loot, dynamicLootDist.spawnpointsForced, locationName, staticAmmoDist);
 
         const allDynamicSpawnpoints = dynamicLootDist.spawnpoints;
 
