@@ -110,22 +110,22 @@ export class LotsofLootService {
         const valuables = Object.keys(items).filter((item) => this.itemHelper.isOfBaseclass(item, BaseClasses.JEWELRY));
 
         const spawnPoints = [
-            { id: "Keys1", position: { x: 185.087, y: 6.554, z: 63.721 }, items: keys },
-            { id: "Keys2", position: { x: 185.125, y: 6.554, z: 63.186 }, items: keys },
-            { id: "Keys3", position: { x: 185.164, y: 6.554, z: 62.241 }, items: keys },
-            { id: "Keys4", position: { x: 185.154, y: 6.554, z: 62.686 }, items: keys },
-            { id: "Keys5", position: { x: 185.21, y: 6.935, z: 60.86 }, items: keys },
-            { id: "Keys6", position: { x: 185.205, y: 6.935, z: 60.56 }, items: keys },
-            { id: "Keys7", position: { x: 185.208, y: 6.58, z: 60.857 }, items: keys },
-            { id: "Keys8", position: { x: 185.211, y: 6.562, z: 60.562 }, items: keys },
-            { id: "Keys9", position: { x: 185.202, y: 6.175, z: 60.551 }, items: keys },
-            { id: "Keys10", position: { x: 185.2, y: 6.234, z: 60.872 }, items: keys },
-            { id: "Keys11", position: { x: 182.683, y: 6.721, z: 57.813 }, items: keys },
-            { id: "Keys12", position: { x: 182.683, y: 6.721, z: 60.073 }, items: keys },
-            { id: "Val1", position: { x: 185.037, y: 5.831, z: 53.836 }, items: valuables },
-            { id: "Val2", position: { x: 183.064, y: 5.831, z: 53.767 }, items: valuables },
-            { id: "Val3", position: { x: 185.146, y: 5.831, z: 60.114 }, items: valuables },
-            { id: "Val4", position: { x: 185.085, y: 5.831, z: 65.393 }, items: valuables },
+            { id: "LotsOfLootRustedKeyRoom Keys 1", position: { x: 185.087, y: 6.554, z: 63.721 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 2", position: { x: 185.125, y: 6.554, z: 63.186 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 3", position: { x: 185.164, y: 6.554, z: 62.241 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 4", position: { x: 185.154, y: 6.554, z: 62.686 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 5", position: { x: 185.21, y: 6.935, z: 60.86 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 6", position: { x: 185.205, y: 6.935, z: 60.56 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 7", position: { x: 185.208, y: 6.58, z: 60.857 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 8", position: { x: 185.211, y: 6.562, z: 60.562 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 9", position: { x: 185.202, y: 6.175, z: 60.551 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 10", position: { x: 185.2, y: 6.234, z: 60.872 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 11", position: { x: 182.683, y: 6.721, z: 57.813 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Keys 12", position: { x: 182.683, y: 6.721, z: 60.073 }, items: keys },
+            { id: "LotsOfLootRustedKeyRoom Valuables 1", position: { x: 185.037, y: 5.831, z: 53.836 }, items: valuables },
+            { id: "LotsOfLootRustedKeyRoom Valuables 2", position: { x: 183.064, y: 5.831, z: 53.767 }, items: valuables },
+            { id: "LotsOfLootRustedKeyRoom Valuables 3", position: { x: 185.146, y: 5.831, z: 60.114 }, items: valuables },
+            { id: "LotsOfLootRustedKeyRoom Valuables 4", position: { x: 185.085, y: 5.831, z: 65.393 }, items: valuables },
         ];
 
         spawnPoints.forEach(({ id, position, items }) => {
