@@ -61,6 +61,15 @@ export class LocationLootGeneratorOverrides {
         // Positions not in forced but have 100% chance to spawn
         const guaranteedLoosePoints: ISpawnpoint[] = [];
 
+        const guaranteedSpawnsButNotForced = this.lotsOfLootLocationLootGenerator.handleSpawningAlwaysSpawnSpawnpoint(dynamicLootDist.spawnpoints, locationName);
+
+        if(guaranteedSpawnsButNotForced != null)
+        {
+            this.logger.debug(`Template Id for forced key selected: ${guaranteedSpawnsButNotForced.template.Id}`);
+
+            guaranteedLoosePoints.push(guaranteedSpawnsButNotForced);
+        }
+
         const blacklistedSpawnpoints = LocationConfig.looseLootBlacklist[locationName];
         const spawnpointArray = new ProbabilityObjectArray<string, ISpawnpoint>(this.mathUtil, this.cloner);
 
@@ -159,7 +168,14 @@ export class LocationLootGeneratorOverrides {
             // Draw a random item from spawn points possible items
             const spawnPointClone = this.cloner.clone(spawnPoint);
             const chosenComposedKey = itemArray.draw(1)[0];
-            const chosenItem = spawnPointClone.template.Items.find((x) => x._id === chosenComposedKey);
+            const chosenItem = spawnPointClone.template.Items.find((item) => item._id === chosenComposedKey);
+
+            if(chosenItem._tpl === "6582dbf0b8d7830efc45016f")
+            {
+                this.logger.debug("SPAWNING KEY");
+                this.logger.debug(`location: x:${spawnPointClone.template.Position.x} y:${spawnPointClone.template.Position.y} z:${spawnPointClone.template.Position.z}`)
+            }
+
             const chosenTpl = chosenItem._tpl;
             const createItemResult = this.createStaticLootItem(chosenTpl, staticAmmoDist, undefined);
 
