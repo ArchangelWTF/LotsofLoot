@@ -3,7 +3,7 @@
         //Enables debug logging
         "debug": false,
         //Allows the loot generator to pick multiple of the same spawnpoints so that loot can spawn on top of one another.
-        "allowLootOverlay": true,
+        "allowLootOverlay": false,
         //Removes backpack restrictions, allowing you to pick itmes like the T H I C C item case that you might find in raid.
         "removeBackpackRestrictions": true,
         //Disables the BSG flea blacklist
