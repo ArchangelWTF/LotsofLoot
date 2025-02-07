@@ -6,7 +6,7 @@
     "author": "ArchangelWTF",
     "sptVersion": "~3.10",
     "loadBefore": [],
-    "loadAfter": [],
+    "loadAfter": ["SVM"],
     "incompatibilities": [],
     "contributors": ["RainbowPC"],
     "isBundleMod": false,
