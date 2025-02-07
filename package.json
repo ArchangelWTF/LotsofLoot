@@ -6,9 +6,13 @@
     "author": "ArchangelWTF",
     "sptVersion": "~3.10",
     "loadBefore": [],
-    "loadAfter": ["SVM"],
+    "loadAfter": [
+        "[SVM] Server Value Modifier"
+    ],
     "incompatibilities": [],
-    "contributors": ["RainbowPC"],
+    "contributors": [
+        "RainbowPC"
+    ],
     "isBundleMod": false,
     "scripts": {
         "setup": "npm i",
