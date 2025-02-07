@@ -9,11 +9,13 @@ import { LotsofLootMarkedRoomService } from "../services/LotsfLootMarkedRoomServ
 import { LotsofLootService } from "../services/LotsofLootService";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 import { LotsofLootLogger } from "../utils/LotsofLootLogger";
+import { LotsofLootRandomUtil } from "../utils/LotsofLootRandomUtil";
 
 export class Container {
     public static register(container: DependencyContainer): void {
         container.register<LotsofLootConfig>("LotsofLootConfig", LotsofLootConfig, { lifecycle: Lifecycle.Singleton });
         container.register<LotsofLootLogger>("LotsofLootLogger", LotsofLootLogger, { lifecycle: Lifecycle.Singleton });
+        container.register<LotsofLootRandomUtil>("LotsofLootRandomUtil", LotsofLootRandomUtil, { lifecycle: Lifecycle.Singleton });
         container.register<LotsofLootHelper>("LotsofLootHelper", LotsofLootHelper, { lifecycle: Lifecycle.Singleton });
         container.register<LotsofLootItemHelper>("LotsofLootItemHelper", LotsofLootItemHelper, { lifecycle: Lifecycle.Singleton });
         container.register<LotsofLootLocationLootGenerator>("LotsofLootLocationLootGenerator", LotsofLootLocationLootGenerator, { lifecycle: Lifecycle.Singleton });

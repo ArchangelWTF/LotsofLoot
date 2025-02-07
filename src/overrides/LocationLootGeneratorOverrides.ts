@@ -17,6 +17,7 @@ import { IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
 import { ILooseLoot, ISpawnpoint, ISpawnpointTemplate, ISpawnpointsForced } from "@spt/models/eft/common/ILooseLoot";
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { LotsofLootLocationLootGenerator } from "../generators/LotsofLootLocationLootGenerator";
+import { LotsofLootRandomUtil } from "../utils/LotsofLootRandomUtil";
 
 @injectable()
 export class LocationLootGeneratorOverrides {
@@ -30,6 +31,7 @@ export class LocationLootGeneratorOverrides {
         @inject("RandomUtil") protected randomUtil: RandomUtil,
         @inject("MathUtil") protected mathUtil: MathUtil,
         @inject("LotsofLootLocationLootGenerator") protected lotsOfLootLocationLootGenerator: LotsofLootLocationLootGenerator,
+        @inject("LotsofLootRandomUtil") protected lotsofLootRandomUtil: LotsofLootRandomUtil,
         @inject("LotsofLootConfig") protected config: LotsofLootConfig,
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
     ) {}
@@ -51,8 +53,15 @@ export class LocationLootGeneratorOverrides {
 
         const allDynamicSpawnpoints = dynamicLootDist.spawnpoints;
 
+        let desiredSpawnpointCount = 0;
+
         // Temporary cast to get rid of protected, draw from random distribution
-        let desiredSpawnpointCount = Math.round((this.locationLootGenerator as any).getLooseLootMultiplerForLocation(locationName) * this.randomUtil.getNormallyDistributedRandomNumber(dynamicLootDist.spawnpointCount.mean, dynamicLootDist.spawnpointCount.std));
+        if (this.config.getConfig().general.allowLootOverlay) {
+            //Draw with our 'RandomUtil' if loot overlay is enabled, so that the desired spawnpoint count is 'less random'
+            desiredSpawnpointCount = Math.round((this.locationLootGenerator as any).getLooseLootMultiplerForLocation(locationName) * this.lotsofLootRandomUtil.getNormallyDistributedRandomNumber(dynamicLootDist.spawnpointCount.mean, dynamicLootDist.spawnpointCount.std));
+        } else {
+            desiredSpawnpointCount = Math.round((this.locationLootGenerator as any).getLooseLootMultiplerForLocation(locationName) * this.randomUtil.getNormallyDistributedRandomNumber(dynamicLootDist.spawnpointCount.mean, dynamicLootDist.spawnpointCount.std));
+        }
 
         if (desiredSpawnpointCount > this.config.getConfig().limits[locationName]) {
             desiredSpawnpointCount = this.config.getConfig().limits[locationName];
@@ -63,8 +72,7 @@ export class LocationLootGeneratorOverrides {
 
         const guaranteedSpawnsButNotForced = this.lotsOfLootLocationLootGenerator.handleSpawningAlwaysSpawnSpawnpoint(dynamicLootDist.spawnpoints, locationName);
 
-        if(guaranteedSpawnsButNotForced != null)
-        {
+        if (guaranteedSpawnsButNotForced != null) {
             this.logger.debug(`Template Id for forced key selected: ${guaranteedSpawnsButNotForced.template.Id}`);
 
             guaranteedLoosePoints.push(guaranteedSpawnsButNotForced);
@@ -174,10 +182,9 @@ export class LocationLootGeneratorOverrides {
             const chosenComposedKey = itemArray.draw(1)[0];
             const chosenItem = spawnPointClone.template.Items.find((item) => item._id === chosenComposedKey);
 
-            if(chosenItem._tpl === "6582dbf0b8d7830efc45016f")
-            {
+            if (chosenItem._tpl === "6582dbf0b8d7830efc45016f") {
                 this.logger.debug("SPAWNING KEY");
-                this.logger.debug(`location: x:${spawnPointClone.template.Position.x} y:${spawnPointClone.template.Position.y} z:${spawnPointClone.template.Position.z}`)
+                this.logger.debug(`location: x:${spawnPointClone.template.Position.x} y:${spawnPointClone.template.Position.y} z:${spawnPointClone.template.Position.z}`);
             }
 
             const chosenTpl = chosenItem._tpl;
