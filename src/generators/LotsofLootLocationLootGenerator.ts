@@ -18,11 +18,11 @@ import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 import { LotsofLootLogger } from "../utils/LotsofLootLogger";
 
 import { IStaticAmmoDetails } from "@spt/models/eft/common/ILocation";
+import { ISpawnpoint } from "@spt/models/eft/common/ILooseLoot";
 import { IItem } from "@spt/models/eft/common/tables/IItem";
 import { ITemplateItem } from "@spt/models/eft/common/tables/ITemplateItem";
 import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { ILootInlooseContainerLimitConfig } from "../models/ILotsofLootConfig";
-import { ISpawnpoint } from "@spt/models/eft/common/ILooseLoot";
 
 @injectable()
 export class LotsofLootLocationLootGenerator {
@@ -44,17 +44,14 @@ export class LotsofLootLocationLootGenerator {
         @inject("LotsofLootLogger") protected logger: LotsofLootLogger,
     ) {}
 
-    public handleSpawningAlwaysSpawnSpawnpoint(spawnpoints: ISpawnpoint[], location: string) : ISpawnpoint|null {
+    public handleSpawningAlwaysSpawnSpawnpoint(spawnpoints: ISpawnpoint[], location: string): ISpawnpoint | null {
         // This key only spawns on streets at the moment, i dont want to deal with debugging this anymore to so I'm just going to force one spawnpoint to always spawn
         if (location != "tarkovstreets") {
-            return null;   
+            return null;
         }
 
-        //Make sure not to spawn it in the rusted key room 
-        const spawns = spawnpoints.filter(
-            (spawnpoint) => !spawnpoint.template.Id.includes("sh_ee_loot") && !spawnpoint.template.Id.includes("LotsOfLootRustedKeyRoom") && spawnpoint.template.Items.some(
-              (item) => item._tpl === "6582dbf0b8d7830efc45016f"
-            ));
+        //Make sure not to spawn it in the rusted key room
+        const spawns = spawnpoints.filter((spawnpoint) => !spawnpoint.template.Id.includes("sh_ee_loot") && !spawnpoint.template.Id.includes("LotsOfLootRustedKeyRoom") && spawnpoint.template.Items.some((item) => item._tpl === "6582dbf0b8d7830efc45016f"));
 
         const spawnpointArray = new ProbabilityObjectArray<string, ISpawnpoint>(this.mathUtil, this.cloner);
 
@@ -211,12 +208,8 @@ export class LotsofLootLocationLootGenerator {
             whitelist = newWhiteList;
             blacklist = new Set(newBlackList);
 
-            if(this.config.getConfig().lootinLooseContainer?.blacklist[tpl])
-            {
-                blacklist = new Set([
-                    ...blacklist, 
-                    ...this.config.getConfig().lootinLooseContainer.blacklist[tpl]
-                ]);
+            if (this.config.getConfig().lootinLooseContainer?.blacklist[tpl]) {
+                blacklist = new Set([...blacklist, ...this.config.getConfig().lootinLooseContainer.blacklist[tpl]]);
             }
 
             // Remove blacklist items from whitelist
