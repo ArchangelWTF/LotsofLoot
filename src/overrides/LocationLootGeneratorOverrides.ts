@@ -86,6 +86,9 @@ export class LocationLootGeneratorOverrides {
 
             if (spawnpoint.probability === 1) {
                 guaranteedLoosePoints.push(spawnpoint);
+                if (!this.config.getConfig().general.allowLootOverlay) {
+                    continue;
+                }
             }
 
             spawnpointArray.push(new ProbabilityObject(spawnpoint.template.Id, spawnpoint.probability, spawnpoint));
@@ -99,7 +102,8 @@ export class LocationLootGeneratorOverrides {
         // Only draw random spawn points if needed
         if (randomSpawnpointCount) {
             // Add randomly chosen spawn points
-            for (const si of spawnpointArray.draw(randomSpawnpointCount, true)) {
+            // If we allow loot overlay, actually remove the spawn points, do not do so without.
+            for (const si of spawnpointArray.draw(randomSpawnpointCount, this.config.getConfig().general.allowLootOverlay)) {
                 chosenSpawnpoints.push(spawnpointArray.data(si));
             }
         }
