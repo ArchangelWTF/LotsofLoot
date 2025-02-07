@@ -1,4 +1,4 @@
-Copyright (c) 2024 ArchangelWTF
+Copyright (c) 2025 ArchangelWTF
 
 Copyright (c) 2022-2024 RainbowPC
 
