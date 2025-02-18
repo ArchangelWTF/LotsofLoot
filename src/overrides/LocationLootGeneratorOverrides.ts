@@ -190,6 +190,11 @@ export class LocationLootGeneratorOverrides {
             const chosenTpl = chosenItem._tpl;
             const createItemResult = this.createStaticLootItem(chosenTpl, staticAmmoDist, undefined);
 
+            if (!createItemResult.items[0]?._id) {
+                this.logger.warning(`Generated item ${this.logger.writeItemName(chosenTpl)} (${chosenTpl})'s root has no id set? Skipping!`);
+                continue;
+            }
+
             // Root id can change when generating a weapon
             spawnPointClone.template.Root = createItemResult.items[0]._id;
             spawnPointClone.template.Items = createItemResult.items;
