@@ -1,6 +1,6 @@
 {
     "name": "LotsOfLoot Redux",
-    "version": "3.0.1",
+    "version": "3.0.3",
     "main": "src/mod.js",
     "license": "MIT",
     "author": "ArchangelWTF",
