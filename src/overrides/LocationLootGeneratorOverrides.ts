@@ -72,7 +72,7 @@ export class LocationLootGeneratorOverrides {
 
         const guaranteedSpawnsButNotForced = this.lotsOfLootLocationLootGenerator.handleSpawningAlwaysSpawnSpawnpoint(dynamicLootDist.spawnpoints, locationName);
 
-        if (guaranteedSpawnsButNotForced != null) {
+        if (guaranteedSpawnsButNotForced) {
             this.logger.debug(`Template Id for forced key selected: ${guaranteedSpawnsButNotForced.template.Id}`);
 
             guaranteedLoosePoints.push(guaranteedSpawnsButNotForced);
