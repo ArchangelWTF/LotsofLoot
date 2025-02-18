@@ -48,17 +48,17 @@ export class LotsofLootLocationLootGenerator {
         switch (location) {
             case "tarkovstreets":
                 //Make sure not to spawn it in the rusted key room
-                const spawns = spawnpoints.filter((spawnpoint) => !spawnpoint.template.Id.includes("sh_ee_loot") && !spawnpoint.template.Id.includes("LotsOfLootRustedKeyRoom") && spawnpoint.template.Items.some((item) => item._tpl === "6582dbf0b8d7830efc45016f"));
+                const spawnsStreets = spawnpoints.filter((spawnpoint) => !spawnpoint.template.Id.includes("sh_ee_loot") && !spawnpoint.template.Id.includes("LotsOfLootRustedKeyRoom") && spawnpoint.template.Items.some((item) => item._tpl === "6582dbf0b8d7830efc45016f"));
 
-                const spawnpointArray = new ProbabilityObjectArray<string, ISpawnpoint>(this.mathUtil, this.cloner);
+                const spawnpointArrayStreets = new ProbabilityObjectArray<string, ISpawnpoint>(this.mathUtil, this.cloner);
 
-                spawns.forEach((spawnpoint) => {
-                    spawnpointArray.push(new ProbabilityObject(spawnpoint.template.Id, spawnpoint.probability, spawnpoint));
+                spawnsStreets.forEach((spawnpoint) => {
+                    spawnpointArrayStreets.push(new ProbabilityObject(spawnpoint.template.Id, spawnpoint.probability, spawnpoint));
                 });
 
-                const draw = spawnpointArray.draw(1, true)[0];
+                const drawStreets = spawnpointArrayStreets.draw(1, true)[0];
 
-                return spawnpointArray.data(draw);
+                return spawnpointArrayStreets.data(drawStreets);
             case "laboratory":
                 // Hotfix for SPT not spawning this item on labs
                 const spawnsLabs = spawnpoints.filter((spawnpoint) => spawnpoint.template.Id.includes("keywhite") && spawnpoint.template.Items.some((item) => item._tpl === "6711039f9e648049e50b3307"));
