@@ -44,6 +44,12 @@ export class LocationLootGeneratorOverrides {
         const loot: ISpawnpointTemplate[] = [];
         const dynamicForcedSpawnPoints: ISpawnpointsForced[] = [];
 
+        // Remove christmas items from loot data
+        if (!this.seasonalEventService.christmasEventEnabled()) {
+            dynamicLootDist.spawnpoints = dynamicLootDist.spawnpoints.filter((point) => !point.template.Id.startsWith("christmas"));
+            dynamicLootDist.spawnpointsForced = dynamicLootDist.spawnpointsForced.filter((point) => !point.template.Id.startsWith("christmas"));
+        }
+
         // Build the list of forced loot from both `ISpawnpointsForced` and any point marked `IsAlwaysSpawn`
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpointsForced);
         dynamicForcedSpawnPoints.push(...dynamicLootDist.spawnpoints.filter((point) => point.template.IsAlwaysSpawn));

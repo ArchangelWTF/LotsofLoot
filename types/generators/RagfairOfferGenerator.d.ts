@@ -12,8 +12,9 @@ import { IBarterScheme } from "@spt/models/eft/common/tables/ITrader";
 import { IOfferRequirement, IRagfairOffer, IRagfairOfferUser } from "@spt/models/eft/ragfair/IRagfairOffer";
 import { IBotConfig } from "@spt/models/spt/config/IBotConfig";
 import { IArmorPlateBlacklistSettings, IBarterDetails, IDynamic, IRagfairConfig } from "@spt/models/spt/config/IRagfairConfig";
+import { ITraderConfig } from "@spt/models/spt/config/ITraderConfig";
 import { ITplWithFleaPrice } from "@spt/models/spt/ragfair/ITplWithFleaPrice";
-import { ILogger } from "@spt/models/spt/utils/ILogger";
+import type { ILogger } from "@spt/models/spt/utils/ILogger";
 import { ConfigServer } from "@spt/servers/ConfigServer";
 import { SaveServer } from "@spt/servers/SaveServer";
 import { DatabaseService } from "@spt/services/DatabaseService";
@@ -24,7 +25,7 @@ import { RagfairPriceService } from "@spt/services/RagfairPriceService";
 import { HashUtil } from "@spt/utils/HashUtil";
 import { RandomUtil } from "@spt/utils/RandomUtil";
 import { TimeUtil } from "@spt/utils/TimeUtil";
-import { ICloner } from "@spt/utils/cloners/ICloner";
+import type { ICloner } from "@spt/utils/cloners/ICloner";
 export declare class RagfairOfferGenerator {
     protected logger: ILogger;
     protected hashUtil: HashUtil;
@@ -47,6 +48,7 @@ export declare class RagfairOfferGenerator {
     protected configServer: ConfigServer;
     protected cloner: ICloner;
     protected ragfairConfig: IRagfairConfig;
+    protected traderConfig: ITraderConfig;
     protected botConfig: IBotConfig;
     protected allowedFleaPriceItemsForBarter: {
         tpl: string;
@@ -83,7 +85,7 @@ export declare class RagfairOfferGenerator {
      * @param isTrader Is the user creating the offer a trader
      * @returns IRagfairOfferUser
      */
-    createUserDataForFleaOffer(userID: string, isTrader: boolean): IRagfairOfferUser;
+    protected createUserDataForFleaOffer(userID: string, isTrader: boolean): IRagfairOfferUser;
     /**
      * Calculate the offer price that's listed on the flea listing
      * @param offerRequirements barter requirements for offer

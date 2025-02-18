@@ -2,15 +2,13 @@ import { IncomingMessage, ServerResponse } from "node:http";
 import { ApplicationContext } from "@spt/context/ApplicationContext";
 import { HttpServerHelper } from "@spt/helpers/HttpServerHelper";
 import { IHttpConfig } from "@spt/models/spt/config/IHttpConfig";
-import { ILogger } from "@spt/models/spt/utils/ILogger";
+import type { ILogger } from "@spt/models/spt/utils/ILogger";
 import { ConfigServer } from "@spt/servers/ConfigServer";
-import { DatabaseServer } from "@spt/servers/DatabaseServer";
 import { WebSocketServer } from "@spt/servers/WebSocketServer";
 import { IHttpListener } from "@spt/servers/http/IHttpListener";
 import { LocalisationService } from "@spt/services/LocalisationService";
 export declare class HttpServer {
     protected logger: ILogger;
-    protected databaseServer: DatabaseServer;
     protected httpServerHelper: HttpServerHelper;
     protected localisationService: LocalisationService;
     protected httpListeners: IHttpListener[];
@@ -19,7 +17,7 @@ export declare class HttpServer {
     protected webSocketServer: WebSocketServer;
     protected httpConfig: IHttpConfig;
     protected started: boolean;
-    constructor(logger: ILogger, databaseServer: DatabaseServer, httpServerHelper: HttpServerHelper, localisationService: LocalisationService, httpListeners: IHttpListener[], configServer: ConfigServer, applicationContext: ApplicationContext, webSocketServer: WebSocketServer);
+    constructor(logger: ILogger, httpServerHelper: HttpServerHelper, localisationService: LocalisationService, httpListeners: IHttpListener[], configServer: ConfigServer, applicationContext: ApplicationContext, webSocketServer: WebSocketServer);
     /**
      * Handle server loading event
      */
@@ -30,7 +28,7 @@ export declare class HttpServer {
      * @param remoteAddress Address to check
      * @returns True if its local
      */
-    protected isLocalRequest(remoteAddress: string): boolean;
+    protected isLocalRequest(remoteAddress: string | undefined): boolean | undefined;
     protected getCookies(req: IncomingMessage): Record<string, string>;
     isStarted(): boolean;
 }
