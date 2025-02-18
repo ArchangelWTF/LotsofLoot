@@ -1,7 +1,7 @@
 import { inject, injectable } from "tsyringe";
 
 import { LogTextColor } from "@spt/models/spt/logging/LogTextColor";
-import { ILogger } from "@spt/models/spt/utils/ILogger";
+import type { ILogger } from "@spt/models/spt/utils/ILogger";
 import { DatabaseService } from "@spt/services/DatabaseService";
 import { LotsofLootConfig } from "./LotsofLootConfig";
 
