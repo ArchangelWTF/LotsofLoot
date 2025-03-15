@@ -9,7 +9,7 @@ import { ILocationConfig } from "@spt/models/spt/config/ILocationConfig";
 import { ConfigServer } from "@spt/servers/ConfigServer";
 import { DatabaseService } from "@spt/services/DatabaseService";
 import { HashUtil } from "@spt/utils/HashUtil";
-import { ICloner } from "@spt/utils/cloners/ICloner";
+import type { ICloner } from "@spt/utils/cloners/ICloner";
 
 import { LotsofLootHelper } from "../helpers/LotsofLootHelper";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";

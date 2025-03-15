@@ -12,7 +12,7 @@ import { ItemFilterService } from "@spt/services/ItemFilterService";
 import { HashUtil } from "@spt/utils/HashUtil";
 import { MathUtil } from "@spt/utils/MathUtil";
 import { ProbabilityObject, ProbabilityObjectArray, RandomUtil } from "@spt/utils/RandomUtil";
-import { ICloner } from "@spt/utils/cloners/ICloner";
+import type { ICloner } from "@spt/utils/cloners/ICloner";
 import { LotsofLootItemHelper } from "../helpers/LotsofLootItemHelper";
 import { LotsofLootConfig } from "../utils/LotsofLootConfig";
 import { LotsofLootLogger } from "../utils/LotsofLootLogger";

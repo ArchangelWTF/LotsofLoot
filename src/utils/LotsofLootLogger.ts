@@ -1,7 +1,8 @@
 import { inject, injectable } from "tsyringe";
 
+import { ProgramStatics } from "@spt/ProgramStatics";
 import { LogTextColor } from "@spt/models/spt/logging/LogTextColor";
-import { ILogger } from "@spt/models/spt/utils/ILogger";
+import type { ILogger } from "@spt/models/spt/utils/ILogger";
 import { DatabaseService } from "@spt/services/DatabaseService";
 import { LotsofLootConfig } from "./LotsofLootConfig";
 
@@ -27,7 +28,7 @@ export class LotsofLootLogger {
     }
 
     public debug(log: string): void {
-        if (this.config.getConfig().general.debug) {
+        if (this.config.getConfig().general.debug || ProgramStatics.DEBUG) {
             this.logger.logWithColor(this.loggerPrefix + log, LogTextColor.YELLOW);
         }
     }

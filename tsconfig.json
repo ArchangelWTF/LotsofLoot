@@ -6,6 +6,7 @@
         "moduleResolution": "NodeNext",
         "esModuleInterop": true,
         "downlevelIteration": true,
+        "isolatedModules": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "resolveJsonModule": true,
