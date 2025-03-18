@@ -99,7 +99,13 @@ export class LotsofLootLocationLootGenerator {
 
         // Handle different item types
         if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.WEAPON)) {
+            const rootItem = items[0];
             items = this.handleWeaponItem(items, tpl, staticAmmoDist);
+
+            // Set proper width and height on weapon
+            const itemSize = this.itemHelper.getItemSize(items, rootItem._id);
+            width = itemSize.width;
+            height = itemSize.height;
         } else if (this.itemHelper.isOfBaseclass(tpl, BaseClasses.MONEY) || this.itemHelper.isOfBaseclass(tpl, BaseClasses.AMMO)) {
             const stackCount = this.randomUtil.getInt(itemTemplate._props.StackMinRandom, itemTemplate._props.StackMaxRandom);
             items[0].upd = { StackObjectsCount: stackCount };
