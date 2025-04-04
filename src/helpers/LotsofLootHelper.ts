@@ -21,6 +21,11 @@ export class LotsofLootHelper {
         for (const key in items) {
             const item = items[key];
 
+            // Filter out the 'Slim Field Med Pack' bag that can only contain medical items
+            if (item._id === "5e4abc6786f77406812bd572") {
+                continue;
+            }
+
             // If the parent is anything else than the 'Backpack' (5448e53e4bdc2d60728b4567)
             if (item._parent !== "5448e53e4bdc2d60728b4567") {
                 continue;
