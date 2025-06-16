@@ -12,7 +12,7 @@
             // Reserve
             { "reservbase", 1 },
             // Streets of Tarkov
-            { "streets", 1 },
+            { "tarkovstreets", 1 },
             // Lighthouse
             { "lighthouse", 1 }
         };
