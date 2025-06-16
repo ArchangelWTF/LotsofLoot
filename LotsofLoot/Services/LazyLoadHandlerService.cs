@@ -5,7 +5,9 @@ using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Services;
 using SPTarkov.Server.Core.Utils.Json;
+using System;
 using System.Diagnostics;
+using System.Diagnostics.Tracing;
 
 namespace LotsofLoot.Services
 {
@@ -23,27 +25,37 @@ namespace LotsofLoot.Services
                 {
                     if (location.StaticLoot is not null)
                     {
-                        location.StaticLoot.OnLazyLoad += (sender, eventArgs) =>
+                        location.StaticLoot.AddTransformer(lazyloadedStaticLootData =>
                         {
-                            HandleStaticLootLazyLoad(locationId, eventArgs);
-                        };
+                            HandleStaticLootLazyLoad(locationId, lazyloadedStaticLootData);
+
+                            return lazyloadedStaticLootData;
+                        });
                     }
 
                     if (location.LooseLoot is not null)
                     {
-                        location.LooseLoot.OnLazyLoad += (sender, eventArgs) =>
+                        location.LooseLoot.AddTransformer(lazyLoadedLooseLootData =>
                         {
-                            HandleLooseLootLazyLoad(locationId, eventArgs);
-                        };
+                            HandleLooseLootLazyLoad(locationId, lazyLoadedLooseLootData);
+
+                            return lazyLoadedLooseLootData;
+                        });
                     }
                 }
             }
         }
 
-        private void HandleStaticLootLazyLoad(string locationId, OnLazyLoadEventArgs<Dictionary<string, StaticLootDetails>> eventArgs)
+        private void HandleStaticLootLazyLoad(string locationId, Dictionary<string, StaticLootDetails>? staticLootData)
         {
+            //This should not be null, but just in case.
+            if (staticLootData is null)
+            {
+                return;
+            }
+
             Stopwatch sw = Stopwatch.StartNew();
-            foreach ((string containerId, StaticLootDetails lootDetails) in eventArgs.Value)
+            foreach ((string containerId, StaticLootDetails lootDetails) in staticLootData)
             {
                 foreach (ItemDistribution itemDistribution in lootDetails.ItemDistribution)
                 {
@@ -64,10 +76,16 @@ namespace LotsofLoot.Services
             logger.Info($"HandleStaticLootLazyLoad finished, took {sw.ElapsedMilliseconds}ms");
         }
 
-        private void HandleLooseLootLazyLoad(string locationId, OnLazyLoadEventArgs<LooseLoot> eventArgs)
+        private void HandleLooseLootLazyLoad(string locationId, LooseLoot? looseLootData)
         {
+            //This should not be null, but just in case.
+            if (looseLootData is null)
+            {
+                return;
+            }
+
             Stopwatch sw = Stopwatch.StartNew();
-            foreach (var spawnpoint in eventArgs.Value.Spawnpoints)
+            foreach (var spawnpoint in looseLootData.Spawnpoints)
             {
                 ChangeRelativeProbabilityInPool(locationId, spawnpoint);
                 ChangeProbabilityOfPool(locationId, spawnpoint);
