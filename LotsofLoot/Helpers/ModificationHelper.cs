@@ -1,4 +1,5 @@
 ﻿using SPTarkov.DI.Annotations;
+using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Services;
 
@@ -9,7 +10,7 @@ namespace LotsofLoot.Helpers
     {
         public void RemoveBackpackRestrictions()
         {
-            Dictionary<string, TemplateItem>? items = databaseService.GetTables()?.Templates?.Items;
+            Dictionary<MongoId, TemplateItem>? items = databaseService.GetTables()?.Templates?.Items;
 
             if (items is null)
             {
@@ -17,7 +18,7 @@ namespace LotsofLoot.Helpers
                 return;
             }
 
-            foreach (KeyValuePair<string, TemplateItem> itemKvP in items)
+            foreach (KeyValuePair<MongoId, TemplateItem> itemKvP in items)
             {
                 // Filter out the 'Slim Field Med Pack' bag that can only contain medical items
                 if (itemKvP.Value.Id == "5e4abc6786f77406812bd572")
@@ -31,15 +32,17 @@ namespace LotsofLoot.Helpers
                     continue;
                 }
 
-                if (itemKvP.Value.Properties?.Grids?.Count > 0)
+                if (itemKvP.Value.Properties?.Grids?.Any() == true)
                 {
-                    if (itemKvP.Value.Properties.Grids[0]?.Props?.Filters is null)
+                    var firstGrid = itemKvP.Value.Properties.Grids.First();
+
+                    if (firstGrid?.Props?.Filters == null)
                     {
                         continue;
                     }
                     else
                     {
-                        itemKvP.Value.Properties.Grids[0].Props!.Filters = [];
+                        firstGrid.Props.Filters = [];
                     }
                 }
             }

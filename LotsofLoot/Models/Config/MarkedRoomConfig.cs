@@ -1,4 +1,6 @@
-﻿namespace LotsofLoot.Models.Config
+﻿using SPTarkov.Server.Core.Models.Common;
+
+namespace LotsofLoot.Models.Config
 {
     public class MarkedRoomConfig
     {
@@ -19,7 +21,7 @@
         /// <summary>
         /// Adds these items to the marked room loot pool, lower number = rarer item
         /// </summary>
-        public Dictionary<string, int> ExtraItems { get; set; } = new Dictionary<string, int>()
+        public Dictionary<MongoId, int> ExtraItems { get; set; } = new Dictionary<MongoId, int>()
         {
             // Keycard holder case
             { "619cbf9e0a7c3a1a2731940a", 1 },
@@ -45,10 +47,10 @@
         /// <summary>
         /// Multiplies the chance for a group of items to spawn in the marked room, higher number = more common
         /// </summary>
-        public Dictionary<string, float> ItemGroups { get; set; } = new Dictionary<string, float>()
+        public Dictionary<MongoId, double> ItemGroups { get; set; } = new Dictionary<MongoId, double>()
         {
             // Weapons group
-            { "5422acb9af1c889c16000029", 0.2f }
+            { "5422acb9af1c889c16000029", 0.2d }
         };
     }
 }

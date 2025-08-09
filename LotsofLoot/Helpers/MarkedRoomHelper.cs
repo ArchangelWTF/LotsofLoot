@@ -2,6 +2,7 @@
 using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Utils;
@@ -18,44 +19,52 @@ namespace LotsofLoot.Helpers
                 logger.Debug($"Marked room ({locationId}) {spawnpoint.Template.Id}");
                 spawnpoint.Probability *= configService.LotsOfLootConfig.MarkedRoomConfig.Multiplier[locationId.ToLower()];
                 AddExtraItemsToMarkedRoom(spawnpoint);
-                AdjustMarkedRoomItemGroups(spawnpoint);
+
+                //Todo: This is fucked, fix
+                //AdjustMarkedRoomItemGroups(spawnpoint);
             }
         }
 
         private void AddExtraItemsToMarkedRoom(Spawnpoint spawnpoint)
         {
-            foreach((string itemTpl, int relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ExtraItems)
+            var spawnpointTemplateItems = spawnpoint.Template.Items.ToList();
+            var spawnpointItemDistribution = spawnpoint.ItemDistribution.ToList();
+
+            foreach ((MongoId templateId, int relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ExtraItems)
             {
-                if (spawnpoint.Template.Items.Any(item => item.Template == itemTpl))
+                if (spawnpoint.Template.Items.Any(item => item.Template == templateId))
                 {
                     continue;
                 }
 
-                string mongoId = hashUtil.Generate();
+                MongoId mongoId = new();
 
-                spawnpoint.Template.Items.Add(new()
+                spawnpointTemplateItems.Add(new()
                 {
                     Id = mongoId,
-                    Template = itemTpl
+                    Template = templateId
                 });
 
-                spawnpoint.ItemDistribution.Add(new()
+                spawnpointItemDistribution.Add(new()
                 {
                     ComposedKey = new() { Key = mongoId },
                     RelativeProbability = relativeProbability
                 });
 
-                logger.Debug($"Added {itemTpl} to {spawnpoint.Template.Id}");
+                logger.Debug($"Added {templateId} to {spawnpoint.Template.Id}");
             }
+
+            spawnpoint.Template.Items = spawnpointTemplateItems;
+            spawnpoint.ItemDistribution = spawnpointItemDistribution;
         }
 
         private void AdjustMarkedRoomItemGroups(Spawnpoint spawnpoint)
         {
             foreach (Item item in spawnpoint.Template.Items)
             {
-                foreach ((string tpl, double relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ItemGroups)
+                foreach ((MongoId templateId, double relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ItemGroups)
                 {
-                    if (itemHelper.IsOfBaseclass(item.Template, tpl))
+                    if (itemHelper.IsOfBaseclass(item.Template, templateId))
                     {
                         foreach (LooseLootItemDistribution itemDistribution in spawnpoint.ItemDistribution)
                         {

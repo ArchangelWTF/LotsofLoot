@@ -4,10 +4,7 @@ using SPTarkov.Common.Extensions;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Services;
-using SPTarkov.Server.Core.Utils.Json;
-using System;
 using System.Diagnostics;
-using System.Diagnostics.Tracing;
 
 namespace LotsofLoot.Services
 {
@@ -79,7 +76,7 @@ namespace LotsofLoot.Services
         private void HandleLooseLootLazyLoad(string locationId, LooseLoot? looseLootData)
         {
             //This should not be null, but just in case.
-            if (looseLootData is null)
+            if (looseLootData is null || looseLootData.Spawnpoints is null)
             {
                 return;
             }

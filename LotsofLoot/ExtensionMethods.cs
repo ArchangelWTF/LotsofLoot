@@ -6,7 +6,12 @@ namespace LotsofLoot
     {
         public static bool IsMarkedRoomSpawnpoint(this Spawnpoint spawnpoint, string locationId)
         {
-            var pos = spawnpoint.Template.Position;
+            var pos = spawnpoint.Template?.Position;
+
+            if (pos is null)
+            {
+                return false;
+            }
 
             if (locationId == "bigmap")
             {

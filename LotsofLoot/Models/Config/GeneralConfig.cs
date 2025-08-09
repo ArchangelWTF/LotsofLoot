@@ -1,4 +1,6 @@
-﻿namespace LotsofLoot.Models.Config
+﻿using SPTarkov.Server.Core.Models.Common;
+
+namespace LotsofLoot.Models.Config
 {
     public class GeneralConfig
     {
@@ -29,7 +31,7 @@
         /// <summary>
         /// Some items don't have good or accurate data set for their price points, this changes the pricing on these items to be more realistic
         /// </summary>
-        public Dictionary<string, long> PriceCorrection { get; set; } = new Dictionary<string, long>
+        public Dictionary<MongoId, long> PriceCorrection { get; set; } = new Dictionary<MongoId, long>
         {
             // T H I C C item case
             { "5c0a840b86f7742ffa4f2482", 15000000 },

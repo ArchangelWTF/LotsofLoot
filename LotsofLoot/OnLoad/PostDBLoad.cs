@@ -4,8 +4,10 @@ using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Spt.Config;
+using SPTarkov.Server.Core.Models.Spt.Templates;
 using SPTarkov.Server.Core.Servers;
 
 namespace LotsofLoot.OnLoad
@@ -19,6 +21,15 @@ namespace LotsofLoot.OnLoad
 
         public Task OnLoad()
         {
+            Templates? databaseTemplates = databaseServer.GetTables().Templates;
+
+            if (databaseTemplates is null || databaseTemplates.Items is null || databaseTemplates.Prices is null)
+            {
+                logger.Critical("Database templates are null, aborting!");
+
+                return Task.CompletedTask;
+            }
+
             if (configService.LotsOfLootConfig.General.RemoveBackpackRestrictions)
             {
                 modificationHelper.RemoveBackpackRestrictions();
@@ -45,7 +56,7 @@ namespace LotsofLoot.OnLoad
 
             if (configService.LotsOfLootConfig.General.DisableFleaRestrictions)
             {
-                foreach ((string templateId, TemplateItem template) in databaseServer.GetTables().Templates.Items)
+                foreach ((MongoId templateId, TemplateItem template) in databaseTemplates.Items)
                 {
                     if (itemHelper.IsValidItem(template.Id))
                     {
@@ -55,9 +66,9 @@ namespace LotsofLoot.OnLoad
                 }
             }
 
-            foreach ((string itemId, long adjustedPrice) in configService.LotsOfLootConfig.General.PriceCorrection)
+            foreach ((MongoId itemId, long adjustedPrice) in configService.LotsOfLootConfig.General.PriceCorrection)
             {
-                databaseServer.GetTables().Templates.Prices[itemId] = adjustedPrice;
+                databaseTemplates.Prices[itemId] = adjustedPrice;
             }
 
             return Task.CompletedTask;

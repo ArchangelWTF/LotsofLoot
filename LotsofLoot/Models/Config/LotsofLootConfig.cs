@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using SPTarkov.Server.Core.Models.Common;
+using System.Text.Json.Serialization;
 
 namespace LotsofLoot.Models.Config
 {
@@ -68,7 +69,7 @@ namespace LotsofLoot.Models.Config
         /// <summary>
         /// Multiplies the spawn chance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
         /// </summary>
-        public Dictionary<string, int> ChangeRelativeProbabilityInPool { get; set; } = new Dictionary<string, int>()
+        public Dictionary<MongoId, int> ChangeRelativeProbabilityInPool { get; set; } = new Dictionary<MongoId, int>()
         {
             // Graphics card
             { "57347ca924597744596b4e71", 2 }
@@ -76,7 +77,7 @@ namespace LotsofLoot.Models.Config
         /// <summary>
         /// Multiplies the spawn chance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
         /// </summary>
-        public Dictionary<string, int> ChangeProbabilityOfPool { get; set; } = new Dictionary<string, int>()
+        public Dictionary<MongoId, int> ChangeProbabilityOfPool { get; set; } = new Dictionary<MongoId, int>()
         {
             // LEDX Skin Transilluminator
             { "5c0530ee86f774697952d952", 1 }
@@ -84,7 +85,7 @@ namespace LotsofLoot.Models.Config
         /// <summary>
         /// Relative chance multiplier that no items spawn in this container, values: 0 = items every time, 1 = no change
         /// </summary>
-        public Dictionary<string, float> Containers { get; set; } = new Dictionary<string, float>()
+        public Dictionary<MongoId, float> Containers { get; set; } = new Dictionary<MongoId, float>()
         {
             // Jacket
             { "578f8778245977358849a9b5", 1 },
