@@ -16,11 +16,17 @@ namespace LotsofLoot.Services
             return modHelper.GetAbsolutePathToModFolder(Assembly.GetExecutingAssembly());
         }
 
+        public string GetConfigPath()
+        {
+            return Path.Combine(GetModPath(), "config", "config.jsonc");
+        }
+
         public async Task LoadAsync()
         {
-            LotsOfLootConfig? loadedConfig = await jsonUtil.DeserializeFromFileAsync<LotsOfLootConfig>(
-                Path.Join(GetModPath(), "config/config.jsonc")
-            );
+            string configPath = GetConfigPath();
+            string configDir = Path.GetDirectoryName(configPath)!;
+
+            LotsOfLootConfig? loadedConfig = await jsonUtil.DeserializeFromFileAsync<LotsOfLootConfig>(configPath);
 
             if (loadedConfig != null)
             {
@@ -29,6 +35,14 @@ namespace LotsofLoot.Services
             else
             {
                 logger.LogWarning("[Lots of Loot] No config file found, loading defaults!");
+
+                if (!Directory.Exists(configDir))
+                {
+                    Directory.CreateDirectory(configDir);
+                }
+
+                // Todo: This is still kind of bad as the comments for configs don't get carried over
+                await File.WriteAllTextAsync(configPath, jsonUtil.Serialize(LotsOfLootConfig, true));
             }
         }
     }
