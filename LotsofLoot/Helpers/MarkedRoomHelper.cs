@@ -20,8 +20,7 @@ namespace LotsofLoot.Helpers
                 spawnpoint.Probability *= configService.LotsOfLootConfig.MarkedRoomConfig.Multiplier[locationId.ToLower()];
                 AddExtraItemsToMarkedRoom(spawnpoint);
 
-                //Todo: This is fucked, fix
-                //AdjustMarkedRoomItemGroups(spawnpoint);
+                AdjustMarkedRoomItemGroups(spawnpoint);
             }
         }
 
@@ -60,15 +59,26 @@ namespace LotsofLoot.Helpers
 
         private void AdjustMarkedRoomItemGroups(Spawnpoint spawnpoint)
         {
-            foreach (Item item in spawnpoint.Template.Items)
+            if(spawnpoint?.Template?.Items is null)
+            {
+                logger.Warning("Spawnpoint template is null?");
+                return;
+            }
+
+            foreach (SptLootItem item in spawnpoint.Template.Items)
             {
                 foreach ((MongoId templateId, double relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ItemGroups)
                 {
                     if (itemHelper.IsOfBaseclass(item.Template, templateId))
                     {
-                        foreach (LooseLootItemDistribution itemDistribution in spawnpoint.ItemDistribution)
+                        foreach (LooseLootItemDistribution itemDistribution in spawnpoint.ItemDistribution ?? [])
                         {
-                            if (itemDistribution.ComposedKey.Key == item.Id)
+                            if(itemDistribution.ComposedKey is null)
+                            {
+                                continue;
+                            }
+
+                            if (itemDistribution.ComposedKey.Key == item.ComposedKey)
                             {
                                 itemDistribution.RelativeProbability *= relativeProbability;
                                 logger.Debug($"markedItemGroups: Changed {item.Template} to {itemDistribution.RelativeProbability}");
