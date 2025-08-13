@@ -1,8 +1,8 @@
-﻿using LotsofLoot.Models.Config;
+﻿using System.Reflection;
+using LotsofLoot.Models.Config;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Utils;
-using System.Reflection;
 
 namespace LotsofLoot.Services
 {
@@ -18,7 +18,9 @@ namespace LotsofLoot.Services
 
         public async Task LoadAsync()
         {
-            LotsOfLootConfig? loadedConfig = await jsonUtil.DeserializeFromFileAsync<LotsOfLootConfig>(Path.Join(GetModPath(), "config/config.jsonc"));
+            LotsOfLootConfig? loadedConfig = await jsonUtil.DeserializeFromFileAsync<LotsOfLootConfig>(
+                Path.Join(GetModPath(), "config/config.jsonc")
+            );
 
             if (loadedConfig != null)
             {
@@ -28,7 +30,6 @@ namespace LotsofLoot.Services
             {
                 logger.LogWarning("[Lots of Loot] No config file found, loading defaults!");
             }
-
         }
     }
 }

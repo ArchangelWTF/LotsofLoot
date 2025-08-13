@@ -1,10 +1,10 @@
-﻿using LotsofLoot.Generators;
+﻿using System.Reflection;
+using LotsofLoot.Generators;
 using SPTarkov.Reflection.Patching;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Generators;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
-using System.Reflection;
 
 namespace LotsofLoot.Overrides.Generators
 {
@@ -12,18 +12,19 @@ namespace LotsofLoot.Overrides.Generators
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(LocationLootGenerator)
-                .GetMethod(nameof(LocationLootGenerator.GenerateDynamicLoot));
+            return typeof(LocationLootGenerator).GetMethod(nameof(LocationLootGenerator.GenerateDynamicLoot));
         }
 
         [PatchPrefix]
-        public static bool Prefix(LooseLoot dynamicLootDist, Dictionary<string, IEnumerable<StaticAmmoDetails>> staticAmmoDist, string locationName, ref List<SpawnpointTemplate> __result)
+        public static bool Prefix(
+            LooseLoot dynamicLootDist,
+            Dictionary<string, IEnumerable<StaticAmmoDetails>> staticAmmoDist,
+            string locationName,
+            ref List<SpawnpointTemplate> __result
+        )
         {
-            return true;
-
-
-            //Todo: needs implementation
-            LotsofLootLocationLootGenerator lotsofLootLocationLootGenerator = ServiceLocator.ServiceProvider.GetService<LotsofLootLocationLootGenerator>()
+            LotsofLootLocationLootGenerator lotsofLootLocationLootGenerator =
+                ServiceLocator.ServiceProvider.GetService<LotsofLootLocationLootGenerator>()
                 ?? throw new NullReferenceException("Could not get LotsofLootLocationLootGenerator");
 
             __result = lotsofLootLocationLootGenerator.GenerateDynamicLoot(dynamicLootDist, staticAmmoDist, locationName);
@@ -36,14 +37,19 @@ namespace LotsofLoot.Overrides.Generators
     {
         protected override MethodBase GetTargetMethod()
         {
-            return typeof(LocationLootGenerator)
-                .GetMethod("CreateStaticLootItem", BindingFlags.Instance | BindingFlags.NonPublic);
+            return typeof(LocationLootGenerator).GetMethod("CreateStaticLootItem", BindingFlags.Instance | BindingFlags.NonPublic);
         }
 
         [PatchPrefix]
-        public static bool Prefix(MongoId chosenTpl, Dictionary<string, IEnumerable<StaticAmmoDetails>> staticAmmoDist, ref ContainerItem __result, string? parentId = null)
+        public static bool Prefix(
+            MongoId chosenTpl,
+            Dictionary<string, IEnumerable<StaticAmmoDetails>> staticAmmoDist,
+            ref ContainerItem __result,
+            string? parentId = null
+        )
         {
-            LotsofLootLocationLootGenerator lotsofLootLocationLootGenerator = ServiceLocator.ServiceProvider.GetService<LotsofLootLocationLootGenerator>()
+            LotsofLootLocationLootGenerator lotsofLootLocationLootGenerator =
+                ServiceLocator.ServiceProvider.GetService<LotsofLootLocationLootGenerator>()
                 ?? throw new NullReferenceException("Could not get LotsofLootLocationLootGenerator");
 
             __result = lotsofLootLocationLootGenerator.CreateStaticLootItem(chosenTpl, staticAmmoDist, parentId);

@@ -1,16 +1,20 @@
-﻿using LotsofLoot.Helpers;
+﻿using System.Diagnostics;
+using LotsofLoot.Helpers;
 using LotsofLoot.Utilities;
 using SPTarkov.Common.Extensions;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Services;
-using System.Diagnostics;
 
 namespace LotsofLoot.Services
 {
     [Injectable(InjectionType.Singleton)]
-    public class LazyLoadHandlerService(DatabaseService databaseService, ConfigService configService,
-        MarkedRoomHelper markedRoomHelper, LotsOfLootLogger logger)
+    public class LazyLoadHandlerService(
+        DatabaseService databaseService,
+        ConfigService configService,
+        MarkedRoomHelper markedRoomHelper,
+        LotsOfLootLogger logger
+    )
     {
         public void OnPostDBLoad()
         {
@@ -62,8 +66,9 @@ namespace LotsofLoot.Services
                     }
 
                     //Todo: Does this even work as intended? Check?
-                    itemDistribution.RelativeProbability = MathF.Round((float)(itemDistribution.RelativeProbability *
-                        configRelativeProbability));
+                    itemDistribution.RelativeProbability = MathF.Round(
+                        (float)(itemDistribution.RelativeProbability * configRelativeProbability)
+                    );
 
                     logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
                 }
@@ -98,12 +103,18 @@ namespace LotsofLoot.Services
 
         private void ChangeRelativeProbabilityInPool(string locationId, Spawnpoint spawnpoint)
         {
-            Dictionary<string, LooseLootItemDistribution> distributionLookup = spawnpoint.ItemDistribution.ToDictionary(d => d.ComposedKey.Key);
+            Dictionary<string, LooseLootItemDistribution> distributionLookup = spawnpoint.ItemDistribution.ToDictionary(d =>
+                d.ComposedKey.Key
+            );
 
             foreach (var item in spawnpoint.Template.Items)
             {
-                if (configService.LotsOfLootConfig.ChangeRelativeProbabilityInPool.TryGetValue(item.Template, out int RelativeProbabilityInPoolModifier) &&
-                    distributionLookup.TryGetValue(item.Id, out var itemDistribution))
+                if (
+                    configService.LotsOfLootConfig.ChangeRelativeProbabilityInPool.TryGetValue(
+                        item.Template,
+                        out int RelativeProbabilityInPoolModifier
+                    ) && distributionLookup.TryGetValue(item.Id, out var itemDistribution)
+                )
                 {
                     itemDistribution.RelativeProbability *= RelativeProbabilityInPoolModifier;
                     logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");

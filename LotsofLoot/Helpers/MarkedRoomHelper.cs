@@ -4,7 +4,6 @@ using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
-using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Utils;
 
 namespace LotsofLoot.Helpers
@@ -38,17 +37,15 @@ namespace LotsofLoot.Helpers
 
                 MongoId mongoId = new();
 
-                spawnpointTemplateItems.Add(new()
-                {
-                    Id = mongoId,
-                    Template = templateId
-                });
+                spawnpointTemplateItems.Add(new() { Id = mongoId, Template = templateId });
 
-                spawnpointItemDistribution.Add(new()
-                {
-                    ComposedKey = new() { Key = mongoId },
-                    RelativeProbability = relativeProbability
-                });
+                spawnpointItemDistribution.Add(
+                    new()
+                    {
+                        ComposedKey = new() { Key = mongoId },
+                        RelativeProbability = relativeProbability,
+                    }
+                );
 
                 logger.Debug($"Added {templateId} to {spawnpoint.Template.Id}");
             }
@@ -59,7 +56,7 @@ namespace LotsofLoot.Helpers
 
         private void AdjustMarkedRoomItemGroups(Spawnpoint spawnpoint)
         {
-            if(spawnpoint?.Template?.Items is null)
+            if (spawnpoint?.Template?.Items is null)
             {
                 logger.Warning("Spawnpoint template is null?");
                 return;
@@ -73,7 +70,7 @@ namespace LotsofLoot.Helpers
                     {
                         foreach (LooseLootItemDistribution itemDistribution in spawnpoint.ItemDistribution ?? [])
                         {
-                            if(itemDistribution.ComposedKey is null)
+                            if (itemDistribution.ComposedKey is null)
                             {
                                 continue;
                             }

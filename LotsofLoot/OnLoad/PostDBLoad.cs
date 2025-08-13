@@ -13,9 +13,15 @@ using SPTarkov.Server.Core.Servers;
 namespace LotsofLoot.OnLoad
 {
     [Injectable(TypePriority = OnLoadOrder.PostDBModLoader)]
-    public class PostDBLoad(ModificationHelper modificationHelper, LazyLoadHandlerService lazyLoadHandlerService,
-        ItemHelper itemHelper, DatabaseServer databaseServer, ConfigServer configServer,
-        ConfigService configService, LotsOfLootLogger logger) : IOnLoad
+    public class PostDBLoad(
+        ModificationHelper modificationHelper,
+        LazyLoadHandlerService lazyLoadHandlerService,
+        ItemHelper itemHelper,
+        DatabaseServer databaseServer,
+        ConfigServer configServer,
+        ConfigService configService,
+        LotsOfLootLogger logger
+    ) : IOnLoad
     {
         private readonly LocationConfig _locationConfig = configServer.GetConfig<LocationConfig>();
 
@@ -56,7 +62,7 @@ namespace LotsofLoot.OnLoad
 
             if (configService.LotsOfLootConfig.General.DisableFleaRestrictions)
             {
-                foreach ((MongoId templateId, TemplateItem template) in databaseTemplates.Items)
+                foreach ((_, TemplateItem template) in databaseTemplates.Items)
                 {
                     if (itemHelper.IsValidItem(template.Id))
                     {

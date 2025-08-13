@@ -11,11 +11,7 @@ namespace LotsofLoot.OnLoad
     public class PreSPTLoad(ConfigService configService, LotsOfLootLogger logger) : IOnLoad
     {
         private bool _overridesInjected = false;
-        private readonly List<AbstractPatch> _patches =
-        [
-            new GenerateDynamicLootOverride(),
-            new GenerateStaticLootOverride(),
-        ];
+        private readonly List<AbstractPatch> _patches = [new GenerateDynamicLootOverride(), new GenerateStaticLootOverride()];
 
         private void InjectOverrides()
         {

@@ -52,5 +52,18 @@ namespace LotsofLoot.Utilities
                 return itemName;
             }
         }
+
+        public bool IsLogEnabled(LogLevel logLevel)
+        {
+#if DEBUG
+            if (logLevel == LogLevel.Debug)
+            {
+                return true;
+            }
+
+#endif
+
+            return false;
+        }
     }
 }
