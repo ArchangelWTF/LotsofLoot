@@ -56,6 +56,8 @@ namespace LotsofLoot.OnLoad
 
                 _locationConfig.StaticLootMultiplier[map] = configService.LotsOfLootConfig.StaticLootMultiplier[map];
                 logger.Debug($"{map}: {configService.LotsOfLootConfig.StaticLootMultiplier[map]}");
+
+                _locationConfig.ContainerRandomisationSettings.Enabled = configService.LotsOfLootConfig.General.LootContainersRandom;
             }
 
             lazyLoadHandlerService.OnPostDBLoad();

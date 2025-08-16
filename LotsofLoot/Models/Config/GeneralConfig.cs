@@ -47,5 +47,10 @@ namespace LotsofLoot.Models.Config
                 // Rusted bloody key
                 { "64d4b23dc1b37504b41ac2b6", 1000000 },
             };
+
+        /// <summary>
+        /// Allows for setting if containers will spawn randomly, false will disable randomness.
+        /// </summary>
+        public bool LootContainersRandom { get; set; } = true;
     }
 }
