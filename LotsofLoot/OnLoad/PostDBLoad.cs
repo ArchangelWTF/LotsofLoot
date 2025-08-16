@@ -52,10 +52,11 @@ namespace LotsofLoot.OnLoad
                 {
                     _locationConfig.LooseLootMultiplier[map] = multiplier;
                 }
-                logger.Debug($"{map}: {multiplier}");
+
+                logger.Debug($"Loose loot multiplier {map}: {_locationConfig.LooseLootMultiplier[map]}");
 
                 _locationConfig.StaticLootMultiplier[map] = configService.LotsOfLootConfig.StaticLootMultiplier[map];
-                logger.Debug($"{map}: {configService.LotsOfLootConfig.StaticLootMultiplier[map]}");
+                logger.Debug($"Static loot multiplier {map}: {configService.LotsOfLootConfig.StaticLootMultiplier[map]}");
 
                 _locationConfig.ContainerRandomisationSettings.Enabled = configService.LotsOfLootConfig.General.LootContainersRandom;
             }

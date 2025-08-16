@@ -1,4 +1,5 @@
-﻿using SPTarkov.DI.Annotations;
+﻿using LotsofLoot.Utilities;
+using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Services;
@@ -6,7 +7,7 @@ using SPTarkov.Server.Core.Services;
 namespace LotsofLoot.Helpers
 {
     [Injectable]
-    public class ModificationHelper(DatabaseService databaseService, ILogger<ModificationHelper> logger)
+    public class ModificationHelper(DatabaseService databaseService, LotsOfLootLogger logger)
     {
         public void RemoveBackpackRestrictions()
         {
@@ -14,7 +15,7 @@ namespace LotsofLoot.Helpers
 
             if (items is null)
             {
-                logger.LogError("[Lots of Loot] Database has no template items, is the database loaded?");
+                logger.Error("Database has no template items, is the database loaded?");
                 return;
             }
 

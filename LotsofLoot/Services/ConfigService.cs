@@ -1,14 +1,14 @@
 ﻿using System.Reflection;
-using System.Text.Json;
 using LotsofLoot.Models.Config;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Utils;
 
 namespace LotsofLoot.Services
 {
     [Injectable(InjectionType.Singleton)]
-    public class ConfigService(ModHelper modHelper, JsonUtil jsonUtil, ILogger<ConfigService> logger)
+    public class ConfigService(ModHelper modHelper, JsonUtil jsonUtil, ISptLogger<ConfigService> logger)
     {
         public LotsOfLootConfig LotsOfLootConfig { get; private set; } = new();
 
@@ -32,10 +32,12 @@ namespace LotsofLoot.Services
             if (loadedConfig is not null)
             {
                 LotsOfLootConfig = loadedConfig;
+
+                logger.Success("[Lots of Loot Redux] Config successfully loaded");
             }
             else
             {
-                logger.LogWarning("[Lots of Loot] No config file found, loading defaults!");
+                logger.Warning("[Lots of Loot Redux] No config file found, loading defaults!");
 
                 if (!Directory.Exists(configDir))
                 {

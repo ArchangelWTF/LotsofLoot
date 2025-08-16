@@ -10,32 +10,32 @@ namespace LotsofLoot.Utilities
     {
         public void Success(string data, Exception? ex = null)
         {
-            logger.Success($"[Lots of Loot] {data}", ex);
+            logger.Success($"[Lots of Loot Redux] {data}", ex);
         }
 
         public void Error(string data, Exception? ex = null)
         {
-            logger.Error($"[Lots of Loot] {data}", ex);
+            logger.Error($"[Lots of Loot Redux] {data}", ex);
         }
 
         public void Warning(string data, Exception? ex = null)
         {
-            logger.Warning($"[Lots of Loot] {data}", ex);
+            logger.Warning($"[Lots of Loot Redux] {data}", ex);
         }
 
         public void Info(string data, Exception? ex = null)
         {
-            logger.Info($"[Lots of Loot] {data}", ex);
+            logger.Info($"[Lots of Loot Redux] {data}", ex);
         }
 
         public void Debug(string data, Exception? ex = null)
         {
-            //logger.Debug($"[Lots of Loot] {data}", ex);
+            logger.Debug($"[Lots of Loot Redux] {data}", ex);
         }
 
         public void Critical(string data, Exception? ex = null)
         {
-            logger.Critical($"[Lots of Loot] {data}", ex);
+            logger.Critical($"[Lots of Loot Redux] {data}", ex);
         }
 
         public string WriteItemName(string itemId, bool writeTpl = false)
@@ -62,6 +62,11 @@ namespace LotsofLoot.Utilities
             }
 
 #endif
+
+            if (configService.LotsOfLootConfig.General.IsDebugEnabled)
+            {
+                return true;
+            }
 
             return false;
         }
