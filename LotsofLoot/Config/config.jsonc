@@ -1,0 +1,274 @@
+{
+  "General": {
+    //Enables debug logging
+    "IsDebugEnabled": false,
+    //Allows the loot generator to pick multiple of the same spawnpoints so that loot can spawn on top of one another.
+    "AllowLootOverlay": false,
+    //Removes backpack restrictions, allowing you to pick itmes like the T H I C C item case that you might find in raid.
+    "RemoveBackpackRestrictions": true,
+    //Disables the BSG flea blacklist
+    "DisableFleaRestrictions": false,
+    //Allows the rusted key room on Streets of Tarkov to also spawn keycards
+    "RustedKeyRoomIncludesKeycards": false,
+    //Cheaper items are more likely to spawn in containers
+    "ItemWeights": false,
+    //Some items dont have good or accurate data set for their price points, this changes the pricing on these items to be more realistic
+    "PriceCorrection": {
+      //T H I C C item case
+      "5c0a840b86f7742ffa4f2482": 15000000,
+      //Weapon case
+      "59fb023c86f7746d0d4b423c": 7000000,
+      //Rusted bloody key
+      "64d4b23dc1b37504b41ac2b6": 1000000
+    },
+    //Allows for setting if containers will spawn randomly, false will disable randomness.
+    "LootContainersRandom": true
+  },
+  //Loose loot multiplier, higher number = more
+  "LooseLootMultiplier": {
+    "bigmap": 5,
+    "factory4_day": 5,
+    "factory4_night": 5,
+    "woods": 5,
+    "interchange": 5,
+    "laboratory": 5,
+    "rezervbase": 5,
+    "shoreline": 5,
+    "tarkovstreets": 5,
+    "lighthouse": 5,
+    "sandbox": 5,
+    "sandbox_high": 5,
+    "labyrinth": 5
+  },
+  //Static loot multiplier, higher number = more
+  "StaticLootMultiplier": {
+    "bigmap": 2,
+    "factory4_day": 2,
+    "factory4_night": 2,
+    "woods": 2,
+    "interchange": 2,
+    "laboratory": 2,
+    "rezervbase": 2,
+    "shoreline": 2,
+    "tarkovstreets": 2,
+    "lighthouse": 2,
+    "sandbox": 2,
+    "sandbox_high": 2,
+    "labyrinth": 2
+  },
+  //Maximum loot generation limits, higher number = higher limit (Would recommend leaving this as is)
+  "Limits": {
+    "bigmap": 10000,
+    "factory4_day": 1500,
+    "factory4_night": 1500,
+    "woods": 10000,
+    "interchange": 30000,
+    "laboratory": 25000,
+    "rezervbase": 40000,
+    "shoreline": 20000,
+    "tarkovstreets": 50000,
+    "lighthouse": 20000,
+    "sandbox": 15000,
+    "sandbox_high": 15000,
+    "labyrinth": 2500
+  },
+  "MarkedRoomConfig": {
+    //Marked room loot multiplier, higher = more loot probability
+    "Multiplier": {
+      "bigmap": 1,
+      "reservbase": 1,
+      "tarkovstreets": 1,
+      "lighthouse": 1
+    },
+    //Adds these items to the marked room loot pool, lower number = rarer item
+    "ExtraItems": {
+      //Keycard holder case
+      "619cbf9e0a7c3a1a2731940a": 1,
+      //Weapon case
+      "59fb023c86f7746d0d4b423c": 2,
+      //Documents case
+      "590c60fc86f77412b13fddcf": 4,
+      //WZ Wallet
+      "60b0f6c058e0b0481a09ad11": 6,
+      //Injector case
+      "619cbf7d23893217ec30b689": 1,
+      //Key tool
+      "59fafd4b86f7745ca07e1232": 3,
+      //S I C C organizational pouch
+      "5d235bb686f77443f4331278": 3,
+      //Item case
+      "59fb042886f7746c5005a7b2": 2,
+      //T H I C C item case
+      "5c0a840b86f7742ffa4f2482": 1,
+      //T H I C C Weapon case
+      "5b6d9ce188a4501afc1b2b25": 1
+    },
+    //Multiplies the chance for a group of items to spawn in the marked room, higher number = more common
+    "ItemGroups": {
+      //Weapons group
+      "5422acb9af1c889c16000029": 0.2
+    }
+  },
+  "LootinLooseContainer": {
+    //Changes the max amount of items spawned in Loose Containers (things like item cases, docs cases and such.. Setting this to 0 will turn this behavior off.) | Value: 0 - 1
+    "LootInContainerModifier": 1,
+    //Changes the max amount of items spawned in Backpacks that are spawned in the world (Setting this to 0 will turn this off.) | Value: 0 - 1
+    "LootInBackpackModifier": 1,
+    //This changes the limits of items spawned in loose containers (Think wallets, keycard holders, sicc organizational pouches, docs cases and more)
+    //Currently this only supports keys and keycards as limits.
+    "SpawnLimits": {
+      //WZ Wallet
+      "60b0f6c058e0b0481a09ad11": {
+        "Keycards": 0
+      },
+      //Simple wallet
+      "5783c43d2459774bbe137486": {
+        "Keycards": 0
+      },
+      //Keycard holder case
+      "619cbf9e0a7c3a1a2731940a": {
+        "Keycards": 2
+      },
+      //Document case
+      "590c60fc86f77412b13fddcf": {
+        "Keys": 3,
+        "Keycards": 1
+      },
+      //S I C C organizational pouch
+      "5d235bb686f77443f4331278": {
+        "Keys": 3,
+        "Keycards": 1
+      },
+      //Key tool
+      "59fafd4b86f7745ca07e1232": {
+        "Keys": 5
+      },
+      //Gingy keychain
+      "62a09d3bcf4a99369e262447": {
+        "Keys": 2
+      }
+    },
+    //This allows for adding items to the lootinLooseContainer blacklist, preventing these items from being selected for spawning
+    "Blacklist": {
+      //Documents case
+      "590c60fc86f77412b13fddcf": [
+        //Shatun's hideout key
+        "664d3db6db5dea2bad286955",
+        //Grumpy's hideout key
+        "664d3dd590294949fe2d81b7",
+        //Voron's hideout key
+        "664d3ddfdda2e85aca370d75",
+        //Leon's hideout key
+        "664d3de85f2355673b09aed5"
+      ],
+      ///S I C C organizational pouch
+      "5d235bb686f77443f4331278": [
+        //Shatun's hideout key
+        "664d3db6db5dea2bad286955",
+        //Grumpy's hideout key
+        "664d3dd590294949fe2d81b7",
+        //Voron's hideout key
+        "664d3ddfdda2e85aca370d75",
+        //Leon's hideout key
+        "664d3de85f2355673b09aed5"
+      ],
+      //Key tool
+      "59fafd4b86f7745ca07e1232": [
+        //Shatun's hideout key
+        "664d3db6db5dea2bad286955",
+        //Grumpy's hideout key
+        "664d3dd590294949fe2d81b7",
+        //Voron's hideout key
+        "664d3ddfdda2e85aca370d75",
+        //Leon's hideout key
+        "664d3de85f2355673b09aed5"
+      ],
+      //Gingy keychain
+      "62a09d3bcf4a99369e262447": [
+        //Shatun's hideout key
+        "664d3db6db5dea2bad286955",
+        //Grumpy's hideout key
+        "664d3dd590294949fe2d81b7",
+        //Voron's hideout key
+        "664d3ddfdda2e85aca370d75",
+        //Leon's hideout key
+        "664d3de85f2355673b09aed5"
+      ]
+    }
+  },
+  //Multiplies the spawnchance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
+  "ChangeRelativeProbabilityInPool": {
+    //Graphics card
+    "57347ca924597744596b4e71": 2
+  },
+  //Multiplies the spawnchance of every pool with the specified item in it, Value: 0 - 1 
+  "ChangeProbabilityOfPool": {
+    //LEDX Skin Transilluminator
+    "5c0530ee86f774697952d952": 1
+  },
+  //Relative chance multiplier that no items spawn in this container, values: 0 = items everytime, 1 = no change
+  "Containers": {
+    //Jacket
+    "578f8778245977358849a9b5": 1,
+    //Safe
+    "578f8782245977354405a1e3": 1,
+    //Cash Register
+    "578f879c24597735401e6bc6": 1,
+    //Duffle Bag
+    "578f87a3245977356274f2cb": 1,
+    //Drawer
+    "578f87b7245977356274f2cd": 1,
+    //Medbag SMU06
+    "5909d24f86f77466f56e6855": 1,
+    //Grenade Box
+    "5909d36d86f774660f0bb900": 1,
+    //Wooden ammo box
+    "5909d45286f77465a8136dc6": 1,
+    //Medcase
+    "5909d4c186f7746ad34e805a": 1,
+    //Toolbox
+    "5909d50c86f774659e6aaebe": 1,
+    //Weapon box
+    "5909d5ef86f77467974efbd8": 1,
+    //Weapon box
+    "5909d76c86f77471e53d2adf": 1,
+    //Weapon box
+    "5909d7cf86f77470ee57d75a": 1,
+    //Weapon box
+    "5909d89086f77472591234a0": 1,
+    //Dead Scav
+    "5909e4b686f7747f5b744fa4": 1,
+    //PC block
+    "59139c2186f77411564f8e42": 1,
+    //Jacket
+    "5914944186f774189e5e76c2": 1,
+    //Jacket
+    "5937ef2b86f77408a47244b3": 1,
+    //Jacket Machinery Key
+    "59387ac686f77401442ddd61": 1,
+    //Cash register TAR2-2
+    "5ad74cf586f774391278f6f0": 1,
+    //Plastic suitcase
+    "5c052cea86f7746b2101e8d8": 1,
+    //Common fund stash
+    "5d07b91b86f7745a077a9432": 1,
+    //Ground cache
+    "5d6d2b5486f774785c2ba8ea": 1,
+    //Buried barrel cache
+    "5d6d2bb386f774785b07a77a": 1,
+    //Ration supply crate
+    "5d6fd13186f77424ad2a8c69": 1,
+    //Technical supply crate
+    "5d6fd45b86f774317075ed43": 1,
+    //Medical supply crate
+    "5d6fe50986f77449d97f7463": 1,
+    //Airdrop supply crate
+    "61a89e5445a2672acf66c877": 1,
+    //Duffle bag
+    "61aa1e9a32a4743c3453d2cf": 1,
+    //Medbag SMU06
+    "61aa1ead84ea0800645777fd": 1,
+    //Weapon crate
+    "578f87ad245977356274f2cc": 1
+  }
+}

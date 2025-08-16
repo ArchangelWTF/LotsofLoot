@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Text.Json;
 using LotsofLoot.Models.Config;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
@@ -18,7 +19,7 @@ namespace LotsofLoot.Services
 
         public string GetConfigPath()
         {
-            return Path.Combine(GetModPath(), "config", "config.jsonc");
+            return Path.Combine(GetModPath(), "Config", "config.jsonc");
         }
 
         public async Task LoadAsync()
@@ -28,7 +29,7 @@ namespace LotsofLoot.Services
 
             LotsOfLootConfig? loadedConfig = await jsonUtil.DeserializeFromFileAsync<LotsOfLootConfig>(configPath);
 
-            if (loadedConfig != null)
+            if (loadedConfig is not null)
             {
                 LotsOfLootConfig = loadedConfig;
             }
