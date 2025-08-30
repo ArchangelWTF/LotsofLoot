@@ -7,10 +7,10 @@
     <ReleaseOutputDir>..\Build\user\mods\archangelwtf-lotsoflootredux\</ReleaseOutputDir>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SPTarkov.Common" Version="4.0.0-prerelease30" />
-    <PackageReference Include="SPTarkov.DI" Version="4.0.0-prerelease30" />
-    <PackageReference Include="SPTarkov.Reflection" Version="4.0.0-prerelease30" />
-    <PackageReference Include="SPTarkov.Server.Core" Version="4.0.0-prerelease30" />
+    <PackageReference Include="SPTarkov.Common" Version="4.0.0-pre.20250830.1715" />
+    <PackageReference Include="SPTarkov.DI" Version="4.0.0-pre.20250830.1715" />
+    <PackageReference Include="SPTarkov.Reflection" Version="4.0.0-pre.20250830.1715" />
+    <PackageReference Include="SPTarkov.Server.Core" Version="4.0.0-pre.20250830.1715" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Config\config.jsonc">

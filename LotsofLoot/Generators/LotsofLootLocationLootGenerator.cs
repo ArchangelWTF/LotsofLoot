@@ -505,20 +505,20 @@ namespace LotsofLoot.Generators
                 return [];
             }
 
-            var firstFilter = firstGrid.Props?.Filters?.FirstOrDefault();
+            var firstFilter = firstGrid.Properties?.Filters?.FirstOrDefault();
 
-            if (firstFilter == null || !firstGrid.Props.Filters.Any())
+            if (firstFilter == null || !firstGrid.Properties.Filters.Any())
             {
                 logger.Debug($"{item.Name} doesn't have a filter, setting default filter!");
-                firstGrid.Props.Filters = [new GridFilter { Filter = ["54009119af1c881c07000029"], ExcludedFilter = [] }];
-                firstFilter = firstGrid.Props.Filters.First(); // reset after assigning
+                firstGrid.Properties.Filters = [new GridFilter { Filter = ["54009119af1c881c07000029"], ExcludedFilter = [] }];
+                firstFilter = firstGrid.Properties.Filters.First(); // reset after assigning
             }
 
             // Clone filters
             List<MongoId> whitelist = [.. firstFilter.Filter];
             HashSet<MongoId> blacklist = [.. firstFilter.ExcludedFilter ?? []];
 
-            int maxCells = (int)(firstGrid.Props.CellsH * firstGrid.Props.CellsV);
+            int maxCells = (int)(firstGrid.Properties.CellsH * firstGrid.Properties.CellsV);
             int amount = randomUtil.GetInt(1, (int)(maxCells * modifier));
 
             // Use cache for whitelist if available, if not available, generate new cache

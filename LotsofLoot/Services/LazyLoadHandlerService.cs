@@ -18,7 +18,7 @@ namespace LotsofLoot.Services
     {
         public void OnPostDBLoad()
         {
-            var locations = databaseService.GetLocations().GetAllPropsAsDict();
+            var locations = databaseService.GetLocations().GetAllPropertiesAsDictionary();
 
             foreach ((string locationId, object? locationObject) in locations)
             {

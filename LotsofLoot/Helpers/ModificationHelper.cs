@@ -37,13 +37,13 @@ namespace LotsofLoot.Helpers
                 {
                     var firstGrid = itemKvP.Value.Properties.Grids.First();
 
-                    if (firstGrid?.Props?.Filters == null)
+                    if (firstGrid?.Properties?.Filters == null)
                     {
                         continue;
                     }
                     else
                     {
-                        firstGrid.Props.Filters = [];
+                        firstGrid.Properties.Filters = [];
                     }
                 }
             }
