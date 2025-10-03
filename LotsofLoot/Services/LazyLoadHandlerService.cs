@@ -3,6 +3,7 @@ using LotsofLoot.Helpers;
 using LotsofLoot.Utilities;
 using SPTarkov.Common.Extensions;
 using SPTarkov.DI.Annotations;
+using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Services;
 
@@ -18,36 +19,33 @@ namespace LotsofLoot.Services
     {
         public void OnPostDBLoad()
         {
-            var locations = databaseService.GetLocations().GetAllPropertiesAsDictionary();
+            var locations = databaseService.GetLocations().GetDictionary();
 
-            foreach ((string locationId, object? locationObject) in locations)
+            foreach ((string locationId, Location location) in locations)
             {
-                if (locationObject is Location location)
+                if (location.StaticLoot is not null)
                 {
-                    if (location.StaticLoot is not null)
+                    location.StaticLoot.AddTransformer(lazyloadedStaticLootData =>
                     {
-                        location.StaticLoot.AddTransformer(lazyloadedStaticLootData =>
-                        {
-                            HandleStaticLootLazyLoad(locationId, lazyloadedStaticLootData);
+                        HandleStaticLootLazyLoad(locationId, lazyloadedStaticLootData);
 
-                            return lazyloadedStaticLootData;
-                        });
-                    }
+                        return lazyloadedStaticLootData;
+                    });
+                }
 
-                    if (location.LooseLoot is not null)
+                if (location.LooseLoot is not null)
+                {
+                    location.LooseLoot.AddTransformer(lazyLoadedLooseLootData =>
                     {
-                        location.LooseLoot.AddTransformer(lazyLoadedLooseLootData =>
-                        {
-                            HandleLooseLootLazyLoad(locationId, lazyLoadedLooseLootData);
+                        HandleLooseLootLazyLoad(locationId, lazyLoadedLooseLootData);
 
-                            return lazyLoadedLooseLootData;
-                        });
-                    }
+                        return lazyLoadedLooseLootData;
+                    });
                 }
             }
         }
 
-        private void HandleStaticLootLazyLoad(string locationId, Dictionary<string, StaticLootDetails>? staticLootData)
+        private void HandleStaticLootLazyLoad(string locationId, Dictionary<MongoId, StaticLootDetails>? staticLootData)
         {
             //This should not be null, but just in case.
             if (staticLootData is null)
@@ -56,7 +54,7 @@ namespace LotsofLoot.Services
             }
 
             Stopwatch sw = Stopwatch.StartNew();
-            foreach ((string containerId, StaticLootDetails lootDetails) in staticLootData)
+            foreach ((MongoId containerId, StaticLootDetails lootDetails) in staticLootData)
             {
                 foreach (ItemDistribution itemDistribution in lootDetails.ItemDistribution)
                 {
