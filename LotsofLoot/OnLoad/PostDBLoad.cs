@@ -12,7 +12,7 @@ using SPTarkov.Server.Core.Servers;
 
 namespace LotsofLoot.OnLoad
 {
-    [Injectable(TypePriority = OnLoadOrder.PostDBModLoader)]
+    [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + LotsofLootLoadPriority.LotsofLootPriorityOffset)]
     public class PostDBLoad(
         ModificationHelper modificationHelper,
         LazyLoadHandlerService lazyLoadHandlerService,
