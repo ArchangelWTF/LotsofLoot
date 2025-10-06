@@ -5,7 +5,7 @@ namespace LotsofLoot
 {
     public record LotsofLootModMetadata : AbstractModMetadata
     {
-        public override string ModGuid { get; init; } = "com.archangelwtf.lotsoflootredux";
+        public override string ModGuid { get; init; } = "wtf.archangel.lotsoflootredux";
         public override string Name { get; init; } = "Lots of Loot Redux";
         public override string Author { get; init; } = "ArchangelWTF";
         public override List<string>? Contributors { get; init; } = ["RainbowPC"];
