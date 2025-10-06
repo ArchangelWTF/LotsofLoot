@@ -4,13 +4,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>Library</OutputType>
-    <ReleaseOutputDir>..\Build\user\mods\archangelwtf-lotsoflootredux\</ReleaseOutputDir>
+    <ReleaseOutputDir>..\Build\SPT\user\mods\archangelwtf-lotsoflootredux\</ReleaseOutputDir>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SPTarkov.Common" Version="4.0.0-pre.20251002.2103" />
-    <PackageReference Include="SPTarkov.DI" Version="4.0.0-pre.20251002.2103" />
-    <PackageReference Include="SPTarkov.Reflection" Version="4.0.0-pre.20251002.2103" />
-    <PackageReference Include="SPTarkov.Server.Core" Version="4.0.0-pre.20251002.2103" />
+    <PackageReference Include="SPTarkov.Common" Version="4.0.0-pre.20251006.1303" />
+    <PackageReference Include="SPTarkov.DI" Version="4.0.0-pre.20251006.1303" />
+    <PackageReference Include="SPTarkov.Reflection" Version="4.0.0-pre.20251006.1303" />
+    <PackageReference Include="SPTarkov.Server.Core" Version="4.0.0-pre.20251006.1303" />
   </ItemGroup>
   <ItemGroup>
     <None Update="Config\config.jsonc">
