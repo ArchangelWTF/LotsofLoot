@@ -76,7 +76,7 @@
     //Marked room loot multiplier, higher = more loot probability
     "Multiplier": {
       "bigmap": 1,
-      "reservbase": 1,
+      "rezervbase": 1,
       "tarkovstreets": 1,
       "lighthouse": 1
     },
