@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+    <ReleaseOutputDir>..\Build\SPT\user\mods\archangelwtf-lotsoflootredux\</ReleaseOutputDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="SPTarkov.Common" Version="4.0.0-pre.202510110943" />
+    <PackageReference Include="SPTarkov.DI" Version="4.0.0-pre.202510110943" />
+    <PackageReference Include="SPTarkov.Reflection" Version="4.0.0-pre.202510110943" />
+    <PackageReference Include="SPTarkov.Server.Core" Version="4.0.0-pre.202510110943" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="Config\config.jsonc">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <!-- Build script for release build-->
+  <Target Name="CleanUnwantedFiles" AfterTargets="Build">
+    <ItemGroup>
+      <UnwantedFiles Include="$(OutputPath)*.pdb;$(OutputPath)*.deps.json;$(OutputPath)*.endpoints.json;$(OutputPath)*.runtimeconfig.*" />
+    </ItemGroup>
+    <Delete Files="@(UnwantedFiles)" />
+  </Target>
+  <Target Name="CopyBuildOutput" AfterTargets="CleanUnwantedFiles">
+    <MakeDir Directories="$(ReleaseOutputDir)" />
+    <ItemGroup>
+      <RemainingFiles Include="$(OutputPath)**\*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(RemainingFiles)"
+      DestinationFiles="@(RemainingFiles-&gt;'$(ReleaseOutputDir)%(RecursiveDir)%(Filename)%(Extension)')"
+    />
+  </Target>
+</Project>
