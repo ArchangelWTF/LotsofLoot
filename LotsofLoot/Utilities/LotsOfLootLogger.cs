@@ -2,6 +2,7 @@
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Services;
+using SPTarkov.Server.Core.Utils;
 
 namespace LotsofLoot.Utilities
 {
@@ -53,17 +54,9 @@ namespace LotsofLoot.Utilities
             }
         }
 
-        public bool IsLogEnabled(LogLevel logLevel)
+        public bool IsDebug()
         {
-#if DEBUG
-            if (logLevel == LogLevel.Debug)
-            {
-                return true;
-            }
-
-#endif
-
-            if (configService.LotsOfLootConfig.General.IsDebugEnabled)
+            if (ProgramStatics.DEBUG() || configService.LotsOfLootConfig.General.IsDebugEnabled)
             {
                 return true;
             }

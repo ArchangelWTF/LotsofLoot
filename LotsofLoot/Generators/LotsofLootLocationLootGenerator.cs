@@ -105,7 +105,7 @@ namespace LotsofLoot.Generators
                 // Point is blacklisted, skip
                 if (blacklistedSpawnPoints?.Contains(spawnPoint.Template.Id) ?? false)
                 {
-                    if (logger.IsLogEnabled(LogLevel.Debug))
+                    if (logger.IsDebug())
                     {
                         logger.Debug($"Ignoring loose loot location: {spawnPoint.Template.Id}");
                     }
@@ -165,7 +165,7 @@ namespace LotsofLoot.Generators
             var tooManySpawnPointsRequested = desiredSpawnPointCount - chosenSpawnPoints.Count > 0;
             if (tooManySpawnPointsRequested)
             {
-                if (logger.IsLogEnabled(LogLevel.Debug))
+                if (logger.IsDebug())
                 {
                     logger.Debug(
                         serverLocalisationService.GetText(
@@ -208,7 +208,7 @@ namespace LotsofLoot.Generators
                 // Spawn point has no items after filtering, skip
                 if (spawnPoint.Template.Items is null || !spawnPoint.Template.Items.Any())
                 {
-                    if (logger.IsLogEnabled(LogLevel.Debug))
+                    if (logger.IsDebug())
                     {
                         logger.Debug(serverLocalisationService.GetText("location-spawnpoint_missing_items", spawnPoint.Template.Id));
                     }
