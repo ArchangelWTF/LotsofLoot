@@ -56,8 +56,16 @@ namespace LotsofLoot.Services
             Stopwatch sw = Stopwatch.StartNew();
             foreach ((MongoId containerId, StaticLootDetails lootDetails) in staticLootData)
             {
+                bool relativeProbabilityZeroWarning = false;
+
                 foreach (ItemDistribution itemDistribution in lootDetails.ItemDistribution)
                 {
+                    if (itemDistribution.RelativeProbability == 0)
+                    {
+                        logger.Warning($"Relative probability is 0? For container {containerId}");
+                        continue;
+                    }
+
                     if (!configService.LotsOfLootConfig.Containers.TryGetValue(containerId, out float configRelativeProbability))
                     {
                         continue;
@@ -67,8 +75,11 @@ namespace LotsofLoot.Services
                     itemDistribution.RelativeProbability = MathF.Round(
                         (float)(itemDistribution.RelativeProbability * configRelativeProbability)
                     );
-
-                    logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
+                    
+                    if (logger.IsDebug())
+                    {
+                        logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
+                    }
                 }
             }
 
