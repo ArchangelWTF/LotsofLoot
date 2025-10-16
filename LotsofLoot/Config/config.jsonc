@@ -146,6 +146,11 @@
       //Gingy keychain
       "62a09d3bcf4a99369e262447": {
         "Keys": 2
+      },
+      //Key case
+      "67d3ed3271c17ff82e0a5b0b": {
+        "Keys": 5,
+        "Keycards": 2
       }
     },
     //This allows for adding items to the lootinLooseContainer blacklist, preventing these items from being selected for spawning
@@ -193,6 +198,19 @@
         "664d3ddfdda2e85aca370d75",
         //Leon's hideout key
         "664d3de85f2355673b09aed5"
+      ],
+      //Key case
+      "67d3ed3271c17ff82e0a5b0b": [
+        //Shatun's hideout key
+        "664d3db6db5dea2bad286955",
+        //Grumpy's hideout key
+        "664d3dd590294949fe2d81b7",
+        //Voron's hideout key
+        "664d3ddfdda2e85aca370d75",
+        //Leon's hideout key
+        "664d3de85f2355673b09aed5",
+        //Key tool
+        "59fafd4b86f7745ca07e1232"
       ]
     }
   },
