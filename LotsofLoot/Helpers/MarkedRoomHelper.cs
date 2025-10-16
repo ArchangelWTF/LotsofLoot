@@ -15,7 +15,11 @@ namespace LotsofLoot.Helpers
         {
             if (spawnpoint.IsMarkedRoomSpawnpoint(locationId.ToLower()))
             {
-                logger.Debug($"Marked room ({locationId}) {spawnpoint.Template.Id}");
+                if (logger.IsDebug())
+                {
+                    logger.Debug($"Marked room ({locationId}) {spawnpoint.Template.Id}");
+                }
+
                 spawnpoint.Probability *= configService.LotsOfLootConfig.MarkedRoomConfig.Multiplier[locationId.ToLower()];
                 AddExtraItemsToMarkedRoom(spawnpoint);
 
@@ -47,7 +51,10 @@ namespace LotsofLoot.Helpers
                     }
                 );
 
-                logger.Debug($"Added {templateId} to {spawnpoint.Template.Id}");
+                if (logger.IsDebug())
+                {
+                    logger.Debug($"Added {templateId} to {spawnpoint.Template.Id}");
+                }
             }
 
             spawnpoint.Template.Items = spawnpointTemplateItems;
@@ -62,6 +69,7 @@ namespace LotsofLoot.Helpers
                 return;
             }
 
+            // Delicious bracket slop, my favorite
             foreach (SptLootItem item in spawnpoint.Template.Items)
             {
                 foreach ((MongoId templateId, double relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ItemGroups)
@@ -78,7 +86,11 @@ namespace LotsofLoot.Helpers
                             if (itemDistribution.ComposedKey.Key == item.ComposedKey)
                             {
                                 itemDistribution.RelativeProbability *= relativeProbability;
-                                logger.Debug($"markedItemGroups: Changed {item.Template} to {itemDistribution.RelativeProbability}");
+
+                                if (logger.IsDebug())
+                                {
+                                    logger.Debug($"markedItemGroups: Changed {item.Template} to {itemDistribution.RelativeProbability}");
+                                }
                             }
                         }
                     }

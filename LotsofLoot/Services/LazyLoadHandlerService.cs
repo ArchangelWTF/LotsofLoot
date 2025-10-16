@@ -123,7 +123,11 @@ namespace LotsofLoot.Services
                 )
                 {
                     itemDistribution.RelativeProbability *= RelativeProbabilityInPoolModifier;
-                    logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
+
+                    if (logger.IsDebug())
+                    {
+                        logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
+                    }
                 }
             }
         }
@@ -142,7 +146,11 @@ namespace LotsofLoot.Services
                     var spawnpointProbability = spawnpoint.Probability ?? 0;
 
                     spawnpoint.Probability = Math.Min(spawnpointProbability * probabilityMultiplier, 1);
-                    logger.Debug($"{locationId}, Pool:{spawnpoint.Template.Id}, Chance:{spawnpoint.Probability}");
+
+                    if (logger.IsDebug())
+                    {
+                        logger.Debug($"{locationId}, Pool:{spawnpoint.Template.Id}, Chance:{spawnpoint.Probability}");
+                    }
 
                     // Only apply once per pool
                     break;

@@ -509,7 +509,6 @@ namespace LotsofLoot.Generators
 
             if (firstFilter == null || !firstGrid.Properties.Filters.Any())
             {
-                logger.Debug($"{item.Name} doesn't have a filter, setting default filter!");
                 firstGrid.Properties.Filters = [new GridFilter { Filter = ["54009119af1c881c07000029"], ExcludedFilter = [] }];
                 firstFilter = firstGrid.Properties.Filters.First(); // reset after assigning
             }
@@ -524,8 +523,6 @@ namespace LotsofLoot.Generators
             // Use cache for whitelist if available, if not available, generate new cache
             if (!_itemFilterIndexCache.TryGetValue(tpl, out var cachedWhiteList))
             {
-                logger.Debug($"{tpl} is new, generating whitelist");
-
                 // Expand items with children
                 whitelist = ExpandItemsWithChildItemIds(whitelist, items);
                 List<MongoId> expandedBlacklist = ExpandItemsWithChildItemIds(blacklist.ToList(), items);

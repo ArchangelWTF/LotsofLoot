@@ -24,7 +24,7 @@ namespace LotsofLoot.OnLoad
             {
                 foreach (AbstractPatch patch in _patches)
                 {
-                    logger.Debug($"Loading patch: {patch.GetType().Name}");
+                    logger.Info($"Loading patch: {patch.GetType().Name}");
                     patch.Enable();
                 }
             }
