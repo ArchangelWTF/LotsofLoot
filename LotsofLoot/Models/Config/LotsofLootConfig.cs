@@ -11,8 +11,8 @@ namespace LotsofLoot.Models.Config
         /// <summary>
         /// Loose loot multiplier, higher number = more
         /// </summary>
-        public Dictionary<string, int> LooseLootMultiplier { get; set; } =
-            new Dictionary<string, int>()
+        public Dictionary<string, double> LooseLootMultiplier { get; set; } =
+            new Dictionary<string, double>()
             {
                 { "bigmap", 5 },
                 { "factory4_day", 5 },
@@ -32,8 +32,8 @@ namespace LotsofLoot.Models.Config
         /// <summary>
         /// Static loot multiplier, higher number = more
         /// </summary>
-        public Dictionary<string, int> StaticLootMultiplier { get; set; } =
-            new Dictionary<string, int>()
+        public Dictionary<string, double> StaticLootMultiplier { get; set; } =
+            new Dictionary<string, double>()
             {
                 { "bigmap", 2 },
                 { "factory4_day", 2 },
@@ -70,14 +70,15 @@ namespace LotsofLoot.Models.Config
                 { "sandbox_high", 15000 },
                 { "labyrinth", 2500 },
             };
+
         public MarkedRoomConfig MarkedRoomConfig { get; set; } = new();
         public LootInLooseContainerConfig LootinLooseContainer { get; set; } = new();
 
         /// <summary>
         /// Multiplies the spawn chance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
         /// </summary>
-        public Dictionary<MongoId, int> ChangeRelativeProbabilityInPool { get; set; } =
-            new Dictionary<MongoId, int>()
+        public Dictionary<MongoId, double> ChangeRelativeProbabilityInPool { get; set; } =
+            new Dictionary<MongoId, double>()
             {
                 // Graphics card
                 { "57347ca924597744596b4e71", 2 },
@@ -86,8 +87,8 @@ namespace LotsofLoot.Models.Config
         /// <summary>
         /// Multiplies the spawn chance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
         /// </summary>
-        public Dictionary<MongoId, int> ChangeProbabilityOfPool { get; set; } =
-            new Dictionary<MongoId, int>()
+        public Dictionary<MongoId, double> ChangeProbabilityOfPool { get; set; } =
+            new Dictionary<MongoId, double>()
             {
                 // LEDX Skin Transilluminator
                 { "5c0530ee86f774697952d952", 1 },

@@ -41,7 +41,7 @@ namespace LotsofLoot.OnLoad
                 modificationHelper.RemoveBackpackRestrictions();
             }
 
-            foreach ((string map, int multiplier) in configService.LotsOfLootConfig.LooseLootMultiplier)
+            foreach ((string map, double multiplier) in configService.LotsOfLootConfig.LooseLootMultiplier)
             {
                 // When allow loot overlay is disabled, amplify the loose loot ever so slightly so more items spawn in other spawn points.
                 if (!configService.LotsOfLootConfig.General.AllowLootOverlay)

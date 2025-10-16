@@ -28,7 +28,7 @@ namespace LotsofLoot.Helpers
             var spawnpointTemplateItems = spawnpoint.Template.Items.ToList();
             var spawnpointItemDistribution = spawnpoint.ItemDistribution.ToList();
 
-            foreach ((MongoId templateId, int relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ExtraItems)
+            foreach ((MongoId templateId, double relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ExtraItems)
             {
                 if (spawnpoint.Template.Items.Any(item => item.Template == templateId))
                 {

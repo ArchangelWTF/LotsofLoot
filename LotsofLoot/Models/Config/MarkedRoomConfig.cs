@@ -7,8 +7,8 @@ namespace LotsofLoot.Models.Config
         /// <summary>
         /// Marked room loot multiplier, higher = more loot probability
         /// </summary>
-        public Dictionary<string, int> Multiplier { get; set; } =
-            new Dictionary<string, int>()
+        public Dictionary<string, double> Multiplier { get; set; } =
+            new Dictionary<string, double>()
             {
                 // Customs
                 { "bigmap", 1 },
@@ -23,8 +23,8 @@ namespace LotsofLoot.Models.Config
         /// <summary>
         /// Adds these items to the marked room loot pool, lower number = rarer item
         /// </summary>
-        public Dictionary<MongoId, int> ExtraItems { get; set; } =
-            new Dictionary<MongoId, int>()
+        public Dictionary<MongoId, double> ExtraItems { get; set; } =
+            new Dictionary<MongoId, double>()
             {
                 // Keycard holder case
                 { "619cbf9e0a7c3a1a2731940a", 1 },

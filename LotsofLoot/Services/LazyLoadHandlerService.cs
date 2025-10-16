@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using LotsofLoot.Helpers;
 using LotsofLoot.Utilities;
-using SPTarkov.Common.Extensions;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
@@ -56,8 +55,6 @@ namespace LotsofLoot.Services
             Stopwatch sw = Stopwatch.StartNew();
             foreach ((MongoId containerId, StaticLootDetails lootDetails) in staticLootData)
             {
-                bool relativeProbabilityZeroWarning = false;
-
                 foreach (ItemDistribution itemDistribution in lootDetails.ItemDistribution)
                 {
                     if (itemDistribution.RelativeProbability == 0)
@@ -121,7 +118,7 @@ namespace LotsofLoot.Services
                 if (
                     configService.LotsOfLootConfig.ChangeRelativeProbabilityInPool.TryGetValue(
                         item.Template,
-                        out int RelativeProbabilityInPoolModifier
+                        out double RelativeProbabilityInPoolModifier
                     ) && distributionLookup.TryGetValue(item.Id, out var itemDistribution)
                 )
                 {
@@ -135,9 +132,16 @@ namespace LotsofLoot.Services
         {
             foreach (var item in spawnpoint.Template.Items)
             {
-                if (configService.LotsOfLootConfig.ChangeProbabilityOfPool.TryGetValue(item.Template, out int probabilityMultiplier))
+                if (configService.LotsOfLootConfig.ChangeProbabilityOfPool.TryGetValue(item.Template, out double probabilityMultiplier))
                 {
-                    spawnpoint.Probability = Math.Min((double)spawnpoint.Probability * probabilityMultiplier, 1);
+                    if (spawnpoint.Probability is null)
+                    {
+                        continue;
+                    }
+
+                    var spawnpointProbability = spawnpoint.Probability ?? 0;
+
+                    spawnpoint.Probability = Math.Min(spawnpointProbability * probabilityMultiplier, 1);
                     logger.Debug($"{locationId}, Pool:{spawnpoint.Template.Id}, Chance:{spawnpoint.Probability}");
 
                     // Only apply once per pool
