@@ -105,7 +105,7 @@ namespace LotsofLoot.Generators
                 // Point is blacklisted, skip
                 if (blacklistedSpawnPoints?.Contains(spawnPoint.Template.Id) ?? false)
                 {
-                    if (logger.IsLogEnabled(LogLevel.Debug))
+                    if (logger.IsDebug())
                     {
                         logger.Debug($"Ignoring loose loot location: {spawnPoint.Template.Id}");
                     }
@@ -165,7 +165,7 @@ namespace LotsofLoot.Generators
             var tooManySpawnPointsRequested = desiredSpawnPointCount - chosenSpawnPoints.Count > 0;
             if (tooManySpawnPointsRequested)
             {
-                if (logger.IsLogEnabled(LogLevel.Debug))
+                if (logger.IsDebug())
                 {
                     logger.Debug(
                         serverLocalisationService.GetText(
@@ -208,7 +208,7 @@ namespace LotsofLoot.Generators
                 // Spawn point has no items after filtering, skip
                 if (spawnPoint.Template.Items is null || !spawnPoint.Template.Items.Any())
                 {
-                    if (logger.IsLogEnabled(LogLevel.Debug))
+                    if (logger.IsDebug())
                     {
                         logger.Debug(serverLocalisationService.GetText("location-spawnpoint_missing_items", spawnPoint.Template.Id));
                     }
@@ -509,7 +509,6 @@ namespace LotsofLoot.Generators
 
             if (firstFilter == null || !firstGrid.Properties.Filters.Any())
             {
-                logger.Debug($"{item.Name} doesn't have a filter, setting default filter!");
                 firstGrid.Properties.Filters = [new GridFilter { Filter = ["54009119af1c881c07000029"], ExcludedFilter = [] }];
                 firstFilter = firstGrid.Properties.Filters.First(); // reset after assigning
             }
@@ -524,8 +523,6 @@ namespace LotsofLoot.Generators
             // Use cache for whitelist if available, if not available, generate new cache
             if (!_itemFilterIndexCache.TryGetValue(tpl, out var cachedWhiteList))
             {
-                logger.Debug($"{tpl} is new, generating whitelist");
-
                 // Expand items with children
                 whitelist = ExpandItemsWithChildItemIds(whitelist, items);
                 List<MongoId> expandedBlacklist = ExpandItemsWithChildItemIds(blacklist.ToList(), items);

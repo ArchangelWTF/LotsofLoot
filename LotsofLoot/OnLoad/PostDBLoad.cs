@@ -41,7 +41,7 @@ namespace LotsofLoot.OnLoad
                 modificationHelper.RemoveBackpackRestrictions();
             }
 
-            foreach ((string map, int multiplier) in configService.LotsOfLootConfig.LooseLootMultiplier)
+            foreach ((string map, double multiplier) in configService.LotsOfLootConfig.LooseLootMultiplier)
             {
                 // When allow loot overlay is disabled, amplify the loose loot ever so slightly so more items spawn in other spawn points.
                 if (!configService.LotsOfLootConfig.General.AllowLootOverlay)
@@ -53,12 +53,14 @@ namespace LotsofLoot.OnLoad
                     _locationConfig.LooseLootMultiplier[map] = multiplier;
                 }
 
-                logger.Debug($"Loose loot multiplier {map}: {_locationConfig.LooseLootMultiplier[map]}");
-
                 _locationConfig.StaticLootMultiplier[map] = configService.LotsOfLootConfig.StaticLootMultiplier[map];
-                logger.Debug($"Static loot multiplier {map}: {configService.LotsOfLootConfig.StaticLootMultiplier[map]}");
-
                 _locationConfig.ContainerRandomisationSettings.Enabled = configService.LotsOfLootConfig.General.LootContainersRandom;
+
+                if (logger.IsDebug())
+                {
+                    logger.Debug($"Loose loot multiplier {map}: {_locationConfig.LooseLootMultiplier[map]}");
+                    logger.Debug($"Static loot multiplier {map}: {configService.LotsOfLootConfig.StaticLootMultiplier[map]}");
+                }
             }
 
             lazyLoadHandlerService.OnPostDBLoad();

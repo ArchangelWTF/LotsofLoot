@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using LotsofLoot.Helpers;
 using LotsofLoot.Utilities;
-using SPTarkov.Common.Extensions;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
@@ -58,6 +57,12 @@ namespace LotsofLoot.Services
             {
                 foreach (ItemDistribution itemDistribution in lootDetails.ItemDistribution)
                 {
+                    if (itemDistribution.RelativeProbability == 0)
+                    {
+                        logger.Warning($"Relative probability is 0? For container {containerId}");
+                        continue;
+                    }
+
                     if (!configService.LotsOfLootConfig.Containers.TryGetValue(containerId, out float configRelativeProbability))
                     {
                         continue;
@@ -67,8 +72,11 @@ namespace LotsofLoot.Services
                     itemDistribution.RelativeProbability = MathF.Round(
                         (float)(itemDistribution.RelativeProbability * configRelativeProbability)
                     );
-
-                    logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
+                    
+                    if (logger.IsDebug())
+                    {
+                        logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
+                    }
                 }
             }
 
@@ -110,12 +118,16 @@ namespace LotsofLoot.Services
                 if (
                     configService.LotsOfLootConfig.ChangeRelativeProbabilityInPool.TryGetValue(
                         item.Template,
-                        out int RelativeProbabilityInPoolModifier
+                        out double RelativeProbabilityInPoolModifier
                     ) && distributionLookup.TryGetValue(item.Id, out var itemDistribution)
                 )
                 {
                     itemDistribution.RelativeProbability *= RelativeProbabilityInPoolModifier;
-                    logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
+
+                    if (logger.IsDebug())
+                    {
+                        logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
+                    }
                 }
             }
         }
@@ -124,10 +136,21 @@ namespace LotsofLoot.Services
         {
             foreach (var item in spawnpoint.Template.Items)
             {
-                if (configService.LotsOfLootConfig.ChangeProbabilityOfPool.TryGetValue(item.Template, out int probabilityMultiplier))
+                if (configService.LotsOfLootConfig.ChangeProbabilityOfPool.TryGetValue(item.Template, out double probabilityMultiplier))
                 {
-                    spawnpoint.Probability = Math.Min((double)spawnpoint.Probability * probabilityMultiplier, 1);
-                    logger.Debug($"{locationId}, Pool:{spawnpoint.Template.Id}, Chance:{spawnpoint.Probability}");
+                    if (spawnpoint.Probability is null)
+                    {
+                        continue;
+                    }
+
+                    var spawnpointProbability = spawnpoint.Probability ?? 0;
+
+                    spawnpoint.Probability = Math.Min(spawnpointProbability * probabilityMultiplier, 1);
+
+                    if (logger.IsDebug())
+                    {
+                        logger.Debug($"{locationId}, Pool:{spawnpoint.Template.Id}, Chance:{spawnpoint.Probability}");
+                    }
 
                     // Only apply once per pool
                     break;
