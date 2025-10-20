@@ -616,7 +616,11 @@ namespace LotsofLoot.Generators
                 {
                     if (limits.Keys.HasValue && itemHelper.IsOfBaseclass(drawnItemTpl, BaseClasses.KEY_MECHANICAL))
                     {
-                        if (drawnKeys >= limits.Keys.Value)
+                        if (drawnKeys < limits.Keys.Value)
+                        {
+                            drawnKeys++;
+                        }
+                        else
                         {
                             if (config.LotsOfLootConfig.General.ItemWeights)
                             {
@@ -627,15 +631,15 @@ namespace LotsofLoot.Generators
                                 whitelist = whitelist.Where(i => !itemHelper.IsOfBaseclass(i, BaseClasses.KEY_MECHANICAL)).ToList();
                             }
                         }
-                        else
-                        {
-                            drawnKeys++;
-                        }
                     }
 
                     if (limits.Keycards.HasValue && itemHelper.IsOfBaseclass(drawnItemTpl, BaseClasses.KEYCARD))
                     {
-                        if (drawnKeycards >= limits.Keycards.Value)
+                        if (drawnKeycards < limits.Keycards.Value)
+                        {
+                            drawnKeycards++;
+                        }
+                        else
                         {
                             if (config.LotsOfLootConfig.General.ItemWeights)
                             {
@@ -645,10 +649,6 @@ namespace LotsofLoot.Generators
                             {
                                 whitelist = whitelist.Where(i => !itemHelper.IsOfBaseclass(i, BaseClasses.KEYCARD)).ToList();
                             }
-                        }
-                        else
-                        {
-                            drawnKeycards++;
                         }
                     }
                 }
