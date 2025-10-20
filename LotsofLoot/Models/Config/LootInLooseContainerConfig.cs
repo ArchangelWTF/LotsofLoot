@@ -92,12 +92,15 @@ namespace LotsofLoot.Models.Config
                     "664d3de85f2355673b09aed5", // Leon's hideout key
                 ],
 
+                // Key Case
                 ["67d3ed3271c17ff82e0a5b0b"] = [
                     "664d3db6db5dea2bad286955", // Shatun's hideout key
                     "664d3dd590294949fe2d81b7", // Grumpy's hideout key
                     "664d3ddfdda2e85aca370d75", // Voron's hideout key
                     "664d3de85f2355673b09aed5", // Leon's hideout key
                     "59fafd4b86f7745ca07e1232", // Key tool
+                    "62a09d3bcf4a99369e262447", // Gingy key tool
+                    "619cbf9e0a7c3a1a2731940a" // Keycard holder case
                 ],
             };
     }
