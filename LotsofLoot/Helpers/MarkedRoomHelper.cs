@@ -34,14 +34,27 @@ namespace LotsofLoot.Helpers
 
             foreach ((MongoId templateId, double relativeProbability) in configService.LotsOfLootConfig.MarkedRoomConfig.ExtraItems)
             {
-                if (spawnpoint.Template.Items.Any(item => item.Template == templateId))
+                var existingItem = spawnpoint.Template.Items.FirstOrDefault(item => item.Template == templateId);
+
+                // If the item already exists, add the new probability up on top of the already existing one
+                if (existingItem != null && existingItem.ComposedKey != null)
                 {
+                    var existingItemDistribution = spawnpointItemDistribution.First(distrib => distrib.ComposedKey?.Key == existingItem.ComposedKey);
+
+                    existingItemDistribution.RelativeProbability += relativeProbability;
+
+                    if (logger.IsDebug())
+                    {
+                        logger.Debug($"Modified {templateId} to new probability {existingItemDistribution.RelativeProbability}");
+                    }
+
+                    // Continue the loop here, we don't need to add a new one
                     continue;
                 }
 
                 MongoId mongoId = new();
 
-                spawnpointTemplateItems.Add(new() { Id = mongoId, Template = templateId });
+                spawnpointTemplateItems.Add(new() { Id = mongoId, Template = templateId, ComposedKey = mongoId });
 
                 spawnpointItemDistribution.Add(
                     new()
