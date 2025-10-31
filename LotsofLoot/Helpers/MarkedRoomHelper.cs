@@ -13,14 +13,14 @@ namespace LotsofLoot.Helpers
     {
         public void AdjustMarkedRooms(string locationId, Spawnpoint spawnpoint)
         {
-            if (spawnpoint.IsMarkedRoomSpawnpoint(locationId.ToLower()))
+            if (spawnpoint.IsMarkedRoomSpawnpoint(locationId.ToLowerInvariant()))
             {
                 if (logger.IsDebug())
                 {
                     logger.Debug($"Marked room ({locationId}) {spawnpoint.Template.Id}");
                 }
 
-                spawnpoint.Probability *= configService.LotsOfLootConfig.MarkedRoomConfig.Multiplier[locationId.ToLower()];
+                spawnpoint.Probability *= configService.LotsOfLootConfig.MarkedRoomConfig.Multiplier[locationId.ToLowerInvariant()];
                 AddExtraItemsToMarkedRoom(spawnpoint);
 
                 AdjustMarkedRoomItemGroups(spawnpoint);
