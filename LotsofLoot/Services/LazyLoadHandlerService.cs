@@ -72,7 +72,7 @@ namespace LotsofLoot.Services
                     itemDistribution.RelativeProbability = MathF.Round(
                         (float)(itemDistribution.RelativeProbability * configRelativeProbability)
                     );
-                    
+
                     if (logger.IsDebug())
                     {
                         logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
@@ -115,18 +115,22 @@ namespace LotsofLoot.Services
 
             foreach (var item in spawnpoint.Template.Items)
             {
-                if (
-                    configService.LotsOfLootConfig.ChangeRelativeProbabilityInPool.TryGetValue(
-                        item.Template,
-                        out double RelativeProbabilityInPoolModifier
-                    ) && distributionLookup.TryGetValue(item.Id, out var itemDistribution)
-                )
+                var key = item.ComposedKey;
+                if (key is not null)
                 {
-                    itemDistribution.RelativeProbability *= RelativeProbabilityInPoolModifier;
-
-                    if (logger.IsDebug())
+                    if (
+                        configService.LotsOfLootConfig.ChangeRelativeProbabilityInPool.TryGetValue(
+                            item.Template,
+                            out double RelativeProbabilityInPoolModifier
+                        ) && distributionLookup.TryGetValue(key, out var itemDistribution)
+                    )
                     {
-                        logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
+                        itemDistribution.RelativeProbability *= RelativeProbabilityInPoolModifier;
+
+                        if (logger.IsDebug())
+                        {
+                            logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
+                        }
                     }
                 }
             }
