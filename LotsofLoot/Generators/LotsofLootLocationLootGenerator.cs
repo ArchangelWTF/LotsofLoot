@@ -91,6 +91,15 @@ namespace LotsofLoot.Generators
                     )
             );
 
+            double lotsofLootDesiredSpawnPointCount = config.LotsOfLootConfig.Limits[locationName];
+
+            if (desiredSpawnPointCount > lotsofLootDesiredSpawnPointCount)
+            {
+                logger.Warning("SPT desires a higher spawn point count than Lots of Loot! Clamping.");
+
+                desiredSpawnPointCount = lotsofLootDesiredSpawnPointCount;
+            }
+
             var blacklistedSpawnPoints = _locationConfig.LooseLootBlacklist.GetValueOrDefault(locationName);
 
             // Init empty array to hold spawn points, letting us pick them pseudo-randomly
@@ -102,6 +111,18 @@ namespace LotsofLoot.Generators
             var allDynamicSpawnPoints = dynamicLootDist.Spawnpoints;
             foreach (var spawnPoint in allDynamicSpawnPoints)
             {
+                if(spawnPoint is null)
+                {
+                    logger.Warning("Spawnpoint is null!");
+                    continue;
+                }
+
+                if(spawnPoint.Template?.Id is null)
+                {
+                    logger.Warning("Spawnpoint template id is null!");
+                    continue;
+                }
+
                 // Point is blacklisted, skip
                 if (blacklistedSpawnPoints?.Contains(spawnPoint.Template.Id) ?? false)
                 {
