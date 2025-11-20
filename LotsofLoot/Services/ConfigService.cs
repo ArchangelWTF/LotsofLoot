@@ -10,6 +10,7 @@ namespace LotsofLoot.Services
     [Injectable(InjectionType.Singleton)]
     public class ConfigService(ModHelper modHelper, JsonUtil jsonUtil, ISptLogger<ConfigService> logger)
     {
+        public LotsofLootModMetadata ModMetadata { get; init; } = new();
         public LotsOfLootConfig LotsOfLootConfig { get; private set; } = new();
 
         public string GetModPath()
