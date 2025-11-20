@@ -15,35 +15,36 @@ namespace LotsofLoot.Helpers
 
             if (items is null)
             {
-                logger.Error("Database has no template items, is the database loaded?");
+                logger.Critical("Database has no template items, is the database loaded?");
                 return;
             }
 
-            foreach (KeyValuePair<MongoId, TemplateItem> itemKvP in items)
+            foreach ((MongoId _, TemplateItem item) in items)
             {
                 // Filter out the 'Slim Field Med Pack' bag that can only contain medical items
-                if (itemKvP.Value.Id == "5e4abc6786f77406812bd572")
+                if (item.Id == "5e4abc6786f77406812bd572")
                 {
                     continue;
                 }
 
                 // If the parent is anything else than the 'Backpack' (5448e53e4bdc2d60728b4567)
-                if (itemKvP.Value.Parent != "5448e53e4bdc2d60728b4567")
+                if (item.Parent != "5448e53e4bdc2d60728b4567")
                 {
                     continue;
                 }
 
-                if (itemKvP.Value.Properties?.Grids?.Any() == true)
+                if (item.Properties?.Grids?.Any() == true)
                 {
-                    var firstGrid = itemKvP.Value.Properties.Grids.First();
-
-                    if (firstGrid?.Properties?.Filters == null)
+                    foreach (var grid in item.Properties.Grids)
                     {
-                        continue;
-                    }
-                    else
-                    {
-                        firstGrid.Properties.Filters = [];
+                        if (grid.Properties?.Filters is null)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            grid.Properties.Filters = [];
+                        }
                     }
                 }
             }
