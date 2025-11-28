@@ -92,6 +92,8 @@ namespace LotsofLoot.Generators
 
                 if (rawValue < mean)
                 {
+                    logger.Debug($"Value ({rawValue}) is lower than mean ({mean})");
+
                     var deviation = mean - rawValue;
 
                     // Lower multiplier means more, after having tested for a bit 0.35 seems a good sweet spot for now.
