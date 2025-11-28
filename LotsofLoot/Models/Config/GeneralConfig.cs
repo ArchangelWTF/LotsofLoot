@@ -52,5 +52,10 @@ namespace LotsofLoot.Models.Config
         /// Allows for setting if containers will spawn randomly, false will disable randomness.
         /// </summary>
         public bool LootContainersRandom { get; set; } = true;
+
+        /// <summary>
+        /// Raises the lower end of SPT's loose loot rolls for more consistent loose loot spawns
+        /// </summary>
+        public bool ReduceLowLooseLootRolls { get; set; } = false;
     }
 }

@@ -25,7 +25,7 @@ namespace LotsofLoot.Generators
         ItemHelper itemHelper,
         PresetHelper presetHelper,
         ItemFilterService itemFilterService,
-        RandomUtil randomUtil,
+        NewSPTRandomUtil randomUtil,
         ICloner cloner,
         LotsofLootItemHelper LotsofLootItemHelper,
         SeasonalEventService seasonalEventService,
@@ -82,14 +82,36 @@ namespace LotsofLoot.Generators
                 locationLootGeneratorReflectionHelper.GetForcedDynamicLoot(dynamicForcedSpawnPoints, locationName, staticAmmoDist)
             );
 
-            // Draw from random distribution
-            var desiredSpawnPointCount = Math.Round(
+            var desiredSpawnPointCount = 0;
+
+            if(config.LotsOfLootConfig.General.ReduceLowLooseLootRolls)
+            {
+                // Lots of loot specific calculation
+                var multiplier = locationLootGeneratorReflectionHelper.GetLooseLootMultiplierForLocation(locationName);
+                var mean = dynamicLootDist.SpawnpointCount.Mean;
+                var std = dynamicLootDist.SpawnpointCount.Std;
+
+                var rawValue = randomUtil.GetNormallyDistributedRandomNumber(mean, std);
+
+                if (rawValue < mean)
+                {
+                    var deviation = mean - rawValue;
+                    rawValue = mean - (deviation * 0.35);
+                }
+
+                desiredSpawnPointCount = (int)Math.Round(multiplier * rawValue);
+            }
+            else
+            {
+                // Default SPT calculation
+                desiredSpawnPointCount = (int)Math.Round(
                 locationLootGeneratorReflectionHelper.GetLooseLootMultiplierForLocation(locationName)
                     * randomUtil.GetNormallyDistributedRandomNumber(
                         dynamicLootDist.SpawnpointCount.Mean,
                         dynamicLootDist.SpawnpointCount.Std
                     )
             );
+            }
 
             double lotsofLootDesiredSpawnPointCount = config.LotsOfLootConfig.Limits[locationName];
 
