@@ -96,8 +96,8 @@ namespace LotsofLoot.Generators
 
                     var deviation = mean - rawValue;
 
-                    // Lower multiplier means more, after having tested for a bit 0.35 seems a good sweet spot for now.
-                    rawValue = mean - (deviation * 0.35);
+                    // Lower multiplier means more, after having tested for a bit 0.45 seems a good sweet spot for now.
+                    rawValue = mean - (deviation * 0.45);
                 }
 
                 desiredSpawnPointCount = (int)Math.Round(locationLootGeneratorReflectionHelper.GetLooseLootMultiplierForLocation(locationName) * rawValue);
