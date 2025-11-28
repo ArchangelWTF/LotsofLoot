@@ -86,20 +86,19 @@ namespace LotsofLoot.Generators
 
             if(config.LotsOfLootConfig.General.ReduceLowLooseLootRolls)
             {
-                // Lots of loot specific calculation
-                var multiplier = locationLootGeneratorReflectionHelper.GetLooseLootMultiplierForLocation(locationName);
                 var mean = dynamicLootDist.SpawnpointCount.Mean;
-                var std = dynamicLootDist.SpawnpointCount.Std;
 
-                var rawValue = randomUtil.GetNormallyDistributedRandomNumber(mean, std);
+                var rawValue = randomUtil.GetNormallyDistributedRandomNumber(mean, dynamicLootDist.SpawnpointCount.Std);
 
                 if (rawValue < mean)
                 {
                     var deviation = mean - rawValue;
+
+                    // Lower multiplier means more, after having tested for a bit 0.35 seems a good sweet spot for now.
                     rawValue = mean - (deviation * 0.35);
                 }
 
-                desiredSpawnPointCount = (int)Math.Round(multiplier * rawValue);
+                desiredSpawnPointCount = (int)Math.Round(locationLootGeneratorReflectionHelper.GetLooseLootMultiplierForLocation(locationName) * rawValue);
             }
             else
             {
