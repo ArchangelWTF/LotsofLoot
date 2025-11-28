@@ -114,7 +114,7 @@ namespace LotsofLoot.Generators
             );
             }
 
-            double lotsofLootDesiredSpawnPointCount = config.LotsOfLootConfig.Limits[locationName];
+            int lotsofLootDesiredSpawnPointCount = config.LotsOfLootConfig.Limits[locationName];
 
             if (desiredSpawnPointCount > lotsofLootDesiredSpawnPointCount)
             {
