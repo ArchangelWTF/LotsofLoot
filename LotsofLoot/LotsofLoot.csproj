@@ -29,6 +29,19 @@
     <ItemGroup>
       <RemainingFiles Include="$(OutputPath)**\*" />
     </ItemGroup>
-    <Copy SourceFiles="@(RemainingFiles)" DestinationFiles="@(RemainingFiles->'$(ReleaseOutputDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy
+      SourceFiles="@(RemainingFiles)"
+      DestinationFiles="@(RemainingFiles->'$(ReleaseOutputDir)%(RecursiveDir)%(Filename)%(Extension)')"
+    />
+  </Target>
+  <Target Name="CopyToServerMods" AfterTargets="CopyBuildOutput" Condition="'$(Configuration)' == 'Debug'">
+    <PropertyGroup>
+      <ServerModsDir>..\..\SPT\server-csharp\SPTarkov.Server\bin\Debug\$(TargetFramework)\user\mods\archangelwtf-lotsoflootredux\</ServerModsDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(ServerModsDir)" />
+    <ItemGroup>
+      <ModFiles Include="$(ReleaseOutputDir)**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ModFiles)" DestinationFiles="@(ModFiles->'$(ServerModsDir)%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 </Project>
