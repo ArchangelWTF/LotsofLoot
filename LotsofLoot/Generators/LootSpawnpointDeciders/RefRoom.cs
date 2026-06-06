@@ -9,8 +9,7 @@ namespace LotsofLoot.Generators.LootSpawnpointDeciders;
 
 [Injectable]
 // Just a copy of the marked room class for now, might change later
-public sealed class RefRoom(ConfigService config, ICloner cloner, NewSPTRandomUtil randomUtil, ILogger<RefRoom> logger)
-    : ILootSpawnpointDecider
+public sealed class RefRoom(ConfigService config, ICloner cloner, NewSPTRandomUtil randomUtil) : ILootSpawnpointDecider
 {
     public List<Spawnpoint> Decide(
         string locationName,
@@ -89,8 +88,6 @@ public sealed class RefRoom(ConfigService config, ICloner cloner, NewSPTRandomUt
             chosenSpawnPoints = chosenSpawnPoints.GroupBy(sp => sp.LocationId).Select(g => g.First()).ToList();
         }
         */
-
-        logger.LogWarning(chosenSpawnPoints.Count.ToString());
 
         return chosenSpawnPoints;
     }

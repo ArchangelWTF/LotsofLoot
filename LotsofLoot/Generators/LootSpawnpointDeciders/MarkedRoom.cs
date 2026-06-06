@@ -8,8 +8,7 @@ using SPTarkov.Server.Core.Utils.Collections;
 namespace LotsofLoot.Generators.LootSpawnpointDeciders;
 
 [Injectable]
-public sealed class MarkedRoom(ConfigService config, ICloner cloner, NewSPTRandomUtil randomUtil, ILogger<MarkedRoom> logger)
-    : ILootSpawnpointDecider
+public sealed class MarkedRoom(ConfigService config, ICloner cloner, NewSPTRandomUtil randomUtil) : ILootSpawnpointDecider
 {
     public List<Spawnpoint> Decide(
         string locationName,
@@ -88,8 +87,6 @@ public sealed class MarkedRoom(ConfigService config, ICloner cloner, NewSPTRando
             chosenSpawnPoints = chosenSpawnPoints.GroupBy(sp => sp.LocationId).Select(g => g.First()).ToList();
         }
         */
-
-        logger.LogWarning(chosenSpawnPoints.Count.ToString());
 
         return chosenSpawnPoints;
     }
