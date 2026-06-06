@@ -6,159 +6,156 @@ using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Services;
 
-namespace LotsofLoot.Services
+namespace LotsofLoot.Services;
+
+[Injectable(InjectionType.Singleton)]
+public class LazyLoadHandlerService(
+    DatabaseService databaseService,
+    ConfigService configService,
+    LootRoomHelper lootRoomHelper,
+    LotsOfLootLogger logger
+)
 {
-    [Injectable(InjectionType.Singleton)]
-    public class LazyLoadHandlerService(
-        DatabaseService databaseService,
-        ConfigService configService,
-        MarkedRoomHelper markedRoomHelper,
-        LotsOfLootLogger logger
-    )
+    public void OnPostDBLoad()
     {
-        public void OnPostDBLoad()
+        var locations = databaseService.GetLocations().GetDictionary();
+
+        foreach ((string locationId, Location location) in locations)
         {
-            var locations = databaseService.GetLocations().GetDictionary();
-
-            foreach ((string locationId, Location location) in locations)
+            if (location.StaticLoot is not null)
             {
-                if (location.StaticLoot is not null)
+                location.StaticLoot.AddTransformer(lazyloadedStaticLootData =>
                 {
-                    location.StaticLoot.AddTransformer(lazyloadedStaticLootData =>
-                    {
-                        HandleStaticLootLazyLoad(locationId, lazyloadedStaticLootData);
+                    HandleStaticLootLazyLoad(locationId, lazyloadedStaticLootData);
 
-                        return lazyloadedStaticLootData;
-                    });
+                    return lazyloadedStaticLootData;
+                });
+            }
+
+            if (location.LooseLoot is not null)
+            {
+                location.LooseLoot.AddTransformer(lazyLoadedLooseLootData =>
+                {
+                    HandleLooseLootLazyLoad(locationId, lazyLoadedLooseLootData);
+
+                    return lazyLoadedLooseLootData;
+                });
+            }
+        }
+    }
+
+    private void HandleStaticLootLazyLoad(string locationId, Dictionary<MongoId, StaticLootDetails>? staticLootData)
+    {
+        //This should not be null, but just in case.
+        if (staticLootData is null)
+        {
+            return;
+        }
+
+        Stopwatch sw = Stopwatch.StartNew();
+        foreach ((MongoId containerId, StaticLootDetails lootDetails) in staticLootData)
+        {
+            foreach (ItemDistribution itemDistribution in lootDetails.ItemDistribution)
+            {
+                if (itemDistribution.RelativeProbability == 0)
+                {
+                    logger.Warning($"Relative probability is 0? For container {containerId}");
+                    continue;
                 }
 
-                if (location.LooseLoot is not null)
+                if (!configService.LotsofLootPresetConfig.Containers.TryGetValue(containerId, out float configRelativeProbability))
                 {
-                    location.LooseLoot.AddTransformer(lazyLoadedLooseLootData =>
-                    {
-                        HandleLooseLootLazyLoad(locationId, lazyLoadedLooseLootData);
+                    continue;
+                }
 
-                        return lazyLoadedLooseLootData;
-                    });
+                //Todo: Does this even work as intended? Check?
+                itemDistribution.RelativeProbability = MathF.Round(
+                    (float)(itemDistribution.RelativeProbability * configRelativeProbability)
+                );
+
+                if (logger.IsDebug())
+                {
+                    logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
                 }
             }
         }
 
-        private void HandleStaticLootLazyLoad(string locationId, Dictionary<MongoId, StaticLootDetails>? staticLootData)
+        sw.Stop();
+        logger.Info($"HandleStaticLootLazyLoad finished, took {sw.ElapsedMilliseconds}ms");
+    }
+
+    private void HandleLooseLootLazyLoad(string locationId, LooseLoot? looseLootData)
+    {
+        //This should not be null, but just in case.
+        if (looseLootData is null || looseLootData.Spawnpoints is null)
         {
-            //This should not be null, but just in case.
-            if (staticLootData is null)
-            {
-                return;
-            }
+            return;
+        }
 
-            Stopwatch sw = Stopwatch.StartNew();
-            foreach ((MongoId containerId, StaticLootDetails lootDetails) in staticLootData)
+        Stopwatch sw = Stopwatch.StartNew();
+        foreach (var spawnpoint in looseLootData.Spawnpoints)
+        {
+            ChangeRelativeProbabilityInPool(locationId, spawnpoint);
+            ChangeProbabilityOfPool(locationId, spawnpoint);
+
+            lootRoomHelper.AdjustLootRooms(locationId, spawnpoint);
+
+            //Todo: This still needs AddToRustedKeyRoom for streets
+        }
+
+        sw.Stop();
+        logger.Info($"HandleLooseLootLazyLoad finished, took {sw.ElapsedMilliseconds}ms");
+    }
+
+    private void ChangeRelativeProbabilityInPool(string locationId, Spawnpoint spawnpoint)
+    {
+        Dictionary<string, LooseLootItemDistribution> distributionLookup = spawnpoint.ItemDistribution.ToDictionary(d => d.ComposedKey.Key);
+
+        foreach (var item in spawnpoint.Template.Items)
+        {
+            var key = item.ComposedKey;
+            if (key is not null)
             {
-                foreach (ItemDistribution itemDistribution in lootDetails.ItemDistribution)
+                if (
+                    configService.LotsofLootPresetConfig.ChangeRelativeProbabilityInPool.TryGetValue(
+                        item.Template,
+                        out double RelativeProbabilityInPoolModifier
+                    ) && distributionLookup.TryGetValue(key, out var itemDistribution)
+                )
                 {
-                    if (itemDistribution.RelativeProbability == 0)
-                    {
-                        logger.Warning($"Relative probability is 0? For container {containerId}");
-                        continue;
-                    }
-
-                    if (!configService.LotsOfLootConfig.Containers.TryGetValue(containerId, out float configRelativeProbability))
-                    {
-                        continue;
-                    }
-
-                    //Todo: Does this even work as intended? Check?
-                    itemDistribution.RelativeProbability = MathF.Round(
-                        (float)(itemDistribution.RelativeProbability * configRelativeProbability)
-                    );
+                    itemDistribution.RelativeProbability *= RelativeProbabilityInPoolModifier;
 
                     if (logger.IsDebug())
                     {
-                        logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
+                        logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
                     }
                 }
             }
-
-            sw.Stop();
-            logger.Info($"HandleStaticLootLazyLoad finished, took {sw.ElapsedMilliseconds}ms");
         }
+    }
 
-        private void HandleLooseLootLazyLoad(string locationId, LooseLoot? looseLootData)
+    private void ChangeProbabilityOfPool(string locationId, Spawnpoint spawnpoint)
+    {
+        foreach (var item in spawnpoint.Template.Items)
         {
-            //This should not be null, but just in case.
-            if (looseLootData is null || looseLootData.Spawnpoints is null)
+            if (configService.LotsofLootPresetConfig.ChangeProbabilityOfPool.TryGetValue(item.Template, out double probabilityMultiplier))
             {
-                return;
-            }
-
-            Stopwatch sw = Stopwatch.StartNew();
-            foreach (var spawnpoint in looseLootData.Spawnpoints)
-            {
-                ChangeRelativeProbabilityInPool(locationId, spawnpoint);
-                ChangeProbabilityOfPool(locationId, spawnpoint);
-
-                markedRoomHelper.AdjustMarkedRooms(locationId, spawnpoint);
-
-                //Todo: This still needs AddToRustedKeyRoom for streets
-            }
-
-            sw.Stop();
-            logger.Info($"HandleLooseLootLazyLoad finished, took {sw.ElapsedMilliseconds}ms");
-        }
-
-        private void ChangeRelativeProbabilityInPool(string locationId, Spawnpoint spawnpoint)
-        {
-            Dictionary<string, LooseLootItemDistribution> distributionLookup = spawnpoint.ItemDistribution.ToDictionary(d =>
-                d.ComposedKey.Key
-            );
-
-            foreach (var item in spawnpoint.Template.Items)
-            {
-                var key = item.ComposedKey;
-                if (key is not null)
+                if (spawnpoint.Probability is null)
                 {
-                    if (
-                        configService.LotsOfLootConfig.ChangeRelativeProbabilityInPool.TryGetValue(
-                            item.Template,
-                            out double RelativeProbabilityInPoolModifier
-                        ) && distributionLookup.TryGetValue(key, out var itemDistribution)
-                    )
-                    {
-                        itemDistribution.RelativeProbability *= RelativeProbabilityInPoolModifier;
-
-                        if (logger.IsDebug())
-                        {
-                            logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
-                        }
-                    }
+                    continue;
                 }
-            }
-        }
 
-        private void ChangeProbabilityOfPool(string locationId, Spawnpoint spawnpoint)
-        {
-            foreach (var item in spawnpoint.Template.Items)
-            {
-                if (configService.LotsOfLootConfig.ChangeProbabilityOfPool.TryGetValue(item.Template, out double probabilityMultiplier))
+                var spawnpointProbability = spawnpoint.Probability ?? 0;
+
+                spawnpoint.Probability = Math.Min(spawnpointProbability * probabilityMultiplier, 1);
+
+                if (logger.IsDebug())
                 {
-                    if (spawnpoint.Probability is null)
-                    {
-                        continue;
-                    }
-
-                    var spawnpointProbability = spawnpoint.Probability ?? 0;
-
-                    spawnpoint.Probability = Math.Min(spawnpointProbability * probabilityMultiplier, 1);
-
-                    if (logger.IsDebug())
-                    {
-                        logger.Debug($"{locationId}, Pool:{spawnpoint.Template.Id}, Chance:{spawnpoint.Probability}");
-                    }
-
-                    // Only apply once per pool
-                    break;
+                    logger.Debug($"{locationId}, Pool:{spawnpoint.Template.Id}, Chance:{spawnpoint.Probability}");
                 }
+
+                // Only apply once per pool
+                break;
             }
         }
     }

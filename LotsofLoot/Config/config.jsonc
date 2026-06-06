@@ -22,23 +22,27 @@
       "64d4b23dc1b37504b41ac2b6": 1000000
     },
     //Allows for setting if containers will spawn randomly, false will disable randomness.
-    "LootContainersRandom": true
+    "LootContainersRandom": true,
+    //Raises the lower end of SPT's loose loot rolls for more consistent loose loot spawns
+    "ReduceLowLooseLootRolls": false,
+    //Sets the strength of the correction for low loot rolls. Lower values increase consistency; higher values keep more natural variation
+    "ReduceLowLooseLootRollsAmount": 0.45
   },
   //Loose loot multiplier, higher number = more
   "LooseLootMultiplier": {
-    "bigmap": 5,
-    "factory4_day": 5,
-    "factory4_night": 5,
-    "woods": 5,
-    "interchange": 5,
-    "laboratory": 5,
-    "rezervbase": 5,
-    "shoreline": 5,
-    "tarkovstreets": 5,
-    "lighthouse": 5,
-    "sandbox": 5,
-    "sandbox_high": 5,
-    "labyrinth": 5
+    "bigmap": 7.5,
+    "factory4_day": 7.5,
+    "factory4_night": 7.5,
+    "woods": 7.5,
+    "interchange": 7.5,
+    "laboratory": 7.5,
+    "rezervbase": 7.5,
+    "shoreline": 7.5,
+    "tarkovstreets": 7.5,
+    "lighthouse": 7.5,
+    "sandbox": 7.5,
+    "sandbox_high": 7.5,
+    "labyrinth": 7.5
   },
   //Static loot multiplier, higher number = more
   "StaticLootMultiplier": {
@@ -59,26 +63,26 @@
   //Maximum loot generation limits, higher number = higher limit (Would recommend leaving this as is)
   "Limits": {
     "bigmap": 10000,
-    "factory4_day": 1500,
-    "factory4_night": 1500,
+    "factory4_day": 2000,
+    "factory4_night": 2000,
     "woods": 10000,
     "interchange": 30000,
-    "laboratory": 25000,
-    "rezervbase": 40000,
+    "laboratory": 10000,
+    "rezervbase": 30000,
     "shoreline": 20000,
-    "tarkovstreets": 50000,
+    "tarkovstreets": 30000,
     "lighthouse": 20000,
-    "sandbox": 15000,
-    "sandbox_high": 15000,
-    "labyrinth": 2500
+    "sandbox": 10000,
+    "sandbox_high": 10000,
+    "labyrinth": 3000
   },
   "MarkedRoomConfig": {
     //Marked room loot multiplier, higher = more loot probability
     "Multiplier": {
-      "bigmap": 1,
-      "rezervbase": 1,
-      "tarkovstreets": 1,
-      "lighthouse": 1
+        "bigmap": 7.5,
+        "rezervbase": 7.5,
+        "tarkovstreets": 7.5,
+        "lighthouse": 7.5
     },
     //Adds these items to the marked room loot pool, lower number = rarer item
     "ExtraItems": {
@@ -107,6 +111,20 @@
     "ItemGroups": {
       //Weapons group
       "5422acb9af1c889c16000029": 0.2
+    }
+  },
+  "RefRoomConfig": {
+    //Ref room loot multiplier, higher = more loot probability
+    "Multiplier": {
+      "woods": 7.5, //Shatun's Hideout
+      "interchange": 7.5, //Grumpy's hideout
+      "shoreline": 7.5, //Voron's Hideout
+      "lighthouse": 7.5 //Leon's Hideout
+    },
+    //Multiplies the chance for a group of itemns to spawn in the room, higher number = more common
+    "ItemGroups": {
+      //Jewelry group
+      "57864a3d24597754843f8721": 0
     }
   },
   "LootinLooseContainer": {
@@ -166,7 +184,7 @@
         //Leon's hideout key
         "664d3de85f2355673b09aed5"
       ],
-      ///S I C C organizational pouch
+      //S I C C organizational pouch
       "5d235bb686f77443f4331278": [
         //Shatun's hideout key
         "664d3db6db5dea2bad286955",
@@ -223,7 +241,7 @@
     //Graphics card
     "57347ca924597744596b4e71": 2
   },
-  //Multiplies the spawnchance of every pool with the specified item in it, Value: 0 - 1 
+  //Multiplies the spawnchance of every pool with the specified item in it, Value: 0 - 1
   "ChangeProbabilityOfPool": {
     //LEDX Skin Transilluminator
     "5c0530ee86f774697952d952": 1

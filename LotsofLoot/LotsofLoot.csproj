@@ -29,9 +29,6 @@
     <ItemGroup>
       <RemainingFiles Include="$(OutputPath)**\*" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(RemainingFiles)"
-      DestinationFiles="@(RemainingFiles-&gt;'$(ReleaseOutputDir)%(RecursiveDir)%(Filename)%(Extension)')"
-    />
+    <Copy SourceFiles="@(RemainingFiles)" DestinationFiles="@(RemainingFiles->'$(ReleaseOutputDir)%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 </Project>

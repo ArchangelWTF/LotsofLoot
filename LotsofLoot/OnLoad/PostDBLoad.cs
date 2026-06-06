@@ -1,88 +1,38 @@
-﻿using LotsofLoot.Helpers;
+﻿using LotsofLoot.Models.Preset;
 using LotsofLoot.Services;
-using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
-using SPTarkov.Server.Core.Helpers;
-using SPTarkov.Server.Core.Models.Common;
-using SPTarkov.Server.Core.Models.Eft.Common.Tables;
-using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Spt.Templates;
 using SPTarkov.Server.Core.Servers;
 
-namespace LotsofLoot.OnLoad
+namespace LotsofLoot.OnLoad;
+
+[Injectable(TypePriority = OnLoadOrder.PostDBModLoader + LotsofLootModMetadata.LotsofLootPriorityOffset)]
+public class PostDBLoad(
+    ConfigService configService,
+    DatabaseServer databaseServer,
+    LazyLoadHandlerService lazyLoadHandlerService,
+    IEnumerable<IOnPresetUpdate> onPresetUpdates
+) : IOnLoad
 {
-    [Injectable(TypePriority = OnLoadOrder.PostDBModLoader + LotsofLootLoadPriority.LotsofLootPriorityOffset)]
-    public class PostDBLoad(
-        ModificationHelper modificationHelper,
-        LazyLoadHandlerService lazyLoadHandlerService,
-        ItemHelper itemHelper,
-        DatabaseServer databaseServer,
-        ConfigServer configServer,
-        ConfigService configService,
-        LotsOfLootLogger logger
-    ) : IOnLoad
+    public Task OnLoad()
     {
-        private readonly LocationConfig _locationConfig = configServer.GetConfig<LocationConfig>();
+        Templates? databaseTemplates = databaseServer.GetTables().Templates;
 
-        public Task OnLoad()
+        if (databaseTemplates is null || databaseTemplates.Items is null || databaseTemplates.Prices is null)
         {
-            Templates? databaseTemplates = databaseServer.GetTables().Templates;
-
-            if (databaseTemplates is null || databaseTemplates.Items is null || databaseTemplates.Prices is null)
-            {
-                logger.Critical("Database templates are null, aborting!");
-
-                return Task.CompletedTask;
-            }
-
-            if (configService.LotsOfLootConfig.General.RemoveBackpackRestrictions)
-            {
-                modificationHelper.RemoveBackpackRestrictions();
-            }
-
-            foreach ((string map, double multiplier) in configService.LotsOfLootConfig.LooseLootMultiplier)
-            {
-                // When allow loot overlay is disabled, amplify the loose loot ever so slightly so more items spawn in other spawn points.
-                if (!configService.LotsOfLootConfig.General.AllowLootOverlay)
-                {
-                    _locationConfig.LooseLootMultiplier[map] = Math.Round(multiplier * 1.5);
-                }
-                else
-                {
-                    _locationConfig.LooseLootMultiplier[map] = multiplier;
-                }
-
-                _locationConfig.StaticLootMultiplier[map] = configService.LotsOfLootConfig.StaticLootMultiplier[map];
-                _locationConfig.ContainerRandomisationSettings.Enabled = configService.LotsOfLootConfig.General.LootContainersRandom;
-
-                if (logger.IsDebug())
-                {
-                    logger.Debug($"Loose loot multiplier {map}: {_locationConfig.LooseLootMultiplier[map]}");
-                    logger.Debug($"Static loot multiplier {map}: {configService.LotsOfLootConfig.StaticLootMultiplier[map]}");
-                }
-            }
-
-            lazyLoadHandlerService.OnPostDBLoad();
-
-            if (configService.LotsOfLootConfig.General.DisableFleaRestrictions)
-            {
-                foreach ((_, TemplateItem template) in databaseTemplates.Items)
-                {
-                    if (itemHelper.IsValidItem(template.Id))
-                    {
-                        template.Properties.CanRequireOnRagfair = true;
-                        template.Properties.CanSellOnRagfair = true;
-                    }
-                }
-            }
-
-            foreach ((MongoId itemId, long adjustedPrice) in configService.LotsOfLootConfig.General.PriceCorrection)
-            {
-                databaseTemplates.Prices[itemId] = adjustedPrice;
-            }
-
-            return Task.CompletedTask;
+            throw new InvalidOperationException("Database templates are null?");
         }
+
+        // This only needs initialisation once, it will get the current values out of the config service when a raid is loaded
+        lazyLoadHandlerService.OnPostDBLoad();
+
+        // Apply the currently loaded preset
+        foreach (IOnPresetUpdate presetUpdate in onPresetUpdates)
+        {
+            presetUpdate.Apply(configService.LotsofLootPresetConfig);
+        }
+
+        return Task.CompletedTask;
     }
 }
