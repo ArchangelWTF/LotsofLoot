@@ -315,7 +315,15 @@ public class LotsofLootLocationLootGenerator(
             if (lootItemCreator.CanCreateItem(chosenTpl))
             {
                 Item rootItem = items[0];
+
                 lootItemCreator.CreateItem(items, itemTemplate, staticAmmoDist, this);
+
+                if (items.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"Generator '{lootItemCreator.GetType().FullName}' said it can create item '{chosenTpl}', but no items were created!"
+                    );
+                }
 
                 if (itemHelper.IsOfBaseclass(chosenTpl, BaseClasses.WEAPON))
                 {
