@@ -88,6 +88,11 @@ public class BackpackSimpleItemCreator(
         DatabaseTables tables = databaseService.GetTables();
         Dictionary<MongoId, TemplateItem>? items = databaseService.GetTables()?.Templates?.Items;
 
+        if (items is null)
+        {
+            throw new InvalidOperationException("Could not generate item, the item templates database is empty?");
+        }
+
         if (!items.TryGetValue(tpl, out var item))
         {
             logger.Warning($"Template {tpl} not found in database.");
