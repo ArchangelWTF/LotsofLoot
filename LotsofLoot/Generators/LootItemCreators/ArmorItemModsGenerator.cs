@@ -38,11 +38,23 @@ public class ArmorItemModsGenerator(ConfigServer configServer, ItemHelper itemHe
             List<Item> presetAndMods = defaultPreset.Items.ReplaceIDs().ToList();
             presetAndMods.RemapRootItemId();
             presetAndMods[0].ParentId = items[0].ParentId;
-            items = presetAndMods;
+
+            items.Clear();
+            items.AddRange(presetAndMods);
+
+            return;
         }
-        else if (templateItem.Properties.Slots?.Count() > 0)
+
+        if (templateItem.Properties.Slots?.Count() > 0)
         {
-            items = itemHelper.AddChildSlotItems(items, templateItem, _locationConfig.EquipmentLootSettings.ModSpawnChancePercent);
+            List<Item> itemsWithChildren = itemHelper.AddChildSlotItems(
+                items,
+                templateItem,
+                _locationConfig.EquipmentLootSettings.ModSpawnChancePercent
+            );
+
+            items.Clear();
+            items.AddRange(itemsWithChildren);
         }
     }
 }
