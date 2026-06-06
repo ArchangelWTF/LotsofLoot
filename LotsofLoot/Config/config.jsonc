@@ -79,10 +79,10 @@
   "MarkedRoomConfig": {
     //Marked room loot multiplier, higher = more loot probability
     "Multiplier": {
-      "bigmap": 4,
-      "rezervbase": 4,
-      "tarkovstreets": 4,
-      "lighthouse": 4
+        "bigmap": 7.5,
+        "rezervbase": 7.5,
+        "tarkovstreets": 7.5,
+        "lighthouse": 7.5
     },
     //Adds these items to the marked room loot pool, lower number = rarer item
     "ExtraItems": {
@@ -116,10 +116,10 @@
   "RefRoomConfig": {
     //Ref room loot multiplier, higher = more loot probability
     "Multiplier": {
-      "woods": 1, //shatun
-      "interchange": 1, //grumpy
-      "shoreline": 1, //voron
-      "lighthouse": 1 //leon
+      "woods": 7.5, //Shatun's Hideout
+      "interchange": 7.5, //Grumpy's hideout
+      "shoreline": 7.5, //Voron's Hideout
+      "lighthouse": 7.5 //Leon's Hideout
     },
     //Multiplies the chance for a group of itemns to spawn in the room, higher number = more common
     "ItemGroups": {

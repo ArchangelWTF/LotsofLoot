@@ -41,25 +41,23 @@ public static class SpawnpointExtensionMethods
                 return true;
             }
         }
-        //Todo: Check
         else if (locationId == "tarkovstreets")
         {
             // Abandoned Factory Marked Room
-            if (pos.X > -133 && pos.X < -129 && pos.Z > 265 && pos.Z < 275 && pos.Y > 8.5 && pos.Y < 11)
+            if (pos.X > -134 && pos.X < -128 && pos.Z > 264 && pos.Z < 276 && pos.Y > 8.5 && pos.Y < 12)
             {
                 return true;
             }
             // Chek 13 Marked Room
-            else if (pos.X > 186 && pos.X < 191 && pos.Z > 224 && pos.Z < 229 && pos.Y > -0.5 && pos.Y < 1.5)
+            else if (pos.X > 184 && pos.X < 192 && pos.Z > 223 && pos.Z < 230 && pos.Y > -1.0 && pos.Y < 1.5)
             {
                 return true;
             }
         }
-        //Todo: Check
         else if (locationId == "lighthouse")
         {
             // Lightkeeper marked room
-            if (pos.X > 319 && pos.X < 330 && pos.Z > 482 && pos.Z < 489 && pos.Y > 5 && pos.Y < 6.5)
+            if (pos.X > 318 && pos.X < 331 && pos.Z > 481 && pos.Z < 490 && pos.Y > 4 && pos.Y < 7)
             {
                 return true;
             }
@@ -77,38 +75,34 @@ public static class SpawnpointExtensionMethods
             return false;
         }
 
-        //Todo: Check
         if (locationId == "woods")
         {
-            //shatun
-            if (pos.X > -514.5 && pos.X < -510.5 && pos.Z > -395.5 && pos.Z < -388 && pos.Y > 15.5 && pos.Y < 19)
+            //Shatun's Hideout
+            if (pos.X > -513 && pos.X < -509 && pos.Z > -396 && pos.Z < -387 && pos.Y > 14 && pos.Y < 19)
             {
                 return true;
             }
         }
-        //Todo: Check
         else if (locationId == "interchange")
         {
-            //grumpy
-            if (pos.X > -200.5 && pos.X < -193 && pos.Z > -348 && pos.Z < -344 && pos.Y > 21 && pos.Y < 24)
+            //Grumpy's hideout
+            if (pos.X > -199 && pos.X < -192 && pos.Z > -348 && pos.Z < -343 && pos.Y > 20 && pos.Y < 25)
             {
                 return true;
             }
         }
-        //Todo: Check
         else if (locationId == "shoreline")
         {
-            //voron
-            if (pos.X > -239.5 && pos.X < -235.5 && pos.Z > 191.5 && pos.Z < 199 && pos.Y > -41 && pos.Y < -37)
+            //Voron's Hideout
+            if (pos.X > -238 && pos.X < -236 && pos.Z > 190 && pos.Z < 1200 && pos.Y > -42 && pos.Y < -36)
             {
                 return true;
             }
         }
-        //Todo: Check
         else if (locationId == "lighthouse")
         {
-            //leon
-            if (pos.X > -79.5 && pos.X < -75.5 && pos.Z > -297.5 && pos.Z < -288 && pos.Y > 9 && pos.Y < 12)
+            //Leon's Hideout
+            if (pos.X > -80 && pos.X < -74 && pos.Z > -298 && pos.Z < -288 && pos.Y > 9 && pos.Y < 13)
             {
                 return true;
             }
