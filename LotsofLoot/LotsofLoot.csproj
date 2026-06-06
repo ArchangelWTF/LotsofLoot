@@ -13,14 +13,7 @@
     <PackageReference Include="SPTarkov.Server.Core" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Config\config.jsonc" />
-    <None Include="config.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Presets\default.json">
+    <None Update="Config\config.jsonc">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
@@ -36,9 +29,6 @@
     <ItemGroup>
       <RemainingFiles Include="$(OutputPath)**\*" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(RemainingFiles)"
-      DestinationFiles="@(RemainingFiles-&gt;'$(ReleaseOutputDir)%(RecursiveDir)%(Filename)%(Extension)')"
-    />
+    <Copy SourceFiles="@(RemainingFiles)" DestinationFiles="@(RemainingFiles->'$(ReleaseOutputDir)%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 </Project>

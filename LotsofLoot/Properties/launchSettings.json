@@ -1,12 +1,9 @@
 {
   "profiles": {
-    "LotsofLoot": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:52767;http://localhost:52768"
+    "SPT": {
+      "commandName": "Executable",
+      "executablePath": "F:\\User Profile\\Documents\\SPT\\server-csharp\\SPTarkov.Server\\bin\\Debug\\net9.0\\SPT.Server.exe",
+      "workingDirectory": "F:\\User Profile\\Documents\\SPT\\server-csharp\\SPTarkov.Server\\bin\\Debug\\net9.0"
     }
   }
 }

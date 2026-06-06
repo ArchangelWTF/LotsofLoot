@@ -1,6 +1,5 @@
 ﻿using LotsofLoot.Models.Preset;
 using LotsofLoot.Services;
-using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.DI;
 using SPTarkov.Server.Core.Models.Spt.Templates;
@@ -12,7 +11,6 @@ namespace LotsofLoot.OnLoad;
 public class PostDBLoad(
     ConfigService configService,
     DatabaseServer databaseServer,
-    LocaleCacheService localeCacheService,
     LazyLoadHandlerService lazyLoadHandlerService,
     IEnumerable<IOnPresetUpdate> onPresetUpdates
 ) : IOnLoad
@@ -25,8 +23,6 @@ public class PostDBLoad(
         {
             throw new InvalidOperationException("Database templates are null?");
         }
-
-        localeCacheService.HydrateCache();
 
         // This only needs initialisation once, it will get the current values out of the config service when a raid is loaded
         lazyLoadHandlerService.OnPostDBLoad();

@@ -34,7 +34,7 @@ public class ConfigService(
 
     public string GetConfigPath()
     {
-        return Path.Combine(ModPath, "config.json");
+        return Path.Combine(ModPath, "Config", "config.jsonc");
     }
 
     public string GetPresetPath(string preset)
@@ -61,50 +61,28 @@ public class ConfigService(
     public async Task LoadAsync()
     {
         string configPath = GetConfigPath();
+        string configDir = Path.GetDirectoryName(configPath)!;
 
-        LotsofLootConfig? loadedConfig = await jsonUtil.DeserializeFromFileAsync<LotsofLootConfig>(configPath);
+        LotsofLootPresetConfig? loadedConfig = await jsonUtil.DeserializeFromFileAsync<LotsofLootPresetConfig>(configPath);
 
         if (loadedConfig is not null)
         {
-            LotsofLootConfig = loadedConfig;
+            LotsofLootPresetConfig = loadedConfig;
+
+            logger.Success("[Lots of Loot Redux] Config successfully loaded");
         }
         else
         {
-            logger.Warning("[Lots of Loot Redux] Could not load config! Using default settings");
+            logger.Warning("[Lots of Loot Redux] No config file found, loading defaults!");
 
-            // Write the default config file back, for some reason it's missing
-            await WriteConfig();
-        }
-
-        // We are too early to update the preset here, and since this is the initial init we dont need to save the config again
-        bool couldLoadPresetConfig = await LoadPresetConfig(LotsofLootConfig.PresetName, false, false);
-
-        if (!couldLoadPresetConfig)
-        {
-            if (LotsofLootConfig.PresetName != "default")
+            if (!Directory.Exists(configDir))
             {
-                logger.Warning(
-                    $"[Lots of Loot Redux] Preset '{LotsofLootConfig.PresetName}' could not be loaded! Attempting to load default preset"
-                );
-
-                // This will set the preset back to default if it loads successfully
-                // This might have happened because the user removed a preset they were using
-                couldLoadPresetConfig = await LoadPresetConfig("default", false, true);
-
-                if (!couldLoadPresetConfig)
-                {
-                    throw new InvalidOperationException(
-                        $"[Lots of Loot Redux] Failed to load preset '{LotsofLootConfig.PresetName}'."
-                            + "Also failed to load the default preset, please re-install this mod as the default preset does not exist anymore!"
-                    );
-                }
+                Directory.CreateDirectory(configDir);
             }
-            else
-            {
-                throw new InvalidOperationException(
-                    "[Lots of Loot Redux] Failed to load the default preset, please re-install this mod as the default preset does not exist anymore!"
-                );
-            }
+
+            throw new InvalidOperationException(
+                $"[Lots of Loot Redux] Failed to load config. Please re-install this mod as the default config does not exist anymore!"
+            );
         }
     }
 
