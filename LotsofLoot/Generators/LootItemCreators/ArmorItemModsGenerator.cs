@@ -10,7 +10,12 @@ using SPTarkov.Server.Core.Servers;
 namespace LotsofLoot.Generators.LootItemCreators;
 
 [Injectable]
-public class ArmorItemModsGenerator(ConfigServer configServer, ItemHelper itemHelper, PresetHelper presetHelper) : ILootItemCreator
+public class ArmorItemModsGenerator(
+    ConfigServer configServer,
+    ItemHelper itemHelper,
+    PresetHelper presetHelper,
+    ILogger<ArmorItemModsGenerator> logger
+) : ILootItemCreator
 {
     private readonly LocationConfig _locationConfig = configServer.GetConfig<LocationConfig>();
 
@@ -39,9 +44,11 @@ public class ArmorItemModsGenerator(ConfigServer configServer, ItemHelper itemHe
             presetAndMods.RemapRootItemId();
             presetAndMods[0].ParentId = items[0].ParentId;
 
-            items.Clear();
-            items.AddRange(presetAndMods);
-
+            if (presetAndMods.Count > 0)
+            {
+                items.Clear();
+                items.AddRange(presetAndMods);
+            }
             return;
         }
 
@@ -53,8 +60,11 @@ public class ArmorItemModsGenerator(ConfigServer configServer, ItemHelper itemHe
                 _locationConfig.EquipmentLootSettings.ModSpawnChancePercent
             );
 
-            items.Clear();
-            items.AddRange(itemsWithChildren);
+            if (itemsWithChildren.Count > 0)
+            {
+                items.Clear();
+                items.AddRange(itemsWithChildren);
+            }
         }
     }
 }
