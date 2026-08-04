@@ -1,0 +1,25 @@
+@* Wraps a settings page so every Config* component inside can hide itself when it doesn't match the search. *@
+
+<MudPaper Elevation="0" Class="lotsofloot-filter spt-panel pa-2">
+    <MudTextField T="string"
+                  @bind-Value="filterText"
+                  Placeholder="@Placeholder"
+                  Variant="Variant.Outlined"
+                  Margin="Margin.Dense"
+                  Immediate="true"
+                  DebounceInterval="150"
+                  Clearable="true"
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search" />
+</MudPaper>
+
+<CascadingValue Name="@SettingsFilter.CascadeName" Value="filterText">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Filter settings...";
+
+    private string? filterText;
+}

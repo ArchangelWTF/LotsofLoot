@@ -4,12 +4,17 @@ using LotsofLoot.Services;
 using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Generators;
+using SPTarkov.Server.Core.Generators.Loot;
 using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Helpers.Items;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
-using SPTarkov.Server.Core.Models.Spt.Server;
+using SPTarkov.Server.Core.Models.Enums;
+using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Services;
+using SPTarkov.Server.Core.Services.Items;
+using SPTarkov.Server.Core.Utils;
 using SPTarkov.Server.Core.Utils.Cloners;
 using SPTarkov.Server.Core.Utils.Collections;
 
@@ -18,12 +23,12 @@ namespace LotsofLoot.Generators.LootItemCreators;
 [Injectable]
 public class BackpackSimpleItemCreator(
     ConfigService configService,
-    DatabaseService databaseService,
+    TemplateTable templateTable,
     ItemFilterService itemFilterService,
     ItemHelper itemHelper,
+    RandomUtil randomUtil,
     LotsofLootItemHelper lotsofLootItemHelper,
     LotsOfLootLogger logger,
-    NewSPTRandomUtil randomUtil,
     ICloner cloner
 ) : ILootItemCreator
 {
@@ -85,8 +90,7 @@ public class BackpackSimpleItemCreator(
             return [];
         }
 
-        DatabaseTables tables = databaseService.GetTables();
-        Dictionary<MongoId, TemplateItem>? items = databaseService.GetTables()?.Templates?.Items;
+        Dictionary<MongoId, TemplateItem>? items = templateTable.Items;
 
         if (items is null)
         {
@@ -164,7 +168,7 @@ public class BackpackSimpleItemCreator(
 
         // Build probability array with improved weight calculation
         ProbabilityObjectArray<MongoId, int?> itemArray = new(cloner);
-        Dictionary<MongoId, double>? prices = tables.Templates?.Prices;
+        Dictionary<MongoId, double>? prices = templateTable.Prices;
 
         foreach (var itemId in whitelist)
         {

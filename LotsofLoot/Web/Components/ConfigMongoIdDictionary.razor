@@ -1,0 +1,305 @@
+@implements IDisposable
+@inject ConfigService configService
+@inject LocaleCacheService localeCacheService
+
+@* Editor for any Dictionary<MongoId, double> in the preset, over either the item or the item-group locale
+   cache. Rows are one line each and long dictionaries get virtualized, because Containers alone is 31 entries. *@
+
+@if (MatchesFilter)
+{
+    <MudItem xs="12">
+        <div class="lotsofloot-collection-header">
+            <div class="lotsofloot-option-title-row">
+                @if (!string.IsNullOrEmpty(WarningText))
+                {
+                    <ConfigWarning Text="@WarningText" />
+                }
+                <MudText Typo="Typo.h6">@Label</MudText>
+            </div>
+            <MudText Typo="Typo.body2" Class="lotsofloot-option-description">@Tooltip</MudText>
+            <div class="lotsofloot-collection-summary">
+                <span class="lotsofloot-kind lotsofloot-kind-object">Object</span>
+                <span>@Value.Count @EntityNoun@(Value.Count == 1 ? string.Empty : "s")</span>
+                @if (ChangedCount > 0)
+                {
+                    <span class="lotsofloot-kind lotsofloot-kind-changed">@ChangedCount changed</span>
+                }
+            </div>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12">
+        <div class="lotsofloot-dict">
+            <div class="lotsofloot-dict-head">
+                <span>@EntityLabel</span>
+                <span>Id</span>
+                <span>Value</span>
+                <span></span>
+            </div>
+
+            <div class="@(ShouldVirtualize ? "lotsofloot-dict-body lotsofloot-dict-body-scroll" : "lotsofloot-dict-body")">
+                @if (ShouldVirtualize)
+                {
+                    <Virtualize Items="Rows" Context="row" ItemSize="46" OverscanCount="8">
+                        @RenderRow(row)
+                    </Virtualize>
+                }
+                else
+                {
+                    foreach (var row in Rows)
+                    {
+                        @RenderRow(row)
+                    }
+                }
+            </div>
+
+            <div class="lotsofloot-dict-row lotsofloot-dict-row-new">
+                <MudAutocomplete T="string"
+                                 Placeholder="@($"Add a {EntityNoun}...")"
+                                 Value="@newKey"
+                                 ValueChanged="@(value => newKey = value)"
+                                 SearchFunc="@SearchLocaleKeys"
+                                 ToStringFunc="@FetchName"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 MinCharacters="1"
+                                 DebounceInterval="300"
+                                 ResetValueOnEmptyText="false"
+                                 CoerceValue="true"
+                                 Strict="false"
+                                 CoerceText="false" />
+                <span class="lotsofloot-dict-id">@(IsValidNewKey ? newKey : string.Empty)</span>
+                <MudNumericField T="double" HideSpinButtons="true" @bind-Value="newValue" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudButton OnClick="AddItem"
+                           Variant="Variant.Filled"
+                           Color="Color.Warning"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Size="Size.Small"
+                           Disabled="@(!IsValidNewKey)">
+                    Add
+                </MudButton>
+            </div>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12" Class="d-flex justify-end gap-2">
+        @if (ShowUndo && !DictionariesEqual(Value, OriginalValue))
+        {
+            <MudButton OnClick="Undo" Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" StartIcon="@Icons.Material.Filled.Undo">
+                Undo All
+            </MudButton>
+        }
+        @if (ShowDefault && !DictionariesEqual(Value, DefaultValue))
+        {
+            <MudButton OnClick="SetDefault" Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small" StartIcon="@Icons.Material.Filled.RestartAlt">
+                Reset to Default
+            </MudButton>
+        }
+    </MudItem>
+}
+
+@code {
+    public enum LocaleSource
+    {
+        Items,
+        ItemGroups,
+    }
+
+    [Parameter] public required string Key { get; set; }
+    [Parameter] public required string Label { get; set; }
+    [Parameter] public string? Tooltip { get; set; }
+    [Parameter] public string? WarningText { get; set; }
+
+    /// <summary>Which locale cache backs the autocomplete, and what a row is called in the UI</summary>
+    [Parameter] public LocaleSource Source { get; set; } = LocaleSource.Items;
+
+    [Parameter] public required Dictionary<MongoId, double> Value { get; set; }
+    [Parameter] public EventCallback<Dictionary<MongoId, double>> ValueChanged { get; set; }
+
+    [Parameter] public required Dictionary<MongoId, double> OriginalValue { get; set; }
+    [Parameter] public required Dictionary<MongoId, double> DefaultValue { get; set; }
+
+    [Parameter] public bool ShowUndo { get; set; } = true;
+    [Parameter] public bool ShowDefault { get; set; } = true;
+
+    [CascadingParameter(Name = SettingsFilter.CascadeName)] private string? FilterText { get; set; }
+
+    private bool MatchesFilter => SettingsFilter.Matches(FilterText, Label, Key, Tooltip);
+
+
+    /// <summary>Past this many rows the list gets its own scroll area rather than growing the page</summary>
+    private const int VirtualizeThreshold = 12;
+
+    private string newKey = string.Empty;
+    private double newValue;
+
+    private string EntityLabel => Source == LocaleSource.ItemGroups ? "Group" : "Item";
+    private string EntityNoun => Source == LocaleSource.ItemGroups ? "group" : "item";
+
+    private List<KeyValuePair<MongoId, double>> Rows => [.. Value];
+    private bool ShouldVirtualize => Value.Count > VirtualizeThreshold;
+    private int ChangedCount => Value.Count(kvp => IsItemChanged(kvp.Key));
+    private bool IsValidNewKey => MongoId.IsValidMongoId(newKey) && !Value.ContainsKey(new MongoId(newKey));
+
+    private RenderFragment RenderRow(KeyValuePair<MongoId, double> row) =>
+        @<div class="@(IsItemChanged(row.Key) ? "lotsofloot-dict-row lotsofloot-dict-row-changed" : "lotsofloot-dict-row")">
+            <MudAutocomplete T="string"
+                             Value="@row.Key"
+                             ValueChanged="@(newKeyValue => OnKeyChanged(row.Key, newKeyValue))"
+                             SearchFunc="@SearchLocaleKeys"
+                             ToStringFunc="@FetchName"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense"
+                             MinCharacters="1"
+                             DebounceInterval="300"
+                             ResetValueOnEmptyText="false"
+                             CoerceValue="true"
+                             Strict="false"
+                             CoerceText="false" />
+            <span class="lotsofloot-dict-id" title="@row.Key.ToString()">@row.Key.ToString()</span>
+            <MudNumericField T="double"
+                             HideSpinButtons="true"
+                             Value="@row.Value"
+                             ValueChanged="@(newVal => OnValueChanged(row.Key, newVal))"
+                             Variant="Variant.Outlined"
+                             Margin="Margin.Dense" />
+            <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                           Color="Color.Error"
+                           Size="Size.Small"
+                           Title="Remove"
+                           OnClick="@(() => RemoveItem(row.Key))" />
+        </div>;
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string FetchName(string id)
+    {
+        return Source == LocaleSource.ItemGroups ? localeCacheService.FetchItemGroupLocale(id) : localeCacheService.FetchLocale(id);
+    }
+
+    private IEnumerable<MongoId> FetchKeys()
+    {
+        return Source == LocaleSource.ItemGroups ? localeCacheService.FetchItemGroupCacheKeys() : localeCacheService.FetchCacheKeys();
+    }
+
+    private bool IsItemChanged(MongoId key)
+    {
+        return !OriginalValue.TryGetValue(key, out var original) || Value[key] != original;
+    }
+
+    private async Task OnKeyChanged(MongoId oldKey, string newKeyValue)
+    {
+        if (!MongoId.IsValidMongoId(newKeyValue))
+        {
+            return;
+        }
+
+        var newMongoId = new MongoId(newKeyValue);
+        if (Value.ContainsKey(newMongoId))
+        {
+            return;
+        }
+
+        var value = Value[oldKey];
+        Value.Remove(oldKey);
+        Value[newMongoId] = value;
+
+        await NotifyChange();
+    }
+
+    private async Task OnValueChanged(MongoId key, double newVal)
+    {
+        Value[key] = newVal;
+        await NotifyChange();
+    }
+
+    private async Task AddItem()
+    {
+        if (!IsValidNewKey)
+        {
+            return;
+        }
+
+        Value[new MongoId(newKey)] = newValue;
+        newKey = string.Empty;
+        newValue = 0;
+
+        await NotifyChange();
+    }
+
+    private async Task RemoveItem(MongoId key)
+    {
+        Value.Remove(key);
+        await NotifyChange();
+    }
+
+    private async Task Undo()
+    {
+        Value = new Dictionary<MongoId, double>(OriginalValue);
+        await NotifyChange();
+    }
+
+    private async Task SetDefault()
+    {
+        Value = new Dictionary<MongoId, double>(DefaultValue);
+        await NotifyChange();
+    }
+
+    private async Task NotifyChange()
+    {
+        if (configService.EditablePresetHolder is null)
+        {
+            return;
+        }
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(Value);
+        }
+
+        if (DictionariesEqual(Value, OriginalValue))
+        {
+            configService.EditablePresetHolder.RemovePendingChange(Key);
+        }
+        else
+        {
+            configService.EditablePresetHolder.AddPendingChange(Key, Label, Undo);
+        }
+    }
+
+    private static bool DictionariesEqual(Dictionary<MongoId, double> first, Dictionary<MongoId, double> second)
+    {
+        return first.Count == second.Count
+            && first.All(kvp => second.TryGetValue(kvp.Key, out var value) && value == kvp.Value);
+    }
+
+    private async Task<IEnumerable<string>> SearchLocaleKeys(string value, CancellationToken cts)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        await Task.Delay(5, cts);
+
+        return FetchKeys()
+            .Where(key => FetchName(key).Contains(value, StringComparison.InvariantCultureIgnoreCase))
+            .Where(key => !Value.ContainsKey(key))
+            .Select(key => key.ToString())
+            .ToList();
+    }
+}

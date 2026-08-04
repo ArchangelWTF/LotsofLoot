@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Generators;
+using SPTarkov.Server.Core.Generators.Loot;
 using SPTarkov.Server.Core.Models.Eft.Common;
 
 namespace LotsofLoot.Helpers;

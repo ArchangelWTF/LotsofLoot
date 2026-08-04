@@ -2,6 +2,7 @@
 using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Eft.Common;
+using SPTarkov.Server.Core.Utils;
 using SPTarkov.Server.Core.Utils.Cloners;
 using SPTarkov.Server.Core.Utils.Collections;
 
@@ -9,7 +10,7 @@ namespace LotsofLoot.Generators.LootSpawnpointDeciders;
 
 [Injectable]
 // Just a copy of the marked room class for now, might change later
-public sealed class RefRoom(ConfigService config, ICloner cloner, NewSPTRandomUtil randomUtil) : ILootSpawnpointDecider
+public sealed class RefRoom(ConfigService config, ICloner cloner, RandomUtil randomUtil) : ILootSpawnpointDecider
 {
     public List<Spawnpoint> Decide(
         string locationName,

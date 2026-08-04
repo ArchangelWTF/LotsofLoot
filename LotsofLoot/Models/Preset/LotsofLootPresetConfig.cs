@@ -40,5 +40,5 @@ public sealed class LotsofLootPresetConfig
     /// <summary>
     /// Relative chance multiplier that no items spawn in this container, values: 0 = items every time, 1 = no change
     /// </summary>
-    public required Dictionary<MongoId, float> Containers { get; set; }
+    public required Dictionary<MongoId, double> Containers { get; set; }
 }

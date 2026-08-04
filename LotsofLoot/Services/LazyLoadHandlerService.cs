@@ -4,13 +4,14 @@ using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
+using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Services;
 
 namespace LotsofLoot.Services;
 
 [Injectable(InjectionType.Singleton)]
 public class LazyLoadHandlerService(
-    DatabaseService databaseService,
+    LocationTable locationTable,
     ConfigService configService,
     LootRoomHelper lootRoomHelper,
     LotsOfLootLogger logger
@@ -18,7 +19,7 @@ public class LazyLoadHandlerService(
 {
     public void OnPostDBLoad()
     {
-        var locations = databaseService.GetLocations().GetDictionary();
+        var locations = locationTable.GetDictionary();
 
         foreach ((string locationId, Location location) in locations)
         {
@@ -63,7 +64,7 @@ public class LazyLoadHandlerService(
                     continue;
                 }
 
-                if (!configService.LotsofLootPresetConfig.Containers.TryGetValue(containerId, out float configRelativeProbability))
+                if (!configService.LotsofLootPresetConfig.Containers.TryGetValue(containerId, out double configRelativeProbability))
                 {
                     continue;
                 }

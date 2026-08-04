@@ -7,44 +7,16 @@ using SPTarkov.Server.Core.DI;
 
 namespace LotsofLoot.OnLoad;
 
-[Injectable(TypePriority = OnLoadOrder.PreSptModLoader + LotsofLootModMetadata.LotsofLootPriorityOffset)]
-public class PreSPTLoad(ConfigService configService, LotsOfLootLogger logger) : IOnLoad
+[Injectable(TypePriority = OnLoadOrder.Preload + LotsofLootModMetadata.LotsofLootPriorityOffset)]
+public class PreSPTLoad(IEnumerable<IRuntimePatch> patches, ConfigService configService) : IOnLoad
 {
-    private bool _overridesInjected = false;
-    private readonly List<AbstractPatch> _patches = [new GenerateDynamicLootOverride(), new GenerateStaticLootOverride()];
-
-    private void InjectOverrides()
+    public async Task OnLoadAsync(CancellationToken cancellationToken)
     {
-        if (_overridesInjected)
+        foreach (var patch in patches)
         {
-            return;
+            patch.Enable();
         }
 
-        try
-        {
-            foreach (AbstractPatch patch in _patches)
-            {
-                if (logger.IsDebug())
-                {
-                    logger.Debug($"Loading patch: {patch.GetType().Name}");
-                }
-
-                patch.Enable();
-            }
-        }
-        catch (Exception ex)
-        {
-            logger.Error($"Error applying patch: {ex.Message}");
-            throw;
-        }
-
-        _overridesInjected = true;
-    }
-
-    public async Task OnLoad()
-    {
-        InjectOverrides();
-
-        await configService.LoadAsync();
+        await configService.LoadAsync(cancellationToken);
     }
 }

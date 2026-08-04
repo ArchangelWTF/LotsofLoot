@@ -4,17 +4,21 @@ using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Spt.Config;
+using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Servers;
 using SPTarkov.Server.Core.Services;
+using SPTarkov.Server.Core.Services.Server;
 
 namespace LotsofLoot.Helpers;
 
 [Injectable]
-public class LotsofLootItemHelper(DatabaseService databaseService, SeasonalEventService seasonalEventService, ConfigServer configServer)
+public class LotsofLootItemHelper(
+    LocationTable locationTable,
+    LocationConfig locationConfig,
+    SeasonalEventConfig seasonalEventConfig,
+    SeasonalEventService seasonalEventService
+)
 {
-    protected readonly LocationConfig LocationConfig = configServer.GetConfig<LocationConfig>();
-    protected readonly SeasonalEventConfig SeasonalEventConfig = configServer.GetConfig<SeasonalEventConfig>();
-
     public List<MongoId> FindAndReturnChildItemIdsByItems(Dictionary<MongoId, TemplateItem> items, MongoId rootItemId)
     {
         // 'Item (54009119af1c881c07000029)' Doesn't have a parent, return all of it's children instead.
@@ -77,7 +81,7 @@ public class LotsofLootItemHelper(DatabaseService databaseService, SeasonalEvent
     {
         var result = new SptLootCountResult();
 
-        var mapData = databaseService.GetLocation(locationId);
+        var mapData = locationTable.GetLocation(locationId);
 
         if (mapData is null || mapData.StaticContainers is null)
         {
@@ -90,7 +94,7 @@ public class LotsofLootItemHelper(DatabaseService databaseService, SeasonalEvent
         if (!seasonalEventService.ChristmasEventEnabled())
         {
             allStaticContainersOnMap = allStaticContainersOnMap.Where(item =>
-                !SeasonalEventConfig.ChristmasContainerIds.Contains(item.Template.Id)
+                !seasonalEventConfig.ChristmasContainerIds.Contains(item.Template.Id)
             );
         }
 

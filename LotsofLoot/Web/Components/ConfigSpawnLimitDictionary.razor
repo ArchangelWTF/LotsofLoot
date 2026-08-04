@@ -1,0 +1,294 @@
+@implements IDisposable
+@inject ConfigService configService
+@inject LocaleCacheService localeCacheService
+
+@if (MatchesFilter)
+{
+    <MudItem xs="12">
+        <div class="lotsofloot-collection-header">
+            <div class="lotsofloot-option-title-row">
+                @if (!string.IsNullOrEmpty(WarningText))
+                {
+                    <ConfigWarning Text="@WarningText" />
+                }
+                <MudText Typo="Typo.h6">@Label</MudText>
+            </div>
+            <MudText Typo="Typo.body2" Class="lotsofloot-option-description">@Tooltip</MudText>
+            <div class="lotsofloot-collection-summary">
+                <span class="lotsofloot-kind lotsofloot-kind-object">Object</span>
+                <span>@Value.Count container@(Value.Count == 1 ? string.Empty : "s")</span>
+            </div>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12">
+        <div class="lotsofloot-dict lotsofloot-dict-limits">
+            <div class="lotsofloot-dict-head">
+                <span>Container</span>
+                <span>Id</span>
+                <span>Keys</span>
+                <span>Keycards</span>
+                <span></span>
+            </div>
+
+            <div class="lotsofloot-dict-body">
+                @foreach (var kvp in Value)
+                {
+                    var currentKey = kvp.Key;
+                    var limit = kvp.Value;
+                    <div class="@(IsItemChanged(currentKey) ? "lotsofloot-dict-row lotsofloot-dict-row-changed" : "lotsofloot-dict-row")">
+                        <MudAutocomplete T="string"
+                                         Value="@currentKey"
+                                         ValueChanged="@(newKeyValue => OnKeyChanged(currentKey, newKeyValue))"
+                                         SearchFunc="@SearchLocaleKeys"
+                                         ToStringFunc="@(id => localeCacheService.FetchLocale(id))"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         MinCharacters="1"
+                                         DebounceInterval="300"
+                                         ResetValueOnEmptyText="false"
+                                         CoerceValue="true"
+                                         Strict="false"
+                                         CoerceText="false" />
+                        <span class="lotsofloot-dict-id" title="@currentKey.ToString()">@currentKey.ToString()</span>
+                        <MudNumericField T="int?"
+                                         Placeholder="Any"
+                                         Min="0"
+                                         HideSpinButtons="true"
+                                         Clearable="true"
+                                         Value="@limit.Keys"
+                                         ValueChanged="@(newVal => OnLimitChanged(currentKey, newVal, limit.Keycards))"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense" />
+                        <MudNumericField T="int?"
+                                         Placeholder="Any"
+                                         Min="0"
+                                         HideSpinButtons="true"
+                                         Clearable="true"
+                                         Value="@limit.Keycards"
+                                         ValueChanged="@(newVal => OnLimitChanged(currentKey, limit.Keys, newVal))"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Title="Remove"
+                                       OnClick="@(() => RemoveItem(currentKey))" />
+                    </div>
+                }
+            </div>
+
+            <div class="lotsofloot-dict-row lotsofloot-dict-row-new">
+                <MudAutocomplete T="string"
+                                 Placeholder="Add a container..."
+                                 Value="@newKey"
+                                 ValueChanged="@(value => newKey = value)"
+                                 SearchFunc="@SearchLocaleKeys"
+                                 ToStringFunc="@(id => localeCacheService.FetchLocale(id))"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 MinCharacters="1"
+                                 DebounceInterval="300"
+                                 ResetValueOnEmptyText="false"
+                                 CoerceValue="true"
+                                 Strict="false"
+                                 CoerceText="false" />
+                <span class="lotsofloot-dict-id">@(IsValidNewKey ? newKey : string.Empty)</span>
+                <MudNumericField T="int?" Placeholder="Any" Min="0" HideSpinButtons="true" Clearable="true"
+                                 @bind-Value="newKeys" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudNumericField T="int?" Placeholder="Any" Min="0" HideSpinButtons="true" Clearable="true"
+                                 @bind-Value="newKeycards" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                <MudButton OnClick="AddItem"
+                           Variant="Variant.Filled"
+                           Color="Color.Warning"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Size="Size.Small"
+                           Disabled="@(!IsValidNewKey)">
+                    Add
+                </MudButton>
+            </div>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12" Class="d-flex justify-end gap-2">
+        @if (!DictionariesEqual(Value, OriginalValue))
+        {
+            <MudButton OnClick="Undo" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Undo">
+                Undo All
+            </MudButton>
+        }
+        @if (!DictionariesEqual(Value, DefaultValue))
+        {
+            <MudButton OnClick="SetDefault" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.RestartAlt">
+                Reset to Default
+            </MudButton>
+        }
+    </MudItem>
+}
+
+@code {
+    [Parameter] public required string Key { get; set; }
+    [Parameter] public required string Label { get; set; }
+    [Parameter] public string? Tooltip { get; set; }
+    [Parameter] public string? WarningText { get; set; }
+
+    [Parameter] public required Dictionary<MongoId, LootInLooseContainerSpawnLimit> Value { get; set; }
+    [Parameter] public EventCallback<Dictionary<MongoId, LootInLooseContainerSpawnLimit>> ValueChanged { get; set; }
+
+    [Parameter] public required Dictionary<MongoId, LootInLooseContainerSpawnLimit> OriginalValue { get; set; }
+    [Parameter] public required Dictionary<MongoId, LootInLooseContainerSpawnLimit> DefaultValue { get; set; }
+
+    [CascadingParameter(Name = SettingsFilter.CascadeName)] private string? FilterText { get; set; }
+
+    private bool MatchesFilter => SettingsFilter.Matches(FilterText, Label, Key, Tooltip);
+
+
+    private string newKey = string.Empty;
+    private int? newKeys;
+    private int? newKeycards;
+
+    private bool IsValidNewKey => MongoId.IsValidMongoId(newKey) && !Value.ContainsKey(new MongoId(newKey));
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool IsItemChanged(MongoId key)
+    {
+        return !OriginalValue.TryGetValue(key, out var original) || !LimitsEqual(Value[key], original);
+    }
+
+    private async Task OnKeyChanged(MongoId oldKey, string newKeyValue)
+    {
+        if (!MongoId.IsValidMongoId(newKeyValue))
+        {
+            return;
+        }
+
+        var newMongoId = new MongoId(newKeyValue);
+        if (Value.ContainsKey(newMongoId))
+        {
+            return;
+        }
+
+        var limit = Value[oldKey];
+        Value.Remove(oldKey);
+        Value[newMongoId] = limit;
+
+        await NotifyChange();
+    }
+
+    private async Task OnLimitChanged(MongoId key, int? keys, int? keycards)
+    {
+        Value[key] = new LootInLooseContainerSpawnLimit { Keys = keys, Keycards = keycards };
+        await NotifyChange();
+    }
+
+    private async Task AddItem()
+    {
+        if (!IsValidNewKey)
+        {
+            return;
+        }
+
+        Value[new MongoId(newKey)] = new LootInLooseContainerSpawnLimit { Keys = newKeys, Keycards = newKeycards };
+        newKey = string.Empty;
+        newKeys = null;
+        newKeycards = null;
+
+        await NotifyChange();
+    }
+
+    private async Task RemoveItem(MongoId key)
+    {
+        Value.Remove(key);
+        await NotifyChange();
+    }
+
+    private async Task Undo()
+    {
+        Value = Clone(OriginalValue);
+        await NotifyChange();
+    }
+
+    private async Task SetDefault()
+    {
+        Value = Clone(DefaultValue);
+        await NotifyChange();
+    }
+
+    private async Task NotifyChange()
+    {
+        if (configService.EditablePresetHolder is null)
+        {
+            return;
+        }
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(Value);
+        }
+
+        if (DictionariesEqual(Value, OriginalValue))
+        {
+            configService.EditablePresetHolder.RemovePendingChange(Key);
+        }
+        else
+        {
+            configService.EditablePresetHolder.AddPendingChange(Key, Label, Undo);
+        }
+    }
+
+    private static Dictionary<MongoId, LootInLooseContainerSpawnLimit> Clone(Dictionary<MongoId, LootInLooseContainerSpawnLimit> source)
+    {
+        return source.ToDictionary(
+            kvp => kvp.Key,
+            kvp => new LootInLooseContainerSpawnLimit { Keys = kvp.Value.Keys, Keycards = kvp.Value.Keycards }
+        );
+    }
+
+    private static bool LimitsEqual(LootInLooseContainerSpawnLimit a, LootInLooseContainerSpawnLimit b)
+    {
+        return a.Keys == b.Keys && a.Keycards == b.Keycards;
+    }
+
+    private static bool DictionariesEqual(
+        Dictionary<MongoId, LootInLooseContainerSpawnLimit> first,
+        Dictionary<MongoId, LootInLooseContainerSpawnLimit> second)
+    {
+        if (first.Count != second.Count)
+        {
+            return false;
+        }
+
+        return first.All(kvp => second.TryGetValue(kvp.Key, out var other) && LimitsEqual(kvp.Value, other));
+    }
+
+    private async Task<IEnumerable<string>> SearchLocaleKeys(string value, CancellationToken cts)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        await Task.Delay(5, cts);
+
+        return localeCacheService.FetchCacheKeys()
+            .Where(key => localeCacheService.FetchLocale(key).Contains(value, StringComparison.InvariantCultureIgnoreCase))
+            .Where(key => !Value.ContainsKey(key))
+            .Select(key => key.ToString())
+            .ToList();
+    }
+}

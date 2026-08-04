@@ -1,0 +1,18 @@
+<MudTooltip Placement="Placement.Right" Arrow="true">
+    <ChildContent>
+        <button type="button" class="lotsofloot-warning-trigger" aria-label="Show warning">
+            <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Small" />
+        </button>
+    </ChildContent>
+    <TooltipContent>
+        <div class="lotsofloot-warning-tooltip" role="note">
+            <strong>Warning</strong>
+            <span>@Text</span>
+        </div>
+    </TooltipContent>
+</MudTooltip>
+
+@code {
+    [Parameter, EditorRequired]
+    public required string Text { get; set; }
+}

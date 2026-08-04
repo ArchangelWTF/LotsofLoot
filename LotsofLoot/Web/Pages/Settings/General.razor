@@ -1,0 +1,152 @@
+@implements IDisposable;
+
+@page "/lotsofloot/settings/general"
+
+@layout BaseMudBlazorLayout
+@inject ConfigService configService
+@inject ISnackbar snackbar
+
+<PageTitle>General settings - Lots of Loot Redux</PageTitle>
+
+<LotsofLootLayout>
+    <MudPaper Elevation="0" Class="lotsofloot-hero spt-panel pa-5">
+        <MudText Typo="Typo.overline" Class="spt-kicker">Settings</MudText>
+        <MudText Typo="Typo.h3" Class="spt-title">General</MudText>
+        <MudText Typo="Typo.body2" Class="spt-subtitle mt-2">Configure global loot behavior and market restrictions.</MudText>
+    </MudPaper>
+    <SettingsFilterBar Placeholder="Filter settings...">
+    <MudPaper Elevation="0" Class="lotsofloot-section spt-panel pa-4">
+            <MudGrid>
+                <ConfigSwitch Key="General.LootOverlayEnabled"
+                  Label="Enable loot overlay"
+                  Tooltip="Allows the loot generator to pick multiple of the same spawnpoints so that loot can spawn on top of one another"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.AllowLootOverlay"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.AllowLootOverlay"
+                  DefaultValue="false"/>
+
+                  <ConfigSwitch Key="General.RemovebackpackRestrictions"
+                  Label="Remove backpack restrictions"
+                  Tooltip="Enabling this allows you to pick items like T H I C C item cases that you might find in raid"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.RemoveBackpackRestrictions"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.RemoveBackpackRestrictions"
+                  DefaultValue="true"/>
+
+                  <ConfigSwitch Key="General.DisableFleaRestrictions"
+                  Label="Disable flea restrictions"
+                  Tooltip="Enabling this will disable the flea market's blacklist"
+                  WarningText="It is possible this might not correctly hot-reload! It is recommended to restart the client after changing this setting"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.DisableFleaRestrictions"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.DisableFleaRestrictions"
+                  DefaultValue="false"/>
+
+                  <ConfigSwitch Key="General.RustedKeyRoomIncludesKeycards"
+                  Label="Rusted key room includes keycards"
+                  Tooltip="Allows the rusted key room on Streets of Tarkov to also spawn keycards"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.RustedKeyRoomIncludesKeycards"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.RustedKeyRoomIncludesKeycards"
+                  DefaultValue="false"/>
+
+                  <ConfigSwitch Key="General.ItemWeights"
+                  Label="Cheaper item weights"
+                  Tooltip="Enabling this will cause cheaper items to have a higher chance of spawning in containers"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.ItemWeights"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.ItemWeights"
+                  DefaultValue="false"/>
+
+                <ConfigMongoIdDictionary Key="General.PriceCorrection"
+                  Label="Price correction"
+                  Tooltip="Some items don't have good or accurate data set for their price points, this can be changed here to make pricing more realistic"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.PriceCorrection"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.PriceCorrection"
+                  DefaultValue="defaultPriceCorrection"/>
+
+                <ConfigSwitch Key="General.LootContainersRandom"
+                  Label="Random loot containers"
+                  Tooltip="Allows for setting if containers will spawn randomly, false will disable randomness and spawn all containers"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.LootContainersRandom"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.LootContainersRandom"
+                  DefaultValue="true"/>
+
+                <ConfigSwitch Key="General.ReduceLowLooseLootRolls"
+                  Label="Reduce low loose loot rolls"
+                  Tooltip="Enabling this raises the lower end of SPT's loose loot rolls for more consistent loose loot spawns"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.ReduceLowLooseLootRolls"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.ReduceLowLooseLootRolls"
+                  DefaultValue="false"/>
+
+                  @if(configService.EditablePresetHolder.presetConfig.General.ReduceLowLooseLootRolls)
+                  {
+                    <ConfigSlider SliderType="double" Key="General.ReduceLowLooseLootRollsAmount"
+                  Label="Low roll adjustment"
+                  Tooltip="Sets the strength of the correction for low loot rolls. Lower values increase consistency; higher values keep more natural variation"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.ReduceLowLooseLootRollsAmount"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.ReduceLowLooseLootRollsAmount"
+                  Min="0.0"
+                  Max="1.0"
+                  Steps="0.01"
+                  DefaultValue="0.45d"/>
+                  }
+            </MudGrid>
+        </MudPaper>
+
+        <MudPaper Elevation="0" Class="lotsofloot-section spt-panel pa-4">
+            <MudText Typo="Typo.h6">Mod</MudText>
+            <MudText Typo="Typo.body2" Class="lotsofloot-option-description">
+                These settings live in the mod's config.json rather than in a preset. The Save button does not apply to
+                them, they are written as soon as you change them.
+            </MudText>
+
+            <MudSwitch T="bool"
+                       Class="mt-3"
+                       Color="Color.Warning"
+                       Label="Enable debug logging"
+                       Value="ConfigService.LotsofLootConfig.IsDebugEnabled"
+                       ValueChanged="OnDebugChanged" />
+        </MudPaper>
+    </SettingsFilterBar>
+</LotsofLootLayout>
+
+@code {
+    private static Dictionary<MongoId, double> defaultPriceCorrection = new Dictionary<MongoId, double>()
+    {
+                // T H I C C item case
+                { "5c0a840b86f7742ffa4f2482", 15000000 },
+                // Weapon case
+                { "59fb023c86f7746d0d4b423c", 7000000 },
+                // Rusted bloody key
+                { "64d4b23dc1b37504b41ac2b6", 1000000 }
+    };
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    private async Task OnDebugChanged(bool enabled)
+    {
+        ConfigService.LotsofLootConfig.IsDebugEnabled = enabled;
+
+        // Not part of a preset, so the Save button never sees it, the snackbar is the only confirmation
+        try
+        {
+            await configService.WriteConfig();
+
+            snackbar.Add(enabled ? "Debug logging enabled" : "Debug logging disabled", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            snackbar.Add($"Could not write config.json: {ex.Message}", Severity.Error);
+        }
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+}

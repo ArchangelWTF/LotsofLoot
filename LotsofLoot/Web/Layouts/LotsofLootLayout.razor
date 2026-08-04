@@ -1,0 +1,37 @@
+<HeadContent>
+    <link href="/LotsofLoot/css/lotsofloot.css" rel="stylesheet" />
+</HeadContent>
+
+<div class="lotsofloot-page spt-page">
+    <MudContainer MaxWidth="MaxWidth.False" Class="lotsofloot-container pa-6">
+        <MudPaper Elevation="0" Class="lotsofloot-header spt-panel pa-3">
+            <Appbar MenuItems="MenuItems" />
+        </MudPaper>
+
+        <div class="lotsofloot-content">
+            @ChildContent
+        </div>
+    </MudContainer>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public RenderFragment? ChildContent { get; set; }
+
+    private static readonly IReadOnlyList<NavItem> MenuItems =
+    [
+        new() { Title = "Home", Href = "/lotsofloot", BasePage = BasePage.Home },
+        new()
+        {
+            Title = "Settings",
+            BasePage = BasePage.Settings,
+            Children =
+            [
+                new() { Title = "Presets", Href = "/lotsofloot/settings/presets", BasePage = BasePage.Settings },
+                new() { Title = "General", Href = "/lotsofloot/settings/general", BasePage = BasePage.Settings },
+                new() { Title = "Loot", Href = "/lotsofloot/settings/loot", BasePage = BasePage.Settings },
+                new() { Title = "Pools & Containers", Href = "/lotsofloot/settings/pools", BasePage = BasePage.Settings },
+            ]
+        },
+    ];
+}

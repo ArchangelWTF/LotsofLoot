@@ -1,0 +1,168 @@
+@implements IDisposable
+
+@page "/lotsofloot"
+@layout BaseMudBlazorLayout
+@inject ConfigService ConfigService
+@inject GitHubReleaseService ReleaseService
+
+<PageTitle>Home - Lots of Loot Redux</PageTitle>
+
+<LotsofLootLayout>
+    <MudPaper Elevation="0" Class="lotsofloot-dashboard-hero spt-panel pa-5">
+        <div>
+            <MudText Typo="Typo.overline" Class="spt-kicker">Loot configuration</MudText>
+            <MudText Typo="Typo.h2" Class="spt-title">Lots of Loot Redux</MudText>
+        </div>
+    </MudPaper>
+
+    @if (ReleaseService.UpdateAvailable && ReleaseService.LatestStable is { } latest)
+    {
+        <MudPaper Elevation="0" Class="lotsofloot-update-banner spt-panel pa-4">
+            <MudIcon Icon="@Icons.Material.Filled.SystemUpdateAlt" Color="Color.Warning" Size="Size.Large" />
+            <div>
+                <strong>@latest.DisplayTitle is available</strong>
+                <span>You are running v@ConfigService.ModMetadata.Version.</span>
+            </div>
+            @if (!string.IsNullOrEmpty(latest.HtmlUrl))
+            {
+                <MudButton Href="@latest.HtmlUrl" Target="_blank" Variant="Variant.Filled" Color="Color.Warning"
+                           EndIcon="@Icons.Material.Filled.OpenInNew">Get it</MudButton>
+            }
+        </MudPaper>
+    }
+
+    <nav class="lotsofloot-home-grid" aria-label="Lots of Loot pages">
+        <a class="lotsofloot-home-link spt-card" href="/lotsofloot/settings/presets">
+            <span class="lotsofloot-home-link-icon"><MudIcon Icon="@Icons.Material.Filled.Bookmarks" /></span>
+            <span class="lotsofloot-home-link-copy"><strong>Presets</strong><span>Load and manage complete configurations.</span></span>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Class="lotsofloot-home-link-arrow" />
+        </a>
+        <a class="lotsofloot-home-link spt-card" href="/lotsofloot/settings/general">
+            <span class="lotsofloot-home-link-icon"><MudIcon Icon="@Icons.Material.Filled.Tune" /></span>
+            <span class="lotsofloot-home-link-copy"><strong>General settings</strong><span>Control global spawning behavior.</span></span>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Class="lotsofloot-home-link-arrow" />
+        </a>
+        <a class="lotsofloot-home-link spt-card" href="/lotsofloot/settings/loot">
+            <span class="lotsofloot-home-link-icon"><MudIcon Icon="@Icons.Material.Filled.Inventory2" /></span>
+            <span class="lotsofloot-home-link-copy"><strong>Loot settings</strong><span>Tune locations, rooms, and containers.</span></span>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Class="lotsofloot-home-link-arrow" />
+        </a>
+        <a class="lotsofloot-home-link spt-card" href="/lotsofloot/settings/pools">
+            <span class="lotsofloot-home-link-icon"><MudIcon Icon="@Icons.Material.Filled.Casino" /></span>
+            <span class="lotsofloot-home-link-copy"><strong>Pools &amp; containers</strong><span>Bias spawn pools and static containers.</span></span>
+            <MudIcon Icon="@Icons.Material.Filled.ArrowForward" Class="lotsofloot-home-link-arrow" />
+        </a>
+    </nav>
+
+    <section aria-labelledby="release-timeline-heading">
+        <div class="lotsofloot-section-heading">
+            <div>
+                <MudText Typo="Typo.overline" Class="spt-kicker">What's new</MudText>
+                <MudText Typo="Typo.h5" Id="release-timeline-heading">Updates</MudText>
+            </div>
+            <MudButton OnClick="OnRefreshClicked"
+                       Disabled="@(ReleaseService.State == ReleaseFeedState.Loading)"
+                       Variant="Variant.Text"
+                       Color="Color.Secondary"
+                       Size="Size.Small"
+                       StartIcon="@Icons.Material.Filled.Refresh">Refresh</MudButton>
+        </div>
+
+        @if (ReleaseService.State == ReleaseFeedState.Loading && ReleaseService.Releases.Count == 0)
+        {
+            <MudPaper Elevation="0" Class="spt-panel pa-4 lotsofloot-release-status">
+                <MudProgressCircular Indeterminate="true" Size="Size.Small" Color="Color.Warning" />
+                <span>Checking GitHub for releases...</span>
+            </MudPaper>
+        }
+        else if (ReleaseService.State == ReleaseFeedState.Unavailable)
+        {
+            <MudPaper Elevation="0" Class="spt-panel pa-4 lotsofloot-release-status">
+                <MudIcon Icon="@Icons.Material.Filled.CloudOff" Color="Color.Default" />
+                <span>Couldn't reach GitHub. Release history will show up once this server is online.</span>
+            </MudPaper>
+        }
+        else
+        {
+            <ol class="lotsofloot-timeline">
+                @foreach (var release in ReleaseService.Releases)
+                {
+                    <li class="@TimelineItemClass(release)">
+                        <span class="lotsofloot-timeline-marker"></span>
+                        <div class="lotsofloot-timeline-card spt-card">
+                            <div class="lotsofloot-timeline-header">
+                                <div>
+                                    <strong>@release.DisplayTitle</strong>
+                                    <span>@(release.PublishedAt?.ToString("d MMMM yyyy") ?? "Unreleased")</span>
+                                </div>
+                                <div class="lotsofloot-timeline-tags">
+                                    @foreach (var tag in ReleaseDirectives.ParseCompatibility(release.Body))
+                                    {
+                                        var matches = GitHubReleaseService.MatchesRunningPlatform(tag);
+                                        <MudChip T="string"
+                                                 Size="Size.Small"
+                                                 Color="@(matches ? Color.Success : Color.Default)"
+                                                 Variant="Variant.Outlined"
+                                                 Title="@(matches ? "Matches the server you are running" : null)">@tag.Text</MudChip>
+                                    }
+                                    @if (IsRunningVersion(release))
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined">Running</MudChip>
+                                    }
+                                    @if (release.Prerelease)
+                                    {
+                                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined">Pre-release</MudChip>
+                                    }
+                                    @if (!string.IsNullOrEmpty(release.HtmlUrl))
+                                    {
+                                        <MudIconButton Href="@release.HtmlUrl" Target="_blank" Size="Size.Small"
+                                                       Icon="@Icons.Material.Filled.OpenInNew" Title="View on GitHub" />
+                                    }
+                                </div>
+                            </div>
+                            <ReleaseNotes Body="@release.Body" />
+                        </div>
+                    </li>
+                }
+            </ol>
+        }
+    </section>
+
+</LotsofLootLayout>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        ReleaseService.FeedChanged += OnFeedChanged;
+
+        await ReleaseService.EnsureLoadedAsync();
+    }
+
+    public void Dispose()
+    {
+        ReleaseService.FeedChanged -= OnFeedChanged;
+    }
+
+    private void OnFeedChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnRefreshClicked()
+    {
+        await ReleaseService.RefreshAsync();
+    }
+
+    private bool IsRunningVersion(GitHubRelease release)
+    {
+        return GitHubReleaseService.TryParseVersion(release.TagName, out var version)
+            && version == ConfigService.ModMetadata.Version;
+    }
+
+    private string TimelineItemClass(GitHubRelease release)
+    {
+        return IsRunningVersion(release)
+            ? "lotsofloot-timeline-item lotsofloot-timeline-item-current"
+            : "lotsofloot-timeline-item";
+    }
+}

@@ -1,0 +1,199 @@
+﻿
+@page "/lotsofloot/settings/presets"
+@rendermode InteractiveServer
+
+@layout BaseMudBlazorLayout
+@inject ConfigService configService
+@inject ISnackbar snackbar
+
+<PageTitle>Presets - Lots of Loot Redux</PageTitle>
+
+<LotsofLootLayout>
+    <MudPaper Elevation="0" Class="lotsofloot-hero spt-panel pa-5">
+        <MudText Typo="Typo.overline" Class="spt-kicker">Settings</MudText>
+        <MudText Typo="Typo.h3" Class="spt-title">Presets</MudText>
+        <MudText Typo="Typo.body2" Class="spt-subtitle mt-2">Load an existing configuration or use it as the starting point for a new preset.</MudText>
+    </MudPaper>
+    <MudPaper Elevation="0" Class="lotsofloot-section spt-panel pa-4">
+        <MudGrid Spacing="2">
+            <MudItem xs="12" sm="6">
+                <MudSelect Label="Choose option" @bind-Value="SelectedPreset" FullWidth="true">
+                    @foreach (var preset in configService.GetPresets())
+                    {
+                        <MudSelectItem Value="@preset">@preset</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudStack Row="true"
+                          RowBreakpoint="Breakpoint.Sm"
+                          Spacing="2"
+                          Class="mud-width-full">
+
+                    <MudButton OnClick="OnLoadClicked"
+                               Disabled="@isLoading"
+                               Variant="Variant.Filled"
+                               Color="Color.Warning"
+                               Class="flex-grow-1"
+                               FullWidth="true">
+                        Load Preset
+                    </MudButton>
+
+                    <MudButton OnClick="@(() => dialogOpen = true)"
+                               Disabled="@isLoading"
+                               Variant="Variant.Filled"
+                               Color="Color.Secondary"
+                               Class="flex-grow-1"
+                               FullWidth="true">
+                        Copy to new preset
+                    </MudButton>
+
+                </MudStack>
+            </MudItem>
+
+        </MudGrid>
+    </MudPaper>
+
+    <MudPaper Elevation="0" Class="lotsofloot-section spt-panel pa-4">
+        <MudText Typo="Typo.h6">Randomize per raid</MudText>
+        <MudText Typo="Typo.body2" Class="lotsofloot-option-description">
+            Picks one of the selected presets before each raid's loot is generated. These settings live in the mod's
+            config.json rather than in a preset. The Save button does not apply to them, they are written as soon as
+            you change them.
+        </MudText>
+
+        <MudSwitch T="bool"
+                   Class="mt-3"
+                   Color="Color.Warning"
+                   Label="Randomize the preset each raid"
+                   Value="ConfigService.LotsofLootConfig.RandomizePresets"
+                   ValueChanged="OnRandomizeToggled" />
+
+        @if (ConfigService.LotsofLootConfig.RandomizePresets)
+        {
+            <div class="lotsofloot-note mt-2">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Small" />
+                <span>
+                    Flea restrictions, backpack restrictions and price correction are baked into the item database your
+                    client caches when it connects. Those three stay on whichever preset was active at that point, only
+                    the loot generation settings actually change per raid.
+                </span>
+            </div>
+
+            @if (SelectedForRandomization.Count < 2)
+            {
+                <MudText Typo="Typo.body2" Class="lotsofloot-option-description mt-2">
+                    Select at least two presets, otherwise every raid rolls the same one.
+                </MudText>
+            }
+
+            <div class="lotsofloot-randomize-list mt-2">
+                @foreach (var preset in configService.GetPresets())
+                {
+                    <MudCheckBox T="bool"
+                                 Dense="true"
+                                 Color="Color.Warning"
+                                 Label="@preset"
+                                 Value="@SelectedForRandomization.Contains(preset, StringComparer.OrdinalIgnoreCase)"
+                                 ValueChanged="@(selected => OnPresetSelectionChanged(preset, selected))" />
+                }
+            </div>
+        }
+    </MudPaper>
+
+    <NewPresetDialog @bind-Open="dialogOpen" Created="OnPresetCreated" Failed="OnPresetFailed" />
+</LotsofLootLayout>
+
+@code {
+    private string SelectedPreset = string.Empty;
+    private bool isLoading = false;
+    private bool dialogOpen;
+
+    protected override void OnInitialized()
+    {
+        SelectedPreset = configService.CurrentlyLoadedPreset;
+    }
+
+    private List<string> SelectedForRandomization => ConfigService.LotsofLootConfig.RandomizedPresets;
+
+    private async Task OnRandomizeToggled(bool enabled)
+    {
+        ConfigService.LotsofLootConfig.RandomizePresets = enabled;
+
+        // Turning it on with nothing chosen is a dead setting, so seed it with the preset in use
+        if (enabled && SelectedForRandomization.Count == 0)
+        {
+            SelectedForRandomization.Add(configService.CurrentlyLoadedPreset);
+        }
+
+        await SaveModConfig(enabled ? "Randomization enabled" : "Randomization disabled");
+    }
+
+    private async Task OnPresetSelectionChanged(string preset, bool selected)
+    {
+        SelectedForRandomization.RemoveAll(existing => string.Equals(existing, preset, StringComparison.OrdinalIgnoreCase));
+
+        if (selected)
+        {
+            SelectedForRandomization.Add(preset);
+        }
+
+        await SaveModConfig(selected ? $"'{preset}' added to the rotation" : $"'{preset}' removed from the rotation");
+    }
+
+    /// <summary>
+    /// These settings are not part of a preset, so they bypass the Save button entirely. The snackbar is
+    /// what tells the user the change landed.
+    /// </summary>
+    private async Task SaveModConfig(string message)
+    {
+        try
+        {
+            await configService.WriteConfig();
+
+            snackbar.Add(message, Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            snackbar.Add($"Could not write config.json: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task OnPresetCreated(string preset)
+    {
+        SelectedPreset = preset;
+
+        snackbar.Add($"Created preset '{preset}' and switched to it", Severity.Success);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void OnPresetFailed(string message)
+    {
+        snackbar.Add(message, Severity.Error);
+    }
+
+    private async Task OnLoadClicked()
+    {
+        if(SelectedPreset == configService.CurrentlyLoadedPreset)
+        {
+            return;
+        }
+
+        isLoading = true;
+
+        var loadResult = await configService.LoadPresetConfig(SelectedPreset, true, true);
+
+        if(loadResult)
+        {
+            snackbar.Add($"Loaded preset '{SelectedPreset}' successfully!", Severity.Success);
+            isLoading = false;
+        }
+        else
+        {
+            snackbar.Add($"Failed to load preset '{SelectedPreset}'", Severity.Error);
+            isLoading = false;
+        }
+    }
+}

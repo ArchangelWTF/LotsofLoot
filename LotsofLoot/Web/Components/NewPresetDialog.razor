@@ -1,0 +1,140 @@
+@inject ConfigService configService
+
+@* Self-contained modal rather than MudDialog: SPT's layout owns the MudBlazor providers, and overlay
+   components rendered from a mod page escape into the page flow instead of floating. *@
+
+@if (Open)
+{
+    <div class="lotsofloot-modal-scrim" @onclick="Cancel"></div>
+
+    <div class="lotsofloot-modal spt-panel" role="dialog" aria-modal="true" aria-labelledby="new-preset-heading">
+        <MudText Typo="Typo.overline" Class="spt-kicker">Presets</MudText>
+        <MudText Typo="Typo.h6" Id="new-preset-heading">Copy to new preset</MudText>
+        <MudText Typo="Typo.body2" Class="lotsofloot-option-description">
+            Copies everything currently on screen, including unsaved changes, into a new preset and switches to it.
+        </MudText>
+
+        <MudTextField T="string"
+                      Label="Preset name"
+                      @bind-Value="name"
+                      Variant="Variant.Outlined"
+                      Margin="Margin.Dense"
+                      Immediate="true"
+                      AutoFocus="true"
+                      Error="@(Validation is not null)"
+                      ErrorText="@Validation"
+                      HelperText="Saved as Presets/<name>.json"
+                      OnKeyDown="OnKeyDown" />
+
+        <div class="lotsofloot-modal-actions">
+            <MudButton OnClick="Cancel" Variant="Variant.Text" Color="Color.Secondary" Disabled="@isSaving">Cancel</MudButton>
+            <MudButton OnClick="Confirm"
+                       Variant="Variant.Filled"
+                       Color="Color.Warning"
+                       StartIcon="@Icons.Material.Filled.ContentCopy"
+                       Disabled="@(isSaving || Validation is not null || string.IsNullOrWhiteSpace(name))">
+                @(isSaving ? "Creating..." : "Create preset")
+            </MudButton>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
+    /// <summary>Raised with the new preset's name once it exists on disk and has been loaded</summary>
+    [Parameter] public EventCallback<string> Created { get; set; }
+
+    /// <summary>Raised with a human-readable reason when creation failed</summary>
+    [Parameter] public EventCallback<string> Failed { get; set; }
+
+    private static readonly char[] InvalidCharacters = [.. Path.GetInvalidFileNameChars(), '.'];
+
+    private string name = string.Empty;
+    private bool isSaving;
+
+    /// <summary>Null when the name is usable, otherwise why it isn't. Empty input is not an error yet.</summary>
+    private string? Validation
+    {
+        get
+        {
+            var trimmed = name.Trim();
+
+            if (trimmed.Length == 0)
+            {
+                return null;
+            }
+
+            if (trimmed.Length > 48)
+            {
+                return "Keep the name under 48 characters";
+            }
+
+            if (trimmed.IndexOfAny(InvalidCharacters) >= 0)
+            {
+                return "Letters, numbers, spaces, dashes and underscores only";
+            }
+
+            return configService.PresetExists(trimmed) ? $"A preset called '{trimmed}' already exists" : null;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (!Open)
+        {
+            name = string.Empty;
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            await Confirm();
+        }
+        else if (args.Key == "Escape")
+        {
+            await Cancel();
+        }
+    }
+
+    private async Task Cancel()
+    {
+        if (isSaving)
+        {
+            return;
+        }
+
+        name = string.Empty;
+        await OpenChanged.InvokeAsync(false);
+    }
+
+    private async Task Confirm()
+    {
+        var trimmed = name.Trim();
+
+        if (isSaving || trimmed.Length == 0 || Validation is not null)
+        {
+            return;
+        }
+
+        isSaving = true;
+
+        var created = await configService.CreatePresetFrom(trimmed, configService.EditablePresetHolder.presetConfig);
+
+        isSaving = false;
+
+        if (created)
+        {
+            name = string.Empty;
+            await OpenChanged.InvokeAsync(false);
+            await Created.InvokeAsync(trimmed);
+        }
+        else
+        {
+            await Failed.InvokeAsync($"Could not create preset '{trimmed}', check the server log");
+        }
+    }
+}

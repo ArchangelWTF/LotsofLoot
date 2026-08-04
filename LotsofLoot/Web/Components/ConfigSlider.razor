@@ -1,0 +1,119 @@
+@implements IDisposable;
+@typeparam SliderType where SliderType : struct, INumber<SliderType>
+@inject ConfigService configService
+
+@if (MatchesFilter)
+{
+    <MudItem xs="12">
+        <div class="lotsofloot-option lotsofloot-option-number">
+            <div class="lotsofloot-option-meta">
+                <div class="lotsofloot-option-title-row">
+                    @if (!string.IsNullOrEmpty(WarningText))
+                    {
+                        <ConfigWarning Text="@WarningText" />
+                    }
+                    <MudTooltip Text="@Tooltip" Color="Color.Info" Arrow="true">
+                        <MudText Typo="Typo.caption" Class="lotsofloot-option-title">@Label</MudText>
+                    </MudTooltip>
+                </div>
+                <span class="lotsofloot-kind lotsofloot-kind-number">Number</span>
+            </div>
+
+            <div class="lotsofloot-option-editor">
+                <MudNumericField T="SliderType"
+                                 Value="Value"
+                                 ValueChanged="OnValueChanged"
+                                 Min="Min"
+                                 Max="Max"
+                                 Step="Steps"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Class="lotsofloot-number-input" />
+                <div class="lotsofloot-option-actions">
+                    @if (ShowUndo && IsChanged)
+                    {
+                        <MudTooltip Text="Undo change">
+                            <MudIconButton Icon="@Icons.Material.Filled.Undo" OnClick="Undo" Variant="Variant.Outlined"
+                                           Color="Color.Secondary" Size="Size.Small" aria-label="Undo change" />
+                        </MudTooltip>
+                    }
+                    else if (ShowDefault && !EqualityComparer<SliderType>.Default.Equals(Value, DefaultValue))
+                    {
+                        <MudTooltip Text="Reset to default">
+                            <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" OnClick="SetDefault" Variant="Variant.Outlined"
+                                           Color="Color.Secondary" Size="Size.Small" aria-label="Reset to default" />
+                        </MudTooltip>
+                    }
+                </div>
+            </div>
+        </div>
+    </MudItem>
+
+    
+}
+
+@code {
+
+    [Parameter] public required string Key { get; set; }
+    [Parameter] public required string Label { get; set; }
+    [Parameter] public string? Tooltip { get; set; }
+    [Parameter] public string? WarningText { get; set; }
+
+    [Parameter] public required SliderType Value { get; set; }
+    [Parameter] public EventCallback<SliderType> ValueChanged { get; set; }
+
+    [Parameter] public required SliderType OriginalValue { get; set; }
+    [Parameter] public required SliderType DefaultValue { get; set; }
+
+    [Parameter] public required SliderType Min { get; set; }
+    [Parameter] public required SliderType Max { get; set; }
+    [Parameter] public required SliderType Steps { get; set; }
+
+    [Parameter] public bool ShowUndo { get; set; } = true;
+    [Parameter] public bool ShowDefault { get; set; } = true;
+
+    [CascadingParameter(Name = SettingsFilter.CascadeName)] private string? FilterText { get; set; }
+
+    private bool MatchesFilter => SettingsFilter.Matches(FilterText, Label, Key, Tooltip);
+
+
+    private bool IsChanged => !EqualityComparer<SliderType>.Default.Equals(Value, OriginalValue);
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnValueChanged(SliderType newValue)
+    {
+        Value = newValue;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(newValue);
+        }
+
+        if (EqualityComparer<SliderType>.Default.Equals(newValue, OriginalValue))
+        {
+            configService.EditablePresetHolder.RemovePendingChange(Key);
+        }
+        else
+        {
+            configService.EditablePresetHolder.AddPendingChange(Key, Label, Undo);
+        }
+    }
+
+    private Task Undo() => OnValueChanged(OriginalValue);
+    private Task SetDefault() => OnValueChanged(DefaultValue);
+}

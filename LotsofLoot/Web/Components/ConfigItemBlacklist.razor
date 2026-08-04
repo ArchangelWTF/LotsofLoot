@@ -1,0 +1,338 @@
+@implements IDisposable
+@inject ConfigService configService
+@inject LocaleCacheService localeCacheService
+
+@if (MatchesFilter)
+{
+    <MudItem xs="12">
+        <div class="lotsofloot-collection-header">
+            <div class="lotsofloot-option-title-row">
+                @if (!string.IsNullOrEmpty(WarningText))
+                {
+                    <ConfigWarning Text="@WarningText" />
+                }
+                <MudText Typo="Typo.h6">@Label</MudText>
+            </div>
+            <MudText Typo="Typo.body2" Class="lotsofloot-option-description">@Tooltip</MudText>
+            <div class="lotsofloot-collection-summary">
+                <span class="lotsofloot-kind lotsofloot-kind-object">Object</span>
+                <span>@Value.Count container@(Value.Count == 1 ? string.Empty : "s"), @Value.Sum(entry => entry.Value.Count) blacklisted</span>
+            </div>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12">
+        <div class="lotsofloot-dict">
+            @foreach (var kvp in Value)
+            {
+                var currentKey = kvp.Key;
+                var blacklist = kvp.Value;
+                <div class="@(IsItemChanged(currentKey) ? "lotsofloot-blacklist-group lotsofloot-blacklist-group-changed" : "lotsofloot-blacklist-group")">
+                    <div class="lotsofloot-blacklist-head">
+                        <MudAutocomplete T="string"
+                                         Value="@currentKey"
+                                         ValueChanged="@(newKeyValue => OnKeyChanged(currentKey, newKeyValue))"
+                                         SearchFunc="@((value, cts) => SearchLocaleKeys(value, cts, null))"
+                                         ToStringFunc="@(id => localeCacheService.FetchLocale(id))"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         MinCharacters="1"
+                                         DebounceInterval="300"
+                                         ResetValueOnEmptyText="false"
+                                         CoerceValue="true"
+                                         Strict="false"
+                                         CoerceText="false" />
+                        <span class="lotsofloot-dict-id" title="@currentKey.ToString()">@currentKey.ToString()</span>
+                        <span class="lotsofloot-blacklist-count">@blacklist.Count blocked</span>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       Title="Remove container"
+                                       OnClick="@(() => RemoveContainer(currentKey))" />
+                    </div>
+
+                    <div class="lotsofloot-blacklist-items">
+                        @if (blacklist.Count == 0)
+                        {
+                            <span class="lotsofloot-blacklist-empty">Nothing blacklisted yet.</span>
+                        }
+                        else
+                        {
+                            <MudChipSet T="string" AllClosable="true" OnClose="@(chip => RemoveBlacklistedItem(currentKey, chip.Text))">
+                                @foreach (var itemId in blacklist)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined"
+                                             Text="@itemId.ToString()">@localeCacheService.FetchLocale(itemId)</MudChip>
+                                }
+                            </MudChipSet>
+                        }
+
+                        <div class="lotsofloot-blacklist-add">
+                            <MudAutocomplete T="string"
+                                             Placeholder="Blacklist an item..."
+                                             Value="@GetPendingItem(currentKey)"
+                                             ValueChanged="@(value => pendingItems[currentKey] = value)"
+                                             SearchFunc="@((value, cts) => SearchLocaleKeys(value, cts, currentKey))"
+                                             ToStringFunc="@(id => localeCacheService.FetchLocale(id))"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             MinCharacters="1"
+                                             DebounceInterval="300"
+                                             ResetValueOnEmptyText="false"
+                                             CoerceValue="true"
+                                             Strict="false"
+                                             CoerceText="false" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                           Color="Color.Warning"
+                                           Size="Size.Small"
+                                           Title="Add to blacklist"
+                                           OnClick="@(() => AddBlacklistedItem(currentKey))"
+                                           Disabled="@(!CanAddBlacklistedItem(currentKey))" />
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="lotsofloot-blacklist-head lotsofloot-blacklist-new">
+                <MudAutocomplete T="string"
+                                 Placeholder="Add a container..."
+                                 Value="@newKey"
+                                 ValueChanged="@(value => newKey = value)"
+                                 SearchFunc="@((value, cts) => SearchLocaleKeys(value, cts, null))"
+                                 ToStringFunc="@(id => localeCacheService.FetchLocale(id))"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 MinCharacters="1"
+                                 DebounceInterval="300"
+                                 ResetValueOnEmptyText="false"
+                                 CoerceValue="true"
+                                 Strict="false"
+                                 CoerceText="false" />
+                <span class="lotsofloot-dict-id">@(IsValidNewKey ? newKey : string.Empty)</span>
+                @* Button sits in the same column as the "N blocked" counter above, so the field it follows
+                   keeps the exact width it has on every other row *@
+                <MudButton OnClick="AddContainer"
+                           Variant="Variant.Filled"
+                           Color="Color.Warning"
+                           StartIcon="@Icons.Material.Filled.Add"
+                           Size="Size.Small"
+                           Disabled="@(!IsValidNewKey)">
+                    Add
+                </MudButton>
+                <span></span>
+            </div>
+        </div>
+    </MudItem>
+
+    <MudItem xs="12" Class="d-flex justify-end gap-2">
+        @if (!DictionariesEqual(Value, OriginalValue))
+        {
+            <MudButton OnClick="Undo" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Undo">
+                Undo All
+            </MudButton>
+        }
+        @if (!DictionariesEqual(Value, DefaultValue))
+        {
+            <MudButton OnClick="SetDefault" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.RestartAlt">
+                Reset to Default
+            </MudButton>
+        }
+    </MudItem>
+}
+
+@code {
+    [Parameter] public required string Key { get; set; }
+    [Parameter] public required string Label { get; set; }
+    [Parameter] public string? Tooltip { get; set; }
+    [Parameter] public string? WarningText { get; set; }
+
+    [Parameter] public required Dictionary<MongoId, List<MongoId>> Value { get; set; }
+    [Parameter] public EventCallback<Dictionary<MongoId, List<MongoId>>> ValueChanged { get; set; }
+
+    [Parameter] public required Dictionary<MongoId, List<MongoId>> OriginalValue { get; set; }
+    [Parameter] public required Dictionary<MongoId, List<MongoId>> DefaultValue { get; set; }
+
+    [CascadingParameter(Name = SettingsFilter.CascadeName)] private string? FilterText { get; set; }
+
+    private bool MatchesFilter => SettingsFilter.Matches(FilterText, Label, Key, Tooltip);
+
+
+    private string newKey = string.Empty;
+    private readonly Dictionary<MongoId, string> pendingItems = [];
+
+    private bool IsValidNewKey => MongoId.IsValidMongoId(newKey) && !Value.ContainsKey(new MongoId(newKey));
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+
+    private string GetPendingItem(MongoId container)
+    {
+        return pendingItems.GetValueOrDefault(container, string.Empty);
+    }
+
+    private bool CanAddBlacklistedItem(MongoId container)
+    {
+        var pending = GetPendingItem(container);
+
+        return MongoId.IsValidMongoId(pending) && !Value[container].Contains(new MongoId(pending));
+    }
+
+    private bool IsItemChanged(MongoId key)
+    {
+        return !OriginalValue.TryGetValue(key, out var original) || !ListsEqual(Value[key], original);
+    }
+
+    private async Task OnKeyChanged(MongoId oldKey, string newKeyValue)
+    {
+        if (!MongoId.IsValidMongoId(newKeyValue))
+        {
+            return;
+        }
+
+        var newMongoId = new MongoId(newKeyValue);
+        if (Value.ContainsKey(newMongoId))
+        {
+            return;
+        }
+
+        var blacklist = Value[oldKey];
+        Value.Remove(oldKey);
+        Value[newMongoId] = blacklist;
+        pendingItems.Remove(oldKey);
+
+        await NotifyChange();
+    }
+
+    private async Task AddContainer()
+    {
+        if (!IsValidNewKey)
+        {
+            return;
+        }
+
+        Value[new MongoId(newKey)] = [];
+        newKey = string.Empty;
+
+        await NotifyChange();
+    }
+
+    private async Task RemoveContainer(MongoId key)
+    {
+        Value.Remove(key);
+        pendingItems.Remove(key);
+
+        await NotifyChange();
+    }
+
+    private async Task AddBlacklistedItem(MongoId container)
+    {
+        if (!CanAddBlacklistedItem(container))
+        {
+            return;
+        }
+
+        Value[container].Add(new MongoId(GetPendingItem(container)));
+        pendingItems[container] = string.Empty;
+
+        await NotifyChange();
+    }
+
+    private async Task RemoveBlacklistedItem(MongoId container, string? itemId)
+    {
+        if (itemId is null || !MongoId.IsValidMongoId(itemId))
+        {
+            return;
+        }
+
+        Value[container].Remove(new MongoId(itemId));
+
+        await NotifyChange();
+    }
+
+    private async Task Undo()
+    {
+        Value = Clone(OriginalValue);
+        await NotifyChange();
+    }
+
+    private async Task SetDefault()
+    {
+        Value = Clone(DefaultValue);
+        await NotifyChange();
+    }
+
+    private async Task NotifyChange()
+    {
+        if (configService.EditablePresetHolder is null)
+        {
+            return;
+        }
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(Value);
+        }
+
+        if (DictionariesEqual(Value, OriginalValue))
+        {
+            configService.EditablePresetHolder.RemovePendingChange(Key);
+        }
+        else
+        {
+            configService.EditablePresetHolder.AddPendingChange(Key, Label, Undo);
+        }
+    }
+
+    private static Dictionary<MongoId, List<MongoId>> Clone(Dictionary<MongoId, List<MongoId>> source)
+    {
+        return source.ToDictionary(kvp => kvp.Key, kvp => new List<MongoId>(kvp.Value));
+    }
+
+    private static bool ListsEqual(List<MongoId> first, List<MongoId> second)
+    {
+        return first.Count == second.Count && !first.Except(second).Any();
+    }
+
+    private static bool DictionariesEqual(Dictionary<MongoId, List<MongoId>> first, Dictionary<MongoId, List<MongoId>> second)
+    {
+        if (first.Count != second.Count)
+        {
+            return false;
+        }
+
+        return first.All(kvp => second.TryGetValue(kvp.Key, out var other) && ListsEqual(kvp.Value, other));
+    }
+
+    private async Task<IEnumerable<string>> SearchLocaleKeys(string value, CancellationToken cts, MongoId? container)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        await Task.Delay(5, cts);
+
+        var exclude = container is null
+            ? Value.Keys.ToHashSet()
+            : Value[container.Value].ToHashSet();
+
+        return localeCacheService.FetchCacheKeys()
+            .Where(key => localeCacheService.FetchLocale(key).Contains(value, StringComparison.InvariantCultureIgnoreCase))
+            .Where(key => !exclude.Contains(key))
+            .Select(key => key.ToString())
+            .ToList();
+    }
+}

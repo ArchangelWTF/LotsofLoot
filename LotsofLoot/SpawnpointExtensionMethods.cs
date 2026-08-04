@@ -6,12 +6,12 @@ public static class SpawnpointExtensionMethods
 {
     public static bool IsMarkedRoomSpawnpoint(this Spawnpoint spawnpoint, string locationId)
     {
-        var pos = spawnpoint.Template?.Position;
-
-        if (pos is null)
+        if (spawnpoint.Template?.Position is null)
         {
             return false;
         }
+
+        var pos = spawnpoint.Template.Position.Value;
 
         if (locationId == "bigmap")
         {
@@ -68,12 +68,12 @@ public static class SpawnpointExtensionMethods
 
     public static bool IsRefKeySpawnpoint(this Spawnpoint spawnpoint, string locationId)
     {
-        var pos = spawnpoint.Template?.Position;
-
-        if (pos is null)
+        if (spawnpoint.Template?.Position is null)
         {
             return false;
         }
+
+        var pos = spawnpoint.Template.Position.Value;
 
         if (locationId == "woods")
         {

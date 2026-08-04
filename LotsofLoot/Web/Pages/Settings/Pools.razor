@@ -1,0 +1,103 @@
+@implements IDisposable;
+
+@page "/lotsofloot/settings/pools"
+
+@layout BaseMudBlazorLayout
+@inject ConfigService configService
+
+<PageTitle>Pool settings - Lots of Loot Redux</PageTitle>
+
+<LotsofLootLayout>
+    <MudPaper Elevation="0" Class="lotsofloot-hero spt-panel pa-5">
+        <MudText Typo="Typo.overline" Class="spt-kicker">Settings</MudText>
+        <MudText Typo="Typo.h3" Class="spt-title">Pools &amp; Containers</MudText>
+        <MudText Typo="Typo.body2" Class="spt-subtitle mt-2">Bias individual items inside their loose loot pools and change how often static containers spawn loot.</MudText>
+    </MudPaper>
+
+    <SettingsFilterBar Placeholder="Filter settings...">
+        <MudExpansionPanels MultiExpansion="true">
+            <MudExpansionPanel @bind-Expanded="poolsExpanded">
+                <TitleContent><PanelTitle Text="Loose loot pools" KeyPrefix="Pools.LooseLoot." /></TitleContent>
+                <ChildContent>
+                <MudGrid>
+                    <ConfigMongoIdDictionary Key="Pools.LooseLoot.ChangeRelativeProbabilityInPool"
+                                          Label="Relative probability in pool"
+                                          Tooltip="Multiplies an item's relative probability inside the pool it already belongs to, making it more likely to be picked over the other items in that same pool"
+                                          @bind-Value="configService.EditablePresetHolder.presetConfig.ChangeRelativeProbabilityInPool"
+                                          OriginalValue="configService.LotsofLootPresetConfig.ChangeRelativeProbabilityInPool"
+                                          DefaultValue="DefaultRelativeProbabilityInPool" />
+
+                    <ConfigMongoIdDictionary Key="Pools.LooseLoot.ChangeProbabilityOfPool"
+                                          Label="Probability of pool"
+                                          Tooltip="Multiplies the chance that the spawnpoint pool containing this item is rolled at all"
+                                          @bind-Value="configService.EditablePresetHolder.presetConfig.ChangeProbabilityOfPool"
+                                          OriginalValue="configService.LotsofLootPresetConfig.ChangeProbabilityOfPool"
+                                          DefaultValue="DefaultProbabilityOfPool" />
+                </MudGrid>
+                </ChildContent>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel @bind-Expanded="containersExpanded">
+                <TitleContent><PanelTitle Text="Static containers" KeyPrefix="Pools.Containers." /></TitleContent>
+                <ChildContent>
+                <MudGrid>
+                    <ConfigMongoIdDictionary Key="Pools.Containers.FillChance"
+                                          Label="Container fill chance"
+                                          Tooltip="Relative chance multiplier that no items spawn in this container. 0 means items every time, 1 leaves the container untouched"
+                                          @bind-Value="configService.EditablePresetHolder.presetConfig.Containers"
+                                          OriginalValue="configService.LotsofLootPresetConfig.Containers"
+                                          DefaultValue="DefaultContainers" />
+                </MudGrid>
+                </ChildContent>
+            </MudExpansionPanel>
+            </MudExpansionPanels>
+    </SettingsFilterBar>
+</LotsofLootLayout>
+
+@code {
+    private bool poolsExpanded = true;
+    private bool containersExpanded = true;
+
+    private static readonly Dictionary<MongoId, double> DefaultRelativeProbabilityInPool = new()
+    {
+        // Graphics card
+        { "57347ca924597744596b4e71", 2 }
+    };
+
+    private static readonly Dictionary<MongoId, double> DefaultProbabilityOfPool = new()
+    {
+        // LEDX Skin Transilluminator
+        { "5c0530ee86f774697952d952", 1 }
+    };
+
+    private static readonly Dictionary<MongoId, double> DefaultContainers = new[]
+    {
+        "578f8778245977358849a9b5", "578f8782245977354405a1e3", "578f879c24597735401e6bc6",
+        "578f87a3245977356274f2cb", "578f87b7245977356274f2cd", "5909d24f86f77466f56e6855",
+        "5909d36d86f774660f0bb900", "5909d45286f77465a8136dc6", "5909d4c186f7746ad34e805a",
+        "5909d50c86f774659e6aaebe", "5909d5ef86f77467974efbd8", "5909d76c86f77471e53d2adf",
+        "5909d7cf86f77470ee57d75a", "5909d89086f77472591234a0", "5909e4b686f7747f5b744fa4",
+        "59139c2186f77411564f8e42", "5914944186f774189e5e76c2", "5937ef2b86f77408a47244b3",
+        "59387ac686f77401442ddd61", "5ad74cf586f774391278f6f0", "5c052cea86f7746b2101e8d8",
+        "5d07b91b86f7745a077a9432", "5d6d2b5486f774785c2ba8ea", "5d6d2bb386f774785b07a77a",
+        "5d6fd13186f77424ad2a8c69", "5d6fd45b86f774317075ed43", "5d6fe50986f77449d97f7463",
+        "61a89e5445a2672acf66c877", "61aa1e9a32a4743c3453d2cf", "61aa1ead84ea0800645777fd",
+        "578f87ad245977356274f2cc"
+    }.ToDictionary(id => new MongoId(id), _ => 1d);
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+}

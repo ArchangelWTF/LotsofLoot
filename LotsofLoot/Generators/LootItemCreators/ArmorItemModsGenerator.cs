@@ -1,10 +1,13 @@
-﻿using SPTarkov.DI.Annotations;
+﻿using SPTarkov.Common.Models.Logging;
+using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Extensions;
 using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Helpers.Items;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
 using SPTarkov.Server.Core.Models.Spt.Config;
+using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Models.Utils;
 using SPTarkov.Server.Core.Servers;
 using SPTarkov.Server.Core.Utils.Cloners;
@@ -13,15 +16,13 @@ namespace LotsofLoot.Generators.LootItemCreators;
 
 [Injectable]
 public class ArmorItemModsGenerator(
-    ConfigServer configServer,
+    LocationConfig locationConfig,
     ItemHelper itemHelper,
     PresetHelper presetHelper,
     ICloner cloner,
     ISptLogger<ArmorItemModsGenerator> logger
 ) : ILootItemCreator
 {
-    private readonly LocationConfig _locationConfig = configServer.GetConfig<LocationConfig>();
-
     public bool CanCreateItem(MongoId tpl)
     {
         if (itemHelper.ArmorItemCanHoldMods(tpl))
@@ -47,7 +48,7 @@ public class ArmorItemModsGenerator(
 
             if (presetAndMods.Count == 0)
             {
-                if (logger.IsLogEnabled(SPTarkov.Server.Core.Models.Spt.Logging.LogLevel.Warn))
+                if (logger.IsLogEnabled(LogLevel.Warning))
                 {
                     logger.Warning($"Template {templateItem.Id} has an empty preset! Unable to generate item mods!");
                 }
@@ -67,7 +68,7 @@ public class ArmorItemModsGenerator(
         if (templateItem.Properties is not null && templateItem.Properties.Slots?.Count() > 0)
         {
             List<Item> itemsWithChildren = itemHelper
-                .AddChildSlotItems(items, templateItem, _locationConfig.EquipmentLootSettings.ModSpawnChancePercent)
+                .AddChildSlotItems(items, templateItem, locationConfig.EquipmentLootSettings.ModSpawnChancePercent)
                 .ToList();
 
             if (itemsWithChildren.Count > 0)
@@ -77,7 +78,7 @@ public class ArmorItemModsGenerator(
             }
             else
             {
-                if (logger.IsLogEnabled(SPTarkov.Server.Core.Models.Spt.Logging.LogLevel.Warn))
+                if (logger.IsLogEnabled(LogLevel.Warning))
                 {
                     logger.Warning($"Template {templateItem.Id} generated no armor child slot items!");
                 }

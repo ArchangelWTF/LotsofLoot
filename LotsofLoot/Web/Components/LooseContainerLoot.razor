@@ -1,0 +1,103 @@
+@implements IDisposable;
+@inject ConfigService configService
+
+<ConfigSlider SliderType="double" Key="Loot.LooseContainer.LootInContainerModifier"
+              Label="Loot in container multiplier"
+              Tooltip="Changes the max amount of items spawned in Loose Containers (things like item cases, docs cases and such.. Setting this to 0 will turn this behavior off.)"
+              @bind-Value="configService.EditablePresetHolder.presetConfig.LootinLooseContainer.LootInContainerModifier"
+              OriginalValue="configService.LotsofLootPresetConfig.LootinLooseContainer.LootInContainerModifier"
+              Min="0.0"
+              Max="1"
+              Steps="0.01"
+              DefaultValue="1d" />
+
+<ConfigSlider SliderType="double" Key="Loot.LooseContainer.LootInBackpackModifier"
+              Label="Loot in backpack multiplier"
+              Tooltip="Changes the max amount of items spawned in Backpacks that are spawned in the world (Setting this to 0 will turn this off.)"
+              @bind-Value="configService.EditablePresetHolder.presetConfig.LootinLooseContainer.LootInBackpackModifier"
+              OriginalValue="configService.LotsofLootPresetConfig.LootinLooseContainer.LootInBackpackModifier"
+              Min="0.0"
+              Max="1"
+              Steps="0.01"
+              DefaultValue="1d" />
+
+<ConfigSpawnLimitDictionary Key="Loot.LooseContainer.SpawnLimits"
+              Label="Container spawn limits"
+              Tooltip="Caps how many keys and keycards may spawn inside a loose container. Leave a field empty for no limit"
+              @bind-Value="configService.EditablePresetHolder.presetConfig.LootinLooseContainer.SpawnLimits"
+              OriginalValue="configService.LotsofLootPresetConfig.LootinLooseContainer.SpawnLimits"
+              DefaultValue="DefaultSpawnLimits" />
+
+<ConfigItemBlacklist Key="Loot.LooseContainer.Blacklist"
+              Label="Container blacklist"
+              Tooltip="Items listed here will never be selected when filling the matching loose container"
+              @bind-Value="configService.EditablePresetHolder.presetConfig.LootinLooseContainer.Blacklist"
+              OriginalValue="configService.LotsofLootPresetConfig.LootinLooseContainer.Blacklist"
+              DefaultValue="DefaultBlacklist" />
+
+@code {
+    // The four ids every case-like container blacklists by default (unfinished/quest-only keycards)
+    private static readonly MongoId[] DefaultBlacklistedKeycards =
+    [
+        "664d3db6db5dea2bad286955",
+        "664d3dd590294949fe2d81b7",
+        "664d3ddfdda2e85aca370d75",
+        "664d3de85f2355673b09aed5"
+    ];
+
+    private static readonly Dictionary<MongoId, LootInLooseContainerSpawnLimit> DefaultSpawnLimits = new()
+    {
+        // WZ Wallet
+        { "60b0f6c058e0b0481a09ad11", new LootInLooseContainerSpawnLimit { Keycards = 0 } },
+        // Wallet
+        { "5783c43d2459774bbe137486", new LootInLooseContainerSpawnLimit { Keycards = 0 } },
+        // Keycard holder case
+        { "619cbf9e0a7c3a1a2731940a", new LootInLooseContainerSpawnLimit { Keycards = 2 } },
+        // Documents case
+        { "590c60fc86f77412b13fddcf", new LootInLooseContainerSpawnLimit { Keys = 3, Keycards = 1 } },
+        // S I C C organizational pouch
+        { "5d235bb686f77443f4331278", new LootInLooseContainerSpawnLimit { Keys = 3, Keycards = 1 } },
+        // Key tool
+        { "59fafd4b86f7745ca07e1232", new LootInLooseContainerSpawnLimit { Keys = 5 } },
+        // Grizzly medical kit
+        { "62a09d3bcf4a99369e262447", new LootInLooseContainerSpawnLimit { Keys = 2 } },
+        // Sealed weapon case
+        { "67d3ed3271c17ff82e0a5b0b", new LootInLooseContainerSpawnLimit { Keys = 5, Keycards = 2 } }
+    };
+
+    private static readonly Dictionary<MongoId, List<MongoId>> DefaultBlacklist = new()
+    {
+        { "590c60fc86f77412b13fddcf", [.. DefaultBlacklistedKeycards] },
+        { "5d235bb686f77443f4331278", [.. DefaultBlacklistedKeycards] },
+        { "59fafd4b86f7745ca07e1232", [.. DefaultBlacklistedKeycards] },
+        { "62a09d3bcf4a99369e262447", [.. DefaultBlacklistedKeycards] },
+        {
+            "67d3ed3271c17ff82e0a5b0b",
+            [
+                .. DefaultBlacklistedKeycards,
+                // Key tool
+                "59fafd4b86f7745ca07e1232",
+                // Grizzly medical kit
+                "62a09d3bcf4a99369e262447",
+                // Keycard holder case
+                "619cbf9e0a7c3a1a2731940a"
+            ]
+        }
+    };
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+}

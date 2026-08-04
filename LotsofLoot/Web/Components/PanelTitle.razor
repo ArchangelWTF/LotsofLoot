@@ -1,0 +1,62 @@
+@implements IDisposable
+@inject ConfigService configService
+
+@* Expansion panel header that says how many settings underneath it are waiting to be saved. *@
+
+<div class="lotsofloot-panel-title">
+    <span>@Text</span>
+    @if (ChangeCount > 0)
+    {
+        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined">@ChangeCount changed</MudChip>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public required string Text { get; set; }
+
+    /// <summary>Pending changes whose key starts with this are counted as belonging to the panel</summary>
+    [Parameter, EditorRequired] public required string KeyPrefix { get; set; }
+
+    private EditablePresetHolder? currentHolder;
+
+    private int ChangeCount => configService.EditablePresetHolder?.CountPendingChanges(KeyPrefix) ?? 0;
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+        AttachToHolder(configService.EditablePresetHolder);
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated -= Refresh;
+        }
+    }
+
+    private void OnHolderChanged()
+    {
+        AttachToHolder(configService.EditablePresetHolder);
+        Refresh();
+    }
+
+    private void AttachToHolder(EditablePresetHolder? holder)
+    {
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated -= Refresh;
+        }
+
+        currentHolder = holder;
+
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated += Refresh;
+        }
+    }
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+}

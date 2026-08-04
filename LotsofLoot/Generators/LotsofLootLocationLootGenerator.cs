@@ -3,15 +3,19 @@ using LotsofLoot.Services;
 using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Extensions;
-using SPTarkov.Server.Core.Generators;
-using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Generators.Loot;
+using SPTarkov.Server.Core.Helpers.InRaid;
+using SPTarkov.Server.Core.Helpers.Items;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Enums;
 using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Models.Spt.Inventory;
-using SPTarkov.Server.Core.Servers;
-using SPTarkov.Server.Core.Services;
+using SPTarkov.Server.Core.Services.Items;
+using SPTarkov.Server.Core.Services.Locales;
+using SPTarkov.Server.Core.Services.Server;
+using SPTarkov.Server.Core.Utils;
 using SPTarkov.Server.Core.Utils.Cloners;
 using SPTarkov.Server.Core.Utils.Collections;
 
@@ -21,21 +25,19 @@ namespace LotsofLoot.Generators;
 public class LotsofLootLocationLootGenerator(
     ItemHelper itemHelper,
     ItemFilterService itemFilterService,
-    NewSPTRandomUtil randomUtil,
+    RandomUtil randomUtil,
     SeasonalEventService seasonalEventService,
     LotsOfLootLogger logger,
     ConfigService config,
     CounterTrackerHelper counterTrackerHelper,
-    ConfigServer configServer,
     ServerLocalisationService serverLocalisationService,
     LocationLootGeneratorReflectionHelper locationLootGeneratorReflectionHelper,
+    LocationConfig locationConfig,
     ICloner cloner,
     IEnumerable<ILootSpawnpointDecider> lootSpawnpointDeciders,
     IEnumerable<ILootItemCreator> lootItemCreators
 )
 {
-    private readonly LocationConfig _locationConfig = configServer.GetConfig<LocationConfig>();
-
     public List<SpawnpointTemplate> GenerateDynamicLoot(
         LooseLoot dynamicLootDist,
         Dictionary<string, IEnumerable<StaticAmmoDetails>> staticAmmoDist,
@@ -55,7 +57,7 @@ public class LotsofLootLocationLootGenerator(
                 .SpawnpointsForced.Where(point => !point.Template.Id.StartsWith("christmas", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 
-        var blacklistedSpawnPoints = _locationConfig.LooseLootBlacklist.GetValueOrDefault(locationName);
+        var blacklistedSpawnPoints = locationConfig.LooseLootBlacklist.GetValueOrDefault(locationName);
 
         // Init empty array to hold spawn points, letting us pick them pseudo-randomly
         var spawnPointArray = new ProbabilityObjectArray<string, Spawnpoint>(cloner);

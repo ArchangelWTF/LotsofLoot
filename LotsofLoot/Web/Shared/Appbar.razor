@@ -1,0 +1,145 @@
+@implements IDisposable
+@inject ConfigService ConfigService
+@inject NavigationManager NavigationManager
+@inject ISnackbar Snackbar
+
+<MudStack Row AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="lotsofloot-toolbar">
+    <MudStack Row AlignItems="AlignItems.Center" Spacing="1" Class="lotsofloot-nav">
+        @foreach (var item in MenuItems)
+        {
+            if (item.Children.Count == 0)
+            {
+                <MudButton Class="@GetActiveClass(item.BasePage)" Href="@item.Href" Variant="Variant.Text" Color="Color.Inherit">@item.Title</MudButton>
+            }
+            else
+            {
+                <MudMenu Class="@GetActiveClass(item.BasePage)" Label="@item.Title" Variant="Variant.Text" Color="Color.Inherit"
+                         EndIcon="@Icons.Material.Filled.KeyboardArrowDown" AnchorOrigin="Origin.BottomCenter" TransformOrigin="Origin.TopCenter">
+                    @foreach (var child in item.Children)
+                    {
+                        <MudMenuItem Href="@child.Href">@child.Title</MudMenuItem>
+                    }
+                </MudMenu>
+            }
+        }
+    </MudStack>
+
+    <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="lotsofloot-actions">
+        @if (HasPendingChanges)
+        {
+            <MudChip T="string" Size="Size.Small" Color="Color.Warning" OnClick="@(() => drawerOpen = true)">
+                @PendingChangeCount unsaved
+            </MudChip>
+        }
+
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Refresh"
+                   OnClick="OnReloadClicked" Disabled="@isSaving">Reload</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Warning" StartIcon="@Icons.Material.Filled.Save"
+                   OnClick="OnSaveClicked" Disabled="@(isSaving || !HasPendingChanges)">@(isSaving ? "Saving..." : "Save")</MudButton>
+    </MudStack>
+</MudStack>
+
+<PendingChangesDrawer @bind-Open="drawerOpen" />
+
+@code {
+    [Parameter, EditorRequired]
+    public required IReadOnlyList<NavItem> MenuItems { get; set; }
+
+    private bool isSaving;
+    private bool drawerOpen;
+    private EditablePresetHolder? currentHolder;
+
+    private int PendingChangeCount => ConfigService.EditablePresetHolder?.GetPendingChanges().Count ?? 0;
+    private bool HasPendingChanges => PendingChangeCount > 0;
+
+    protected override void OnInitialized()
+    {
+        ConfigService.EditablePresetHolderChanged += OnHolderChanged;
+        AttachToHolder(ConfigService.EditablePresetHolder);
+    }
+
+    private void OnHolderChanged()
+    {
+        AttachToHolder(ConfigService.EditablePresetHolder);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void AttachToHolder(EditablePresetHolder? holder)
+    {
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated -= Refresh;
+        }
+
+        currentHolder = holder;
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated += Refresh;
+        }
+    }
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        ConfigService.EditablePresetHolderChanged -= OnHolderChanged;
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated -= Refresh;
+        }
+    }
+
+    private async Task OnReloadClicked()
+    {
+        var discarded = PendingChangeCount;
+
+        await ConfigService.ReloadConfig();
+
+        Snackbar.Add(
+            discarded == 0 ? "Reloaded from the saved preset" : $"Reloaded, discarding {discarded} unsaved change{(discarded == 1 ? "" : "s")}",
+            Severity.Info
+        );
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnSaveClicked()
+    {
+        var saved = PendingChangeCount;
+
+        isSaving = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            await ConfigService.SavePendingChanges();
+
+            drawerOpen = false;
+            Snackbar.Add($"Saved {saved} change{(saved == 1 ? "" : "s")} to preset '{ConfigService.CurrentlyLoadedPreset}'", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Could not save the preset: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private string GetActiveClass(BasePage page) => page == GetBasePage() ? "lotsofloot-nav-active" : string.Empty;
+
+    private BasePage GetBasePage()
+    {
+        var path = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        if (path is "lotsofloot" or "lotsofloot/")
+        {
+            return BasePage.Home;
+        }
+
+        return path.StartsWith("lotsofloot/settings", StringComparison.OrdinalIgnoreCase)
+            ? BasePage.Settings
+            : BasePage.None;
+    }
+}

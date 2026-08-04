@@ -1,14 +1,17 @@
 ﻿using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Helpers.Items;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Enums;
+using SPTarkov.Server.Core.Utils;
 
 namespace LotsofLoot.Generators.LootItemCreators;
 
 [Injectable]
-public class MoneyAmmoItemCreator(ItemHelper itemHelper, NewSPTRandomUtil randomUtil) : ILootItemCreator
+public class MoneyAmmoItemCreator(ItemHelper itemHelper, RandomUtil randomUtil) : ILootItemCreator
 {
     public bool CanCreateItem(MongoId tpl)
     {

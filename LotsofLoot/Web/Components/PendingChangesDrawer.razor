@@ -1,0 +1,107 @@
+@implements IDisposable
+@inject ConfigService configService
+
+@* Lists every unsaved setting with its own revert, so the Save button is never a leap of faith. *@
+
+@* Deliberately not a MudDrawer: we render inside SPT's layout, which owns the MudDrawerContainer, so a
+   drawer here escapes into page flow. A fixed-position panel of our own behaves predictably. *@
+
+@if (Open)
+{
+    <div class="lotsofloot-drawer-scrim" @onclick="Close"></div>
+}
+
+<aside class="@(Open ? "lotsofloot-drawer lotsofloot-drawer-open" : "lotsofloot-drawer")" aria-hidden="@(!Open)">
+    <div class="lotsofloot-drawer-inner">
+        <div class="lotsofloot-drawer-head">
+            <div>
+                <MudText Typo="Typo.overline" Class="spt-kicker">Unsaved</MudText>
+                <MudText Typo="Typo.h6">Pending changes</MudText>
+            </div>
+            <MudIconButton Icon="@Icons.Material.Filled.Close" Size="Size.Small" OnClick="Close" />
+        </div>
+
+        @if (Changes.Count == 0)
+        {
+            <p class="lotsofloot-drawer-empty">Nothing to save. Every setting matches the loaded preset.</p>
+        }
+        else
+        {
+            <ul class="lotsofloot-drawer-list">
+                @foreach (var change in Changes)
+                {
+                    <li>
+                        <div>
+                            <strong>@change.Label</strong>
+                            <span>@change.Key</span>
+                        </div>
+                        <MudIconButton Icon="@Icons.Material.Filled.Undo"
+                                       Size="Size.Small"
+                                       Color="Color.Secondary"
+                                       Title="Revert this setting"
+                                       OnClick="@(() => Revert(change))" />
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</aside>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
+    private EditablePresetHolder? currentHolder;
+
+    private List<PendingChange> Changes =>
+        [.. (configService.EditablePresetHolder?.GetPendingChanges() ?? []).OrderBy(change => change.Key, StringComparer.Ordinal)];
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+        AttachToHolder(configService.EditablePresetHolder);
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated -= Refresh;
+        }
+    }
+
+    private void OnHolderChanged()
+    {
+        AttachToHolder(configService.EditablePresetHolder);
+        Refresh();
+    }
+
+    private void AttachToHolder(EditablePresetHolder? holder)
+    {
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated -= Refresh;
+        }
+
+        currentHolder = holder;
+
+        if (currentHolder is not null)
+        {
+            currentHolder.PendingChangesUpdated += Refresh;
+        }
+    }
+
+    private void Refresh() => InvokeAsync(StateHasChanged);
+
+    private Task Close() => OpenChanged.InvokeAsync(false);
+
+    private async Task Revert(PendingChange change)
+    {
+        await change.Revert();
+
+        // The setting's own revert path clears the pending entry, this just makes sure the drawer redraws
+        await InvokeAsync(StateHasChanged);
+    }
+}

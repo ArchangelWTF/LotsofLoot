@@ -1,0 +1,158 @@
+@implements IDisposable;
+
+@inject ConfigService configService
+
+@* Every location exposes the same four or five sliders, so they are driven off the table below rather than
+   written out thirteen times. *@
+
+@foreach (var location in Locations)
+{
+    if (!IsLocationVisible(location))
+    {
+        continue;
+    }
+
+    <MudItem xs="12">
+        <MudPaper Class="align-center mud-width-full ma-1" Elevation="0">
+            <MudText>@location.Name</MudText>
+            <MudDivider />
+        </MudPaper>
+    </MudItem>
+
+    <ConfigSlider SliderType="double" Key="@($"Loot.Locations.{location.Key}LooseLootMultiplier")"
+                  Label="Loose loot multiplier"
+                  Tooltip="Sets the loose loot multiplier"
+                  Value="Preset.LooseLootMultiplier[location.MapId]"
+                  ValueChanged="@(value => Preset.LooseLootMultiplier[location.MapId] = value)"
+                  OriginalValue="Original.LooseLootMultiplier[location.MapId]"
+                  WarningText="Setting this value too high can cause the client to take a lot longer to load or not load at all any more, use higher values with caution"
+                  Min="1.0"
+                  Max="50"
+                  Steps="0.5"
+                  DefaultValue="7.5d" />
+
+    <ConfigSlider SliderType="double" Key="@($"Loot.Locations.{location.Key}StaticLootMultiplier")"
+                  Label="Static loot multiplier"
+                  Tooltip="Sets the static loot multiplier"
+                  Value="Preset.StaticLootMultiplier[location.MapId]"
+                  ValueChanged="@(value => Preset.StaticLootMultiplier[location.MapId] = value)"
+                  OriginalValue="Original.StaticLootMultiplier[location.MapId]"
+                  WarningText="Setting this value too high can cause the client to take a lot longer to load or not load at all any more, use higher values with caution"
+                  Min="1.0"
+                  Max="50"
+                  Steps="0.5"
+                  DefaultValue="2d" />
+
+    @if (location.HasMarkedRoom)
+    {
+        <ConfigSlider SliderType="double" Key="@($"Loot.Locations.{location.Key}MarkedLootMultiplier")"
+                      Label="Marked room loot multiplier"
+                      Tooltip="Sets the Marked room loot multiplier, the higher the value the more item probability"
+                      Value="Preset.MarkedRoomConfig.Multiplier[location.MapId]"
+                      ValueChanged="@(value => Preset.MarkedRoomConfig.Multiplier[location.MapId] = value)"
+                      OriginalValue="Original.MarkedRoomConfig.Multiplier[location.MapId]"
+                      Min="0.5"
+                      Max="25"
+                      Steps="0.5"
+                      DefaultValue="4d" />
+    }
+
+    @if (location.HasRefRoom)
+    {
+        <ConfigSlider SliderType="double" Key="@($"Loot.Locations.{location.Key}RefLootMultiplier")"
+                      Label="Ref room loot multiplier"
+                      Tooltip="Sets the Ref room loot multiplier, the higher the value the more item probability"
+                      Value="Preset.RefRoomConfig.Multiplier[location.MapId]"
+                      ValueChanged="@(value => Preset.RefRoomConfig.Multiplier[location.MapId] = value)"
+                      OriginalValue="Original.RefRoomConfig.Multiplier[location.MapId]"
+                      Min="0.5"
+                      Max="25"
+                      Steps="0.5"
+                      DefaultValue="2d" />
+    }
+
+    <ConfigSlider SliderType="int" Key="@($"Loot.Locations.{location.Key}LootGeneratorLimit")"
+                  Label="Loot generator limit"
+                  Tooltip="Sets the limit on the amount of loot that will be generated"
+                  Value="Preset.Limits[location.MapId]"
+                  ValueChanged="@(value => Preset.Limits[location.MapId] = value)"
+                  OriginalValue="Original.Limits[location.MapId]"
+                  Min="1000"
+                  Max="50000"
+                  Steps="1000"
+                  DefaultValue="location.DefaultLimit" />
+}
+
+@code {
+    /// <param name="Key">Segment of the pending-change key, e.g. "Customs" in "Loot.Locations.CustomsLooseLootMultiplier"</param>
+    /// <param name="MapId">The location id the preset dictionaries are keyed on</param>
+    private sealed record LocationDefinition(
+        string Key,
+        string MapId,
+        string Name,
+        int DefaultLimit,
+        bool HasMarkedRoom = false,
+        bool HasRefRoom = false
+    );
+
+    private static readonly LocationDefinition[] Locations =
+    [
+        new("Customs", "bigmap", "Customs", 10000, HasMarkedRoom: true),
+        new("FactoryDay", "factory4_day", "Factory (Day)", 2000),
+        new("FactoryNight", "factory4_night", "Factory (Night)", 2000),
+        new("Woods", "woods", "Woods", 10000, HasRefRoom: true),
+        new("Interchange", "interchange", "Interchange", 30000, HasRefRoom: true),
+        new("Laboratory", "laboratory", "Laboratory", 10000),
+        new("Reserve", "rezervbase", "Reserve", 30000, HasMarkedRoom: true),
+        new("Shoreline", "shoreline", "Shoreline", 20000, HasRefRoom: true),
+        new("StreetsOfTarkov", "tarkovstreets", "Streets of Tarkov", 30000, HasMarkedRoom: true),
+        new("Lighthouse", "lighthouse", "Lighthouse", 20000, HasMarkedRoom: true, HasRefRoom: true),
+        new("GroundZero", "sandbox", "Ground Zero", 10000),
+        new("GroundZeroHigh", "sandbox_high", "Ground Zero (High)", 10000),
+        new("Labyrinth", "labyrinth", "Labyrinth", 3000),
+    ];
+
+    [CascadingParameter(Name = SettingsFilter.CascadeName)] private string? FilterText { get; set; }
+
+    private LotsofLootPresetConfig Preset => configService.EditablePresetHolder.presetConfig;
+    private LotsofLootPresetConfig Original => configService.LotsofLootPresetConfig;
+
+    /// <summary>
+    /// The location header is ours to draw rather than a ConfigSlider's, so it has to disappear when the
+    /// filter would hide every slider underneath it
+    /// </summary>
+    private bool IsLocationVisible(LocationDefinition location)
+    {
+        if (string.IsNullOrWhiteSpace(FilterText))
+        {
+            return true;
+        }
+
+        if (SettingsFilter.Matches(FilterText, location.Name, location.Key))
+        {
+            return true;
+        }
+
+        string[] sharedLabels = ["Loose loot multiplier", "Static loot multiplier", "Loot generator limit"];
+
+        return sharedLabels.Any(label => SettingsFilter.Matches(FilterText, label))
+            || (location.HasMarkedRoom && SettingsFilter.Matches(FilterText, "Marked room loot multiplier"))
+            || (location.HasRefRoom && SettingsFilter.Matches(FilterText, "Ref room loot multiplier"));
+    }
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+}

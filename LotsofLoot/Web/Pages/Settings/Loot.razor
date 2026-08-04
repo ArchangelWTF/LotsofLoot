@@ -1,0 +1,131 @@
+@implements IDisposable;
+
+@page "/lotsofloot/settings/loot"
+
+@layout BaseMudBlazorLayout
+@inject ConfigService configService
+
+<PageTitle>Loot settings - Lots of Loot Redux</PageTitle>
+
+<LotsofLootLayout>
+    <MudPaper Elevation="0" Class="lotsofloot-hero spt-panel pa-5">
+        <MudText Typo="Typo.overline" Class="spt-kicker">Settings</MudText>
+        <MudText Typo="Typo.h3" Class="spt-title">Loot</MudText>
+        <MudText Typo="Typo.body2" Class="spt-subtitle mt-2">Adjust map multipliers, special rooms, and loose-container behavior.</MudText>
+    </MudPaper>
+    <SettingsFilterBar Placeholder="Filter locations and settings...">
+        <MudExpansionPanels MultiExpansion="true">
+            <MudExpansionPanel @bind-Expanded="locationsExpanded">
+                <TitleContent><PanelTitle Text="Location settings" KeyPrefix="Loot.Locations." /></TitleContent>
+                <ChildContent>
+                <MudGrid>
+                    <LootLocations/>
+                </MudGrid>
+                </ChildContent>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel @bind-Expanded="markedRoomExpanded">
+                <TitleContent><PanelTitle Text="Marked room settings" KeyPrefix="Loot.MarkedRoom." /></TitleContent>
+                <ChildContent>
+                <MudGrid>
+                    <ConfigMongoIdDictionary Key="Loot.MarkedRoom.ExtraItems"
+                                      Label="Extra marked room items"
+                                      Tooltip="Adds extra items to the marked room's loot pool, the higher the value the more probability an item has to spawn over others"
+                                      @bind-Value="configService.EditablePresetHolder.presetConfig.MarkedRoomConfig.ExtraItems"
+                                      OriginalValue="configService.LotsofLootPresetConfig.MarkedRoomConfig.ExtraItems"
+                                      DefaultValue="DefaultMarkedRoomExtraItems" />
+
+                    <ConfigMongoIdDictionary Source="ConfigMongoIdDictionary.LocaleSource.ItemGroups" Key="Loot.MarkedRoom.ItemGroups"
+                                      Label="Marked room item groups"
+                                      Tooltip="Modifying this multiplies the chance for items of a particular group to spawn in the marked room"
+                                      @bind-Value="configService.EditablePresetHolder.presetConfig.MarkedRoomConfig.ItemGroups"
+                                      OriginalValue="configService.LotsofLootPresetConfig.MarkedRoomConfig.ItemGroups"
+                                      DefaultValue="DefaultMarkedItemGroups" />
+                </MudGrid>
+                </ChildContent>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel @bind-Expanded="refRoomExpanded">
+                <TitleContent><PanelTitle Text="Ref room settings" KeyPrefix="Loot.RefRoom." /></TitleContent>
+                <ChildContent>
+                <MudGrid>
+                    <ConfigMongoIdDictionary Source="ConfigMongoIdDictionary.LocaleSource.ItemGroups" Key="Loot.RefRoom.ItemGroups"
+                                               Label="Ref room item groups"
+                                               Tooltip="Modifying this multiplies the chance for items of a particular group to spawn in the Ref rooms"
+                                               @bind-Value="configService.EditablePresetHolder.presetConfig.RefRoomConfig.ItemGroups"
+                                               OriginalValue="configService.LotsofLootPresetConfig.RefRoomConfig.ItemGroups"
+                                               DefaultValue="DefaultRefItemGroups" />
+                </MudGrid>
+                </ChildContent>
+            </MudExpansionPanel>
+
+            <MudExpansionPanel @bind-Expanded="looseContainerExpanded">
+                <TitleContent><PanelTitle Text="Loose container loot" KeyPrefix="Loot.LooseContainer." /></TitleContent>
+                <ChildContent>
+                <MudGrid>
+                    <LooseContainerLoot/>
+                </MudGrid>
+                </ChildContent>
+            </MudExpansionPanel>
+            </MudExpansionPanels>
+    </SettingsFilterBar>
+</LotsofLootLayout>
+
+@code {
+    private bool locationsExpanded = true;
+    private bool markedRoomExpanded = true;
+    private bool refRoomExpanded = true;
+    private bool looseContainerExpanded = true;
+
+    private static Dictionary<MongoId, double> DefaultMarkedRoomExtraItems = new Dictionary<MongoId, double>()
+    {
+                //Keycard holder case
+                { "619cbf9e0a7c3a1a2731940a", 1 },
+                //Weapon case
+                { "59fb023c86f7746d0d4b423c", 2 },
+                //Documents case
+                { "590c60fc86f77412b13fddcf", 4 },
+                //WZ Wallet
+                { "60b0f6c058e0b0481a09ad11", 6 },
+                //Injector case
+                { "619cbf7d23893217ec30b689", 1 },
+                //Key tool
+                { "59fafd4b86f7745ca07e1232", 3 },
+                //S I C C organizational pouch
+                { "5d235bb686f77443f4331278", 3 },
+                //Item case
+                { "59fb042886f7746c5005a7b2", 2 },
+                //T H I C C item case
+                { "5c0a840b86f7742ffa4f2482", 1 },
+                //T H I C C Weapon case
+                { "5b6d9ce188a4501afc1b2b25", 1 }
+    };
+
+    private static Dictionary<MongoId, double> DefaultMarkedItemGroups = new Dictionary<MongoId, double>()
+    {
+                //Weapons group
+                { "5422acb9af1c889c16000029", 0.2 }
+    };
+
+    private static Dictionary<MongoId, double> DefaultRefItemGroups = new Dictionary<MongoId, double>()
+    {
+                //Jewelry group
+                { "57864a3d24597754843f8721", 0.1 }
+    };
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+}

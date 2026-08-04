@@ -1,26 +1,28 @@
 ﻿using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Helpers.Items;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Enums;
 using SPTarkov.Server.Core.Models.Spt.Config;
+using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Servers;
+using SPTarkov.Server.Core.Utils;
 using SPTarkov.Server.Core.Utils.Cloners;
 
 namespace LotsofLoot.Generators.LootItemCreators;
 
 [Injectable]
 public class WeaponItemCreator(
-    ConfigServer configServer,
+    LocationConfig locationConfig,
     ItemHelper itemHelper,
     PresetHelper presetHelper,
-    NewSPTRandomUtil randomUtil,
+    RandomUtil randomUtil,
     ICloner cloner
 ) : ILootItemCreator
 {
-    private readonly LocationConfig _locationConfig = configServer.GetConfig<LocationConfig>();
-
     public bool CanCreateItem(MongoId tpl)
     {
         if (itemHelper.IsOfBaseclass(tpl, BaseClasses.WEAPON))
@@ -58,7 +60,7 @@ public class WeaponItemCreator(
 
         Item? magazine = items.Find(x => x.SlotId == "mod_magazine");
 
-        if (magazine != null && randomUtil.GetChance100(_locationConfig.MagazineLootHasAmmoChancePercent))
+        if (magazine != null && randomUtil.GetChance100(locationConfig.MagazineLootHasAmmoChancePercent))
         {
             // Get required templates
             TemplateItem? magTemplate = itemHelper.GetItem(magazine.Template).Value;
@@ -73,7 +75,7 @@ public class WeaponItemCreator(
                 magTemplate,
                 staticAmmoDictionary,
                 weaponTemplate.Properties.AmmoCaliber,
-                _locationConfig.MinFillStaticMagazinePercent / 100.0,
+                locationConfig.MinFillStaticMagazinePercent / 100.0,
                 defaultWeapon.Properties.DefAmmo,
                 defaultWeapon
             );

@@ -1,0 +1,981 @@
+.lotsofloot-page {
+    --lotsofloot-panel-bg: rgba(9, 9, 11, 0.74);
+    --lotsofloot-card-bg: rgba(24, 24, 27, 0.48);
+    --lotsofloot-blue-soft: rgba(56, 189, 248, 0.12);
+    --lotsofloot-green-soft: rgba(34, 197, 94, 0.13);
+    --lotsofloot-yellow-soft: rgba(250, 204, 21, 0.12);
+}
+
+.lotsofloot-container {
+    max-width: 1480px;
+    margin-inline: auto;
+}
+
+.lotsofloot-header {
+    position: sticky;
+    top: 12px;
+    z-index: 1100;
+    border-color: rgba(63, 63, 70, 0.76);
+    background: rgba(9, 9, 11, 0.9);
+}
+
+.lotsofloot-content {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+    min-height: 0;
+    padding-top: 16px;
+}
+
+.lotsofloot-toolbar,
+.lotsofloot-nav,
+.lotsofloot-actions {
+    flex-wrap: wrap;
+}
+
+.lotsofloot-nav-active {
+    color: var(--spt-accent) !important;
+    background: var(--lotsofloot-yellow-soft) !important;
+}
+
+.lotsofloot-hero {
+    border-color: #1f2937;
+    background:
+        linear-gradient(135deg, rgba(31, 41, 55, 0.92), rgba(3, 7, 18, 0.95) 52%, rgba(9, 9, 11, 0.98)),
+        var(--lotsofloot-panel-bg);
+}
+
+/* Mod landing page, following SIC's landing-card language. */
+.lotsofloot-home-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.lotsofloot-home-link {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    min-height: 104px;
+    padding: 18px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.lotsofloot-home-link-icon {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(250, 204, 21, 0.34);
+    border-radius: 10px;
+    color: var(--spt-accent);
+    background: var(--lotsofloot-yellow-soft);
+}
+
+.lotsofloot-home-link-copy {
+    display: grid;
+    gap: 4px;
+}
+
+.lotsofloot-home-link-copy strong {
+    color: var(--spt-text);
+    font-size: 1rem;
+}
+
+.lotsofloot-home-link-copy span {
+    color: var(--spt-text-muted);
+    font-size: 0.84rem;
+    line-height: 1.45;
+}
+
+.lotsofloot-home-link-arrow {
+    color: var(--spt-text-muted);
+    transition: color 160ms ease, transform 160ms ease;
+}
+
+.lotsofloot-home-link:hover .lotsofloot-home-link-arrow,
+.lotsofloot-home-link:focus-visible .lotsofloot-home-link-arrow {
+    color: var(--spt-accent);
+    transform: translateX(3px);
+}
+
+/* Compact home dashboard. */
+.lotsofloot-dashboard-hero {
+    border-color: #1f2937;
+    background:
+        radial-gradient(circle at 94% 18%, rgba(56, 189, 248, 0.11), transparent 19rem),
+        linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(3, 7, 18, 0.96) 58%, rgba(9, 9, 11, 0.98));
+}
+
+.lotsofloot-dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.lotsofloot-dashboard-panel {
+    min-width: 0;
+    border-color: rgba(63, 63, 70, 0.76);
+    background: var(--lotsofloot-panel-bg);
+}
+
+.lotsofloot-dashboard-panel-header,
+.lotsofloot-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.lotsofloot-dashboard-panel-header {
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--spt-border);
+}
+
+.lotsofloot-dashboard-panel-header .mud-typography-h5,
+.lotsofloot-section-heading .mud-typography-h5 {
+    color: var(--spt-text);
+    font-weight: 800;
+}
+
+.lotsofloot-detail-list {
+    display: grid;
+    margin: 0;
+}
+
+.lotsofloot-detail-list > div {
+    display: grid;
+    grid-template-columns: minmax(130px, 1fr) minmax(0, 1.2fr);
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(39, 39, 42, 0.72);
+}
+
+.lotsofloot-detail-list > div:last-child {
+    border-bottom: 0;
+}
+
+.lotsofloot-detail-list dt {
+    color: var(--spt-text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.lotsofloot-detail-list dd {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--spt-text);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lotsofloot-generation-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.lotsofloot-generation-stats > div {
+    display: grid;
+    gap: 3px;
+    padding: 12px;
+    border: 1px solid var(--spt-border);
+    border-radius: var(--spt-radius);
+    background: rgba(24, 24, 27, 0.55);
+}
+
+.lotsofloot-generation-stats span {
+    color: var(--spt-text-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.lotsofloot-generation-stats strong {
+    color: var(--spt-text);
+    font-size: 1.05rem;
+}
+
+.lotsofloot-section-heading {
+    margin: 8px 0 12px;
+}
+
+.lotsofloot-section-heading > span {
+    color: var(--spt-text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.lotsofloot-section {
+    border-color: rgba(63, 63, 70, 0.76) !important;
+    background: var(--lotsofloot-panel-bg) !important;
+}
+
+.lotsofloot-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Inline caveat that has to be read, unlike ConfigWarning which hides behind a hover tooltip */
+.lotsofloot-note {
+    display: flex;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid rgba(250, 204, 21, 0.28);
+    border-radius: var(--spt-radius);
+    background: var(--lotsofloot-yellow-soft);
+    color: var(--spt-text-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.lotsofloot-note > .mud-icon-root {
+    flex: 0 0 auto;
+    margin-top: 2px;
+}
+
+.lotsofloot-randomize-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0 12px;
+}
+
+.lotsofloot-modal-scrim,
+.lotsofloot-drawer-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.lotsofloot-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    z-index: 1401;
+    display: grid;
+    gap: 10px;
+    width: min(460px, 92vw);
+    padding: 20px;
+    transform: translate(-50%, -50%);
+}
+
+.lotsofloot-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.lotsofloot-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1401;
+    overflow-y: auto;
+    width: min(380px, 92vw);
+    height: 100vh;
+    border-left: 1px solid var(--spt-border);
+    background: rgba(9, 9, 11, 0.98);
+    transform: translateX(100%);
+    transition: transform 160ms ease;
+    visibility: hidden;
+}
+
+.lotsofloot-drawer-open {
+    transform: translateX(0);
+    visibility: visible;
+}
+
+.lotsofloot-drawer-inner {
+    display: grid;
+    align-content: start;
+    gap: 12px;
+    padding: 16px;
+}
+
+.lotsofloot-drawer-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--spt-border);
+}
+
+.lotsofloot-drawer-empty {
+    margin: 0;
+    color: var(--spt-text-muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+}
+
+.lotsofloot-drawer-list {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.lotsofloot-drawer-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 10px;
+    border: 1px solid var(--spt-border);
+    border-left: 2px solid var(--spt-accent);
+    border-radius: var(--spt-radius);
+    background: var(--lotsofloot-card-bg);
+}
+
+.lotsofloot-drawer-list strong {
+    display: block;
+    font-size: 0.84rem;
+}
+
+.lotsofloot-drawer-list span {
+    color: var(--spt-text-muted);
+    font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+    font-size: 0.68rem;
+}
+
+.lotsofloot-filter {
+    position: sticky;
+    top: 76px;
+    z-index: 1050;
+    border-color: rgba(63, 63, 70, 0.76) !important;
+    background: rgba(9, 9, 11, 0.94) !important;
+}
+
+/* Dense dictionary editor: one line per entry rather than a card per entry. */
+.lotsofloot-dict {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid var(--spt-border);
+    border-radius: var(--spt-radius);
+    background: var(--lotsofloot-card-bg);
+
+    /* Every row is its own grid, so an `auto` trailing column would resolve to a different width per
+       row and knock the 1fr column out of alignment. The action column is fixed for that reason, and
+       sized to fit the Add button rather than just the delete icon. */
+    --lotsofloot-action-col: 96px;
+}
+
+.lotsofloot-dict-head,
+.lotsofloot-dict-row,
+.lotsofloot-dict-row-new {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 218px 132px var(--lotsofloot-action-col);
+    gap: 10px;
+    align-items: center;
+    padding: 3px 10px;
+}
+
+.lotsofloot-dict-head {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--spt-border);
+    background: rgba(24, 24, 27, 0.7);
+    color: var(--spt-text-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.lotsofloot-dict-body-scroll {
+    overflow-y: auto;
+    max-height: 460px;
+}
+
+.lotsofloot-dict-row {
+    border-left: 2px solid transparent;
+}
+
+.lotsofloot-dict-row:hover {
+    background: rgba(63, 63, 70, 0.18);
+}
+
+.lotsofloot-dict-row-changed {
+    border-left-color: var(--spt-accent);
+    background: var(--lotsofloot-yellow-soft);
+}
+
+.lotsofloot-dict-row-new {
+    border-top: 1px solid var(--spt-border);
+    background: rgba(24, 24, 27, 0.5);
+}
+
+/* Fill the action column so a wider button can never push the row's other columns around */
+.lotsofloot-dict-row-new .mud-button-root {
+    width: 100%;
+}
+
+.lotsofloot-dict-row .mud-icon-button {
+    justify-self: center;
+}
+
+.lotsofloot-dict-id {
+    overflow: hidden;
+    color: var(--spt-text-muted);
+    font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lotsofloot-dict-limits .lotsofloot-dict-head,
+.lotsofloot-dict-limits .lotsofloot-dict-row,
+.lotsofloot-dict-limits .lotsofloot-dict-row-new {
+    grid-template-columns: minmax(0, 1fr) 218px 104px 104px var(--lotsofloot-action-col);
+}
+
+/* Blacklist entries are a container header plus its own chip list, so they get grouped rather than tabulated. */
+.lotsofloot-blacklist-group {
+    border-bottom: 1px solid var(--spt-border);
+    border-left: 2px solid transparent;
+}
+
+/* The add row draws its own top border, so the last group must not double it up */
+.lotsofloot-blacklist-group:last-of-type {
+    border-bottom: 0;
+}
+
+.lotsofloot-blacklist-group-changed {
+    border-left-color: var(--spt-accent);
+    background: var(--lotsofloot-yellow-soft);
+}
+
+.lotsofloot-blacklist-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 218px var(--lotsofloot-action-col) 44px;
+    gap: 10px;
+    align-items: center;
+    padding: 4px 10px;
+}
+
+.lotsofloot-blacklist-new .mud-button-root {
+    width: 100%;
+}
+
+/* Same template as the rows above so the container field lines up, rather than borrowing the
+   dictionary editor's new-row template, which has a different column count. */
+.lotsofloot-blacklist-new {
+    border-top: 1px solid var(--spt-border);
+    background: rgba(24, 24, 27, 0.5);
+}
+
+.lotsofloot-blacklist-count {
+    color: var(--spt-text-muted);
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.lotsofloot-blacklist-items {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 0 10px 8px 12px;
+}
+
+/* A container with a lot of blocked items must wrap, never widen the panel */
+.lotsofloot-blacklist-items > .mud-chipset {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.lotsofloot-blacklist-empty {
+    color: var(--spt-text-muted);
+    font-size: 0.78rem;
+}
+
+.lotsofloot-blacklist-add {
+    display: flex;
+    flex: 0 1 260px;
+    align-items: center;
+    gap: 4px;
+    min-width: 190px;
+}
+
+.lotsofloot-kind-changed {
+    border-color: rgba(250, 204, 21, 0.4);
+    background: var(--lotsofloot-yellow-soft);
+    color: var(--spt-accent);
+}
+
+@media (max-width: 900px) {
+    .lotsofloot-dict-head,
+    .lotsofloot-dict-row,
+    .lotsofloot-dict-row-new {
+        grid-template-columns: minmax(0, 1fr) 110px var(--lotsofloot-action-col);
+    }
+
+    .lotsofloot-dict-limits .lotsofloot-dict-head,
+    .lotsofloot-dict-limits .lotsofloot-dict-row,
+    .lotsofloot-dict-limits .lotsofloot-dict-row-new {
+        grid-template-columns: minmax(0, 1fr) 84px 84px var(--lotsofloot-action-col);
+    }
+
+    /* The id column is the first thing to go when space runs out. */
+    .lotsofloot-dict-id,
+    .lotsofloot-dict-head > span:nth-child(2) {
+        display: none;
+    }
+}
+
+/* Release timeline on the landing page. */
+.lotsofloot-update-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border-color: rgba(250, 204, 21, 0.4) !important;
+    background: linear-gradient(135deg, var(--lotsofloot-yellow-soft), var(--lotsofloot-panel-bg)) !important;
+}
+
+.lotsofloot-update-banner > div {
+    display: grid;
+    flex: 1;
+}
+
+.lotsofloot-update-banner strong {
+    font-size: 1rem;
+}
+
+.lotsofloot-update-banner span {
+    color: var(--spt-text-muted);
+    font-size: 0.82rem;
+}
+
+.lotsofloot-release-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--spt-text-muted);
+    font-size: 0.86rem;
+}
+
+.lotsofloot-timeline {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0 0 0 22px;
+    list-style: none;
+}
+
+.lotsofloot-timeline-item {
+    position: relative;
+}
+
+/* The rail is drawn per item so it stops cleanly at the last card. */
+.lotsofloot-timeline-item::before {
+    content: "";
+    position: absolute;
+    top: 22px;
+    bottom: -20px;
+    left: -14px;
+    width: 2px;
+    background: var(--spt-border);
+}
+
+.lotsofloot-timeline-item:last-child::before {
+    display: none;
+}
+
+.lotsofloot-timeline-marker {
+    position: absolute;
+    top: 15px;
+    left: -19px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--spt-border);
+    border-radius: 50%;
+    background: var(--spt-bg, #09090b);
+}
+
+.lotsofloot-timeline-item-current .lotsofloot-timeline-marker {
+    border-color: var(--spt-accent);
+    background: var(--spt-accent);
+}
+
+.lotsofloot-timeline-card {
+    padding: 14px 16px;
+}
+
+.lotsofloot-timeline-item-current .lotsofloot-timeline-card {
+    border-color: rgba(250, 204, 21, 0.36);
+}
+
+.lotsofloot-timeline-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.lotsofloot-timeline-header > div:first-child {
+    display: grid;
+}
+
+.lotsofloot-timeline-header strong {
+    font-size: 0.98rem;
+}
+
+.lotsofloot-timeline-header span {
+    color: var(--spt-text-muted);
+    font-size: 0.76rem;
+}
+
+.lotsofloot-timeline-tags {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.lotsofloot-release-heading {
+    margin: 12px 0 4px;
+    color: var(--spt-text);
+    font-size: 0.84rem;
+    font-weight: 800;
+}
+
+.lotsofloot-release-text,
+.lotsofloot-release-empty {
+    margin: 6px 0 0;
+    color: var(--spt-text-muted);
+    font-size: 0.84rem;
+    line-height: 1.55;
+}
+
+.lotsofloot-release-list {
+    margin: 6px 0 0;
+    padding-left: 18px;
+    color: var(--spt-text-muted);
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+.lotsofloot-timeline-card a {
+    color: var(--spt-accent);
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.lotsofloot-timeline-card a:hover,
+.lotsofloot-timeline-card a:focus-visible {
+    text-decoration: underline;
+}
+
+/* SIC ConfigJsonValueEditor-style primitive cards. */
+.lotsofloot-option {
+    display: grid;
+    grid-template-columns: minmax(170px, 300px) minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    min-height: 54px;
+    padding: 11px 12px;
+    border: 1px solid rgba(39, 39, 42, 0.98);
+    border-radius: var(--spt-radius);
+    background:
+        linear-gradient(90deg, rgba(24, 24, 27, 0.72), rgba(24, 24, 27, 0.42)),
+        var(--lotsofloot-card-bg);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.lotsofloot-option-boolean {
+    box-shadow: inset 3px 0 0 rgba(250, 204, 21, 0.82), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.lotsofloot-option-number {
+    box-shadow: inset 3px 0 0 rgba(34, 197, 94, 0.74), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.lotsofloot-option:hover,
+.lotsofloot-option:focus-within {
+    transform: translateY(-1px);
+    border-color: rgba(82, 82, 91, 0.95);
+    background: rgba(24, 24, 27, 0.72);
+}
+
+.lotsofloot-option-meta {
+    display: grid;
+    min-width: 0;
+    gap: 5px;
+}
+
+.lotsofloot-option-title-row,
+.lotsofloot-collection-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.lotsofloot-option-title {
+    color: var(--spt-text);
+    font-weight: 700;
+    line-height: 1.3;
+    word-break: break-word;
+}
+
+.lotsofloot-warning-trigger {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    padding: 0;
+    border: 1px solid rgba(250, 204, 21, 0.48);
+    border-radius: 6px;
+    color: var(--spt-accent);
+    background: var(--lotsofloot-yellow-soft);
+    cursor: help;
+    transition: border-color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+
+.lotsofloot-warning-trigger:hover,
+.lotsofloot-warning-trigger:focus-visible {
+    border-color: var(--spt-accent);
+    background: rgba(250, 204, 21, 0.18);
+    box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.1);
+    outline: none;
+}
+
+.lotsofloot-warning-tooltip {
+    display: grid;
+    gap: 5px;
+    width: min(360px, calc(100vw - 32px));
+    padding: 10px 12px;
+    border: 1px solid rgba(250, 204, 21, 0.62);
+    border-radius: 6px;
+    color: #f8fafc;
+    background: rgba(24, 24, 27, 0.98);
+    box-shadow: 0 16px 38px rgba(0, 0, 0, 0.46);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    text-align: left;
+    white-space: normal;
+}
+
+.lotsofloot-warning-tooltip strong {
+    color: var(--spt-accent);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.lotsofloot-option-description {
+    color: var(--spt-text-muted) !important;
+    line-height: 1.35;
+}
+
+.lotsofloot-kind {
+    width: max-content;
+    max-width: 100%;
+    padding: 3px 7px;
+    border: 1px solid rgba(63, 63, 70, 0.74);
+    border-radius: 999px;
+    color: #d4d4d8;
+    background: rgba(39, 39, 42, 0.72);
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.lotsofloot-kind-boolean {
+    border-color: rgba(250, 204, 21, 0.38);
+    color: #fde047;
+    background: var(--lotsofloot-yellow-soft);
+}
+
+.lotsofloot-kind-number {
+    border-color: rgba(34, 197, 94, 0.34);
+    color: #86efac;
+    background: var(--lotsofloot-green-soft);
+}
+
+.lotsofloot-kind-object {
+    border-color: rgba(56, 189, 248, 0.34);
+    color: #7dd3fc;
+    background: var(--lotsofloot-blue-soft);
+}
+
+.lotsofloot-option-editor {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.lotsofloot-switch-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    color: #d4d4d8;
+    font-weight: 700;
+}
+
+.lotsofloot-option-actions {
+    min-width: 42px;
+}
+
+.lotsofloot-number-input input {
+    font-family: Consolas, "Liberation Mono", monospace;
+}
+
+/* Object/dictionary blocks follow SIC's object summary and nested row treatment. */
+.lotsofloot-collection-header {
+    display: grid;
+    gap: 8px;
+    padding: 12px;
+    border: 1px solid rgba(63, 63, 70, 0.62);
+    border-radius: var(--spt-radius);
+    background: rgba(3, 7, 18, 0.2);
+}
+
+.lotsofloot-collection-summary {
+    color: var(--spt-text-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.lotsofloot-dictionary-row {
+    border: 1px solid rgba(39, 39, 42, 0.98) !important;
+    border-radius: var(--spt-radius) !important;
+    background: rgba(3, 7, 18, 0.3) !important;
+    box-shadow: inset 3px 0 0 rgba(56, 189, 248, 0.5);
+    transition: border-color 160ms ease, background 160ms ease;
+}
+
+.lotsofloot-dictionary-row:hover,
+.lotsofloot-dictionary-row:focus-within {
+    border-color: rgba(82, 82, 91, 0.95) !important;
+    background: rgba(24, 24, 27, 0.55) !important;
+}
+
+.lotsofloot-dictionary-row-changed {
+    border-color: rgba(250, 204, 21, 0.52) !important;
+    box-shadow: inset 3px 0 0 rgba(250, 204, 21, 0.82);
+}
+
+/* Location labels were previously plain divider bars; present them as SIC section summaries. */
+.lotsofloot-page .mud-grid > .mud-grid-item-xs-12 > .mud-paper.align-center.mud-width-full.ma-1 {
+    margin-top: 14px !important;
+    padding: 10px 12px;
+    border: 1px solid rgba(56, 189, 248, 0.28);
+    border-radius: var(--spt-radius);
+    background: linear-gradient(90deg, rgba(14, 116, 144, 0.18), rgba(3, 7, 18, 0.34));
+}
+
+.lotsofloot-page .mud-grid > .mud-grid-item-xs-12 > .mud-paper.align-center.mud-width-full.ma-1 .mud-typography {
+    color: var(--spt-text);
+    font-weight: 800;
+}
+
+.lotsofloot-page .mud-grid > .mud-grid-item-xs-12 > .mud-paper.align-center.mud-width-full.ma-1 .mud-divider {
+    display: none;
+}
+
+.lotsofloot-page .mud-button-root {
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.lotsofloot-page .mud-button-filled-warning {
+    color: #111827;
+}
+
+.lotsofloot-page .mud-input-outlined-border {
+    border-color: var(--spt-border-strong) !important;
+}
+
+.lotsofloot-page .mud-input:hover .mud-input-outlined-border {
+    border-color: #52525b !important;
+}
+
+.lotsofloot-page .mud-input.mud-input-focused .mud-input-outlined-border {
+    border-color: var(--spt-info) !important;
+}
+
+.lotsofloot-page .mud-expand-panel {
+    overflow: hidden;
+    border: 1px solid rgba(63, 63, 70, 0.76);
+    border-radius: var(--spt-radius);
+    background: var(--lotsofloot-panel-bg);
+}
+
+.lotsofloot-page .mud-expand-panel-header {
+    min-height: 52px;
+    background: rgba(24, 24, 27, 0.72);
+}
+
+.lotsofloot-page .mud-expand-panel-text {
+    color: var(--spt-text);
+    font-weight: 800;
+}
+
+@media (max-width: 800px) {
+    .lotsofloot-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lotsofloot-home-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .lotsofloot-option {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 720px) {
+    .lotsofloot-container {
+        padding: 12px !important;
+    }
+
+    .lotsofloot-header {
+        position: static;
+    }
+
+    .lotsofloot-toolbar,
+    .lotsofloot-nav,
+    .lotsofloot-actions {
+        width: 100%;
+        flex-direction: column !important;
+        align-items: stretch !important;
+    }
+
+    .lotsofloot-option-editor {
+        grid-template-columns: 1fr;
+    }
+
+    .lotsofloot-home-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lotsofloot-generation-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .lotsofloot-section-heading {
+        align-items: flex-end;
+    }
+
+}

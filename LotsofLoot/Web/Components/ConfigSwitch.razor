@@ -1,0 +1,108 @@
+@implements IDisposable;
+@inject ConfigService configService
+
+@if (MatchesFilter)
+{
+    <MudItem xs="12">
+        <div class="lotsofloot-option lotsofloot-option-boolean">
+            <div class="lotsofloot-option-meta">
+                <div class="lotsofloot-option-title-row">
+                    @if (!string.IsNullOrEmpty(WarningText))
+                    {
+                        <ConfigWarning Text="@WarningText" />
+                    }
+                    <MudTooltip Text="@Tooltip" Color="Color.Info" Arrow="true">
+                        <MudText Typo="Typo.caption" Class="lotsofloot-option-title">@Label</MudText>
+                    </MudTooltip>
+                </div>
+                <span class="lotsofloot-kind lotsofloot-kind-boolean">Boolean</span>
+            </div>
+
+            <div class="lotsofloot-option-editor">
+                <div class="lotsofloot-switch-field">
+                    <MudSwitch T="bool" Value="Value" ValueChanged="OnValueChanged" Color="Color.Warning" />
+                    <span>@(Value ? "Enabled" : "Disabled")</span>
+                </div>
+                <div class="lotsofloot-option-actions">
+                    @if (ShowUndo && IsChanged)
+                    {
+                        <MudTooltip Text="Undo change">
+                            <MudIconButton Icon="@Icons.Material.Filled.Undo" OnClick="Undo" Variant="Variant.Outlined"
+                                           Color="Color.Secondary" Size="Size.Small" aria-label="Undo change" />
+                        </MudTooltip>
+                    }
+                    else if (ShowDefault && !Equals(Value, DefaultValue))
+                    {
+                        <MudTooltip Text="Reset to default">
+                            <MudIconButton Icon="@Icons.Material.Filled.RestartAlt" OnClick="SetDefault" Variant="Variant.Outlined"
+                                           Color="Color.Secondary" Size="Size.Small" aria-label="Reset to default" />
+                        </MudTooltip>
+                    }
+                </div>
+            </div>
+        </div>
+    </MudItem>
+
+    
+}
+
+@code {
+    [Parameter] public required string Key { get; set; }
+    [Parameter] public required string Label { get; set; }
+    [Parameter] public string? Tooltip { get; set; }
+    [Parameter] public string? WarningText { get; set; }
+
+    [Parameter] public required bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+
+    [Parameter] public required bool OriginalValue { get; set; }
+    [Parameter] public required bool DefaultValue { get; set; }
+
+    [Parameter] public bool ShowUndo { get; set; } = true;
+    [Parameter] public bool ShowDefault { get; set; } = true;
+
+    [CascadingParameter(Name = SettingsFilter.CascadeName)] private string? FilterText { get; set; }
+
+    private bool MatchesFilter => SettingsFilter.Matches(FilterText, Label, Key, Tooltip);
+
+
+    private bool IsChanged => Value != OriginalValue;
+
+    protected override void OnInitialized()
+    {
+        configService.EditablePresetHolderChanged += OnHolderChanged;
+    }
+
+    public void Dispose()
+    {
+        configService.EditablePresetHolderChanged -= OnHolderChanged;
+    }
+
+    private void OnHolderChanged()
+    {
+        // We have to invoke a refresh here to make sure the state of the UI is still correct
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnValueChanged(bool newValue)
+    {
+        Value = newValue;
+
+        if (ValueChanged.HasDelegate)
+        {
+            await ValueChanged.InvokeAsync(Value);
+        }
+
+        if (newValue == OriginalValue)
+        {
+            configService.EditablePresetHolder.RemovePendingChange(Key);
+        }
+        else
+        {
+            configService.EditablePresetHolder.AddPendingChange(Key, Label, Undo);
+        }
+    }
+
+    private Task Undo() => OnValueChanged(OriginalValue);
+    private Task SetDefault() => OnValueChanged(DefaultValue);
+}

@@ -2,13 +2,14 @@
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Services;
 using SPTarkov.Server.Core.Utils.Cloners;
 
 namespace LotsofLoot.OnPresetUpdate;
 
 [Injectable(InjectionType.Singleton)]
-public sealed class BackpackRestrictions(DatabaseService databaseService, ICloner cloner) : IOnPresetUpdate
+public sealed class BackpackRestrictions(TemplateTable templateTable, ICloner cloner) : IOnPresetUpdate
 {
     private bool _isEnabled = false;
     private readonly Dictionary<MongoId, List<IEnumerable<GridFilter>>> _backpackFilterBackup = [];
@@ -17,7 +18,7 @@ public sealed class BackpackRestrictions(DatabaseService databaseService, IClone
     {
         if (preset.General.RemoveBackpackRestrictions)
         {
-            foreach ((MongoId id, TemplateItem item) in databaseService.GetTables().Templates.Items)
+            foreach ((MongoId id, TemplateItem item) in templateTable.Items)
             {
                 // Filter out the 'Slim Field Med Pack' bag that can only contain medical items
                 if (item.Id == "5e4abc6786f77406812bd572")
@@ -74,7 +75,7 @@ public sealed class BackpackRestrictions(DatabaseService databaseService, IClone
             return;
         }
 
-        foreach ((MongoId id, TemplateItem item) in databaseService.GetTables().Templates.Items)
+        foreach ((MongoId id, TemplateItem item) in templateTable.Items)
         {
             if (!_backpackFilterBackup.TryGetValue(id, out var savedFilters))
             {

@@ -1,0 +1,203 @@
+{
+  "General": {
+    "AllowLootOverlay": false,
+    "RemoveBackpackRestrictions": true,
+    "DisableFleaRestrictions": false,
+    "RustedKeyRoomIncludesKeycards": false,
+    "ItemWeights": false,
+    "PriceCorrection": {
+      "5c0a840b86f7742ffa4f2482": 15000000,
+      "59fb023c86f7746d0d4b423c": 7000000,
+      "64d4b23dc1b37504b41ac2b6": 1000000
+    },
+    "LootContainersRandom": true,
+    "ReduceLowLooseLootRolls": false,
+    "ReduceLowLooseLootRollsAmount": 0.45
+  },
+  "LooseLootMultiplier": {
+    "bigmap": 7.5,
+    "factory4_day": 7.5,
+    "factory4_night": 7.5,
+    "woods": 7.5,
+    "interchange": 7.5,
+    "laboratory": 7.5,
+    "rezervbase": 7.5,
+    "shoreline": 7.5,
+    "tarkovstreets": 7.5,
+    "lighthouse": 7.5,
+    "sandbox": 7.5,
+    "sandbox_high": 7.5,
+    "labyrinth": 7.5
+  },
+  "StaticLootMultiplier": {
+    "bigmap": 2,
+    "factory4_day": 2,
+    "factory4_night": 2,
+    "woods": 2,
+    "interchange": 2,
+    "laboratory": 2,
+    "rezervbase": 2,
+    "shoreline": 2,
+    "tarkovstreets": 2,
+    "lighthouse": 2,
+    "sandbox": 2,
+    "sandbox_high": 2,
+    "labyrinth": 2
+  },
+  "Limits": {
+    "bigmap": 10000,
+    "factory4_day": 2000,
+    "factory4_night": 2000,
+    "woods": 10000,
+    "interchange": 30000,
+    "laboratory": 10000,
+    "rezervbase": 30000,
+    "shoreline": 20000,
+    "tarkovstreets": 30000,
+    "lighthouse": 20000,
+    "sandbox": 10000,
+    "sandbox_high": 10000,
+    "labyrinth": 3000
+  },
+  "MarkedRoomConfig": {
+    "Multiplier": {
+      "bigmap": 4,
+      "rezervbase": 4,
+      "tarkovstreets": 4,
+      "lighthouse": 4
+    },
+    "ExtraItems": {
+      "619cbf9e0a7c3a1a2731940a": 1,
+      "59fb023c86f7746d0d4b423c": 2,
+      "590c60fc86f77412b13fddcf": 4,
+      "60b0f6c058e0b0481a09ad11": 6,
+      "619cbf7d23893217ec30b689": 1,
+      "59fafd4b86f7745ca07e1232": 3,
+      "5d235bb686f77443f4331278": 3,
+      "59fb042886f7746c5005a7b2": 2,
+      "5c0a840b86f7742ffa4f2482": 1,
+      "5b6d9ce188a4501afc1b2b25": 1
+    },
+    "ItemGroups": {
+      "5422acb9af1c889c16000029": 0.2
+    }
+  },
+  "RefRoomConfig": {
+    "Multiplier": {
+      "woods": 2,
+      "interchange": 2,
+      "shoreline": 2,
+      "lighthouse": 2
+    },
+    "ItemGroups": {
+      "57864a3d24597754843f8721": 0.1
+    }
+  },
+  "LootinLooseContainer": {
+    "LootInContainerModifier": 1,
+    "LootInBackpackModifier": 1,
+    "SpawnLimits": {
+      "60b0f6c058e0b0481a09ad11": {
+        "Keycards": 0
+      },
+      "5783c43d2459774bbe137486": {
+        "Keycards": 0
+      },
+      "619cbf9e0a7c3a1a2731940a": {
+        "Keycards": 2
+      },
+      "590c60fc86f77412b13fddcf": {
+        "Keys": 3,
+        "Keycards": 1
+      },
+      "5d235bb686f77443f4331278": {
+        "Keys": 3,
+        "Keycards": 1
+      },
+      "59fafd4b86f7745ca07e1232": {
+        "Keys": 5
+      },
+      "62a09d3bcf4a99369e262447": {
+        "Keys": 2
+      },
+      "67d3ed3271c17ff82e0a5b0b": {
+        "Keys": 5,
+        "Keycards": 2
+      }
+    },
+    "Blacklist": {
+      "590c60fc86f77412b13fddcf": [
+        "664d3db6db5dea2bad286955",
+        "664d3dd590294949fe2d81b7",
+        "664d3ddfdda2e85aca370d75",
+        "664d3de85f2355673b09aed5"
+      ],
+      "5d235bb686f77443f4331278": [
+        "664d3db6db5dea2bad286955",
+        "664d3dd590294949fe2d81b7",
+        "664d3ddfdda2e85aca370d75",
+        "664d3de85f2355673b09aed5"
+      ],
+      "59fafd4b86f7745ca07e1232": [
+        "664d3db6db5dea2bad286955",
+        "664d3dd590294949fe2d81b7",
+        "664d3ddfdda2e85aca370d75",
+        "664d3de85f2355673b09aed5"
+      ],
+      "62a09d3bcf4a99369e262447": [
+        "664d3db6db5dea2bad286955",
+        "664d3dd590294949fe2d81b7",
+        "664d3ddfdda2e85aca370d75",
+        "664d3de85f2355673b09aed5"
+      ],
+      "67d3ed3271c17ff82e0a5b0b": [
+        "664d3db6db5dea2bad286955",
+        "664d3dd590294949fe2d81b7",
+        "664d3ddfdda2e85aca370d75",
+        "664d3de85f2355673b09aed5",
+        "59fafd4b86f7745ca07e1232",
+        "62a09d3bcf4a99369e262447",
+        "619cbf9e0a7c3a1a2731940a"
+      ]
+    }
+  },
+  "ChangeRelativeProbabilityInPool": {
+    "57347ca924597744596b4e71": 2
+  },
+  "ChangeProbabilityOfPool": {
+    "5c0530ee86f774697952d952": 1
+  },
+  "Containers": {
+    "578f8778245977358849a9b5": 1,
+    "578f8782245977354405a1e3": 1,
+    "578f879c24597735401e6bc6": 1,
+    "578f87a3245977356274f2cb": 1,
+    "578f87b7245977356274f2cd": 1,
+    "5909d24f86f77466f56e6855": 1,
+    "5909d36d86f774660f0bb900": 1,
+    "5909d45286f77465a8136dc6": 1,
+    "5909d4c186f7746ad34e805a": 1,
+    "5909d50c86f774659e6aaebe": 1,
+    "5909d5ef86f77467974efbd8": 1,
+    "5909d76c86f77471e53d2adf": 1,
+    "5909d7cf86f77470ee57d75a": 1,
+    "5909d89086f77472591234a0": 1,
+    "5909e4b686f7747f5b744fa4": 1,
+    "59139c2186f77411564f8e42": 1,
+    "5914944186f774189e5e76c2": 1,
+    "5937ef2b86f77408a47244b3": 1,
+    "59387ac686f77401442ddd61": 1,
+    "5ad74cf586f774391278f6f0": 1,
+    "5c052cea86f7746b2101e8d8": 1,
+    "5d07b91b86f7745a077a9432": 1,
+    "5d6d2b5486f774785c2ba8ea": 1,
+    "5d6d2bb386f774785b07a77a": 1,
+    "5d6fd13186f77424ad2a8c69": 1,
+    "5d6fd45b86f774317075ed43": 1,
+    "5d6fe50986f77449d97f7463": 1,
+    "61a89e5445a2672acf66c877": 1,
+    "61aa1e9a32a4743c3453d2cf": 1,
+    "61aa1ead84ea0800645777fd": 1,
+    "578f87ad245977356274f2cc": 1
+  }
+}

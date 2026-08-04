@@ -1,19 +1,20 @@
 ﻿using LotsofLoot.Utilities;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Helpers;
+using SPTarkov.Server.Core.Helpers.Items;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
 using SPTarkov.Server.Core.Models.Eft.Common.Tables;
+using SPTarkov.Server.Core.Models.Enums;
 using SPTarkov.Server.Core.Models.Spt.Config;
 using SPTarkov.Server.Core.Servers;
+using SPTarkov.Server.Core.Utils;
 
 namespace LotsofLoot.Generators.LootItemCreators;
 
 [Injectable]
-public class MagazineItemCreator(ConfigServer configServer, ItemHelper itemHelper, NewSPTRandomUtil randomUtil) : ILootItemCreator
+public class MagazineItemCreator(LocationConfig locationConfig, ItemHelper itemHelper, RandomUtil randomUtil) : ILootItemCreator
 {
-    private readonly LocationConfig _locationConfig = configServer.GetConfig<LocationConfig>();
-
     public bool CanCreateItem(MongoId tpl)
     {
         if (itemHelper.IsOfBaseclass(tpl, BaseClasses.MAGAZINE))
@@ -31,7 +32,7 @@ public class MagazineItemCreator(ConfigServer configServer, ItemHelper itemHelpe
         LotsofLootLocationLootGenerator context
     )
     {
-        if (!randomUtil.GetChance100(_locationConfig.MagazineLootHasAmmoChancePercent))
+        if (!randomUtil.GetChance100(locationConfig.MagazineLootHasAmmoChancePercent))
         {
             return;
         }
@@ -43,7 +44,7 @@ public class MagazineItemCreator(ConfigServer configServer, ItemHelper itemHelpe
             templateItem,
             staticAmmoDictionary,
             null,
-            _locationConfig.MinFillStaticMagazinePercent / 100.0
+            locationConfig.MinFillStaticMagazinePercent / 100.0
         );
 
         items.RemoveAt(0);
