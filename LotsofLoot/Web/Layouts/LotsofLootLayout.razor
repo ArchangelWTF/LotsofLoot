@@ -5,18 +5,22 @@
 <div class="lotsofloot-page spt-page">
     <MudContainer MaxWidth="MaxWidth.False" Class="lotsofloot-container pa-6">
         <MudPaper Elevation="0" Class="lotsofloot-header spt-panel pa-3">
-            <Appbar MenuItems="MenuItems" />
+            <Appbar MenuItems="MenuItems" @bind-DrawerOpen="drawerOpen" />
         </MudPaper>
 
         <div class="lotsofloot-content">
             @ChildContent
         </div>
     </MudContainer>
+
+    <PendingChangesDrawer @bind-Open="drawerOpen" />
 </div>
 
 @code {
     [Parameter, EditorRequired]
     public RenderFragment? ChildContent { get; set; }
+
+    private bool drawerOpen;
 
     private static readonly IReadOnlyList<NavItem> MenuItems =
     [

@@ -27,7 +27,7 @@
     <MudStack Row AlignItems="AlignItems.Center" Spacing="2" Class="lotsofloot-actions">
         @if (HasPendingChanges)
         {
-            <MudChip T="string" Size="Size.Small" Color="Color.Warning" OnClick="@(() => drawerOpen = true)">
+            <MudChip T="string" Size="Size.Small" Color="Color.Warning" OnClick="@(() => DrawerOpenChanged.InvokeAsync(true))">
                 @PendingChangeCount unsaved
             </MudChip>
         }
@@ -39,14 +39,14 @@
     </MudStack>
 </MudStack>
 
-<PendingChangesDrawer @bind-Open="drawerOpen" />
-
 @code {
     [Parameter, EditorRequired]
     public required IReadOnlyList<NavItem> MenuItems { get; set; }
 
+    [Parameter] public bool DrawerOpen { get; set; }
+    [Parameter] public EventCallback<bool> DrawerOpenChanged { get; set; }
+
     private bool isSaving;
-    private bool drawerOpen;
     private EditablePresetHolder? currentHolder;
 
     private int PendingChangeCount => ConfigService.EditablePresetHolder?.GetPendingChanges().Count ?? 0;
@@ -114,7 +114,7 @@
         {
             await ConfigService.SavePendingChanges();
 
-            drawerOpen = false;
+            await DrawerOpenChanged.InvokeAsync(false);
             Snackbar.Add($"Saved {saved} change{(saved == 1 ? "" : "s")} to preset '{ConfigService.CurrentlyLoadedPreset}'", Severity.Success);
         }
         catch (Exception ex)

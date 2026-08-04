@@ -360,7 +360,9 @@
 /* Dense dictionary editor: one line per entry rather than a card per entry. */
 .lotsofloot-dict {
     display: grid;
-    overflow: hidden;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
     border: 1px solid var(--spt-border);
     border-radius: var(--spt-radius);
     background: var(--lotsofloot-card-bg);
@@ -889,6 +891,11 @@
 
 .lotsofloot-page .mud-grid > .mud-grid-item-xs-12 > .mud-paper.align-center.mud-width-full.ma-1 .mud-divider {
     display: none;
+}
+
+.lotsofloot-content > *,
+.lotsofloot-page .mud-grid-item {
+    min-width: 0;
 }
 
 .lotsofloot-page .mud-button-root {
