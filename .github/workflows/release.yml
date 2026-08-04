@@ -91,12 +91,14 @@ jobs:
         run: |
           {
             echo "notes<<EOF"
+            # Read by the mod's own release feed, invisible on the rendered page
+            echo "<!-- compat: SPT ${{ steps.spt.outputs.compat }} -->"
+            echo ""
+            echo "# This release is for SPT ${{ steps.spt.outputs.compat }}"
+            echo ""
             echo "## Lots of Loot Redux ${{ steps.version.outputs.version }}"
             echo ""
             echo "_Changelog goes here._"
-            echo ""
-            # Read by the mod's own release feed, invisible on the rendered page
-            echo "<!-- compat: SPT ${{ steps.spt.outputs.compat }} -->"
             echo ""
             echo "### VirusTotal"
             # The action outputs comma-separated "filepath=url" pairs, one per scanned file
