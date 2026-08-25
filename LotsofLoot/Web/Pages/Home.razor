@@ -21,7 +21,7 @@
             <MudIcon Icon="@Icons.Material.Filled.SystemUpdateAlt" Color="Color.Warning" Size="Size.Large" />
             <div>
                 <strong>@latest.DisplayTitle is available</strong>
-                <span>You are running v@ConfigService.ModMetadata.Version.</span>
+                <span>You are running v@(ConfigService.ModMetadata.Version).</span>
             </div>
             @if (!string.IsNullOrEmpty(latest.HtmlUrl))
             {
