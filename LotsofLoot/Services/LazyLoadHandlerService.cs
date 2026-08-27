@@ -17,6 +17,8 @@ public class LazyLoadHandlerService(
     LotsOfLootLogger logger
 )
 {
+    private readonly record struct PoolModifier(double Modifier, MongoId Template);
+
     public void OnPostDBLoad()
     {
         var locations = locationTable.GetDictionary();
@@ -71,9 +73,8 @@ public class LazyLoadHandlerService(
 
                 //Todo: Does this even work as intended? Check?
                 itemDistribution.RelativeProbability = MathF.Round(
-                    (float)(itemDistribution.RelativeProbability * configRelativeProbability)
+                    (float)((itemDistribution.RelativeProbability ?? 0) * configRelativeProbability)
                 );
-
                 if (logger.IsDebug())
                 {
                     logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
@@ -110,34 +111,62 @@ public class LazyLoadHandlerService(
 
     private void ChangeRelativeProbabilityInPool(string locationId, Spawnpoint spawnpoint)
     {
-        Dictionary<string, LooseLootItemDistribution> distributionLookup = spawnpoint.ItemDistribution.ToDictionary(d => d.ComposedKey.Key);
+        var config = configService.LotsofLootPresetConfig.ChangeRelativeProbabilityInPool;
 
-        foreach (var item in spawnpoint.Template.Items)
+        if (config.Count == 0)
         {
-            var key = item.ComposedKey;
-            if (key is not null)
-            {
-                if (
-                    configService.LotsofLootPresetConfig.ChangeRelativeProbabilityInPool.TryGetValue(
-                        item.Template,
-                        out double RelativeProbabilityInPoolModifier
-                    ) && distributionLookup.TryGetValue(key, out var itemDistribution)
-                )
-                {
-                    itemDistribution.RelativeProbability *= RelativeProbabilityInPoolModifier;
+            return;
+        }
 
-                    if (logger.IsDebug())
-                    {
-                        logger.Debug($"{locationId}, {spawnpoint.Template.Id}, {item.Template}, {itemDistribution.RelativeProbability}");
-                    }
+        Dictionary<string, PoolModifier>? modifiers = null;
+
+        foreach (var item in spawnpoint.Template?.Items ?? [])
+        {
+            if (item.ComposedKey is null || !config.TryGetValue(item.Template, out double modifier))
+            {
+                continue;
+            }
+
+            modifiers ??= [];
+
+            // Mods can inject a composed key that already exists in the pool, so we just stack rather than override
+            // Yes this looks disgusting, I dont care
+            modifiers[item.ComposedKey] = modifiers.TryGetValue(item.ComposedKey, out PoolModifier existing)
+                ? existing with
+                {
+                    Modifier = existing.Modifier * modifier,
                 }
+                : new PoolModifier(modifier, item.Template);
+        }
+
+        // Most pools contain none of the configured items, so the distribution pass is usually skipped entirely
+        if (modifiers is null)
+        {
+            return;
+        }
+
+        foreach (LooseLootItemDistribution itemDistribution in spawnpoint.ItemDistribution ?? [])
+        {
+            if (
+                itemDistribution.ComposedKey?.Key is null
+                || !modifiers.TryGetValue(itemDistribution.ComposedKey.Key, out PoolModifier match)
+            )
+            {
+                continue;
+            }
+
+            itemDistribution.RelativeProbability *= match.Modifier;
+
+            if (logger.IsDebug())
+            {
+                logger.Debug($"{locationId}, {spawnpoint.Template?.Id}, {match.Template}, {itemDistribution.RelativeProbability}");
             }
         }
     }
 
     private void ChangeProbabilityOfPool(string locationId, Spawnpoint spawnpoint)
     {
-        foreach (var item in spawnpoint.Template.Items)
+        foreach (var item in spawnpoint.Template?.Items ?? [])
         {
             if (configService.LotsofLootPresetConfig.ChangeProbabilityOfPool.TryGetValue(item.Template, out double probabilityMultiplier))
             {
@@ -152,7 +181,7 @@ public class LazyLoadHandlerService(
 
                 if (logger.IsDebug())
                 {
-                    logger.Debug($"{locationId}, Pool:{spawnpoint.Template.Id}, Chance:{spawnpoint.Probability}");
+                    logger.Debug($"{locationId}, Pool:{spawnpoint.Template!.Id}, Chance:{spawnpoint.Probability}");
                 }
 
                 // Only apply once per pool
