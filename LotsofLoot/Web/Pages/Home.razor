@@ -1,6 +1,7 @@
 @implements IDisposable
 
 @page "/lotsofloot"
+@attribute [Authorize(Policy = "Administrator")]
 @layout BaseMudBlazorLayout
 @inject ConfigService ConfigService
 @inject GitHubReleaseService ReleaseService

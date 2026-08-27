@@ -1,6 +1,7 @@
 @implements IDisposable;
 
 @page "/lotsofloot/settings/loot"
+@attribute [Authorize(Policy = "Administrator")]
 
 @layout BaseMudBlazorLayout
 @inject ConfigService configService
