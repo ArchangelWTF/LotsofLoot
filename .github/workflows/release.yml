@@ -16,7 +16,7 @@ env:
   ZIP_PREFIX: LotsofLootRedux
   PROJECT: LotsofLoot/LotsofLoot.csproj
   METADATA: LotsofLoot/LotsofLootModMetadata.cs
-  DLL_PATH: Build/SPT_Runtime/user/mods/archangelwtf-lotsoflootredux/LotsofLoot.dll
+  MOD_DIR: Build/SPT_Runtime/user/mods/archangelwtf-lotsoflootredux
 
 jobs:
   release:
@@ -65,6 +65,9 @@ jobs:
       - name: Build (Release)
         run: dotnet build --configuration Release --no-restore -p:Version=${{ steps.version.outputs.version }}
 
+      - name: Copy license
+        run: cp LICENSE.md "$MOD_DIR/LICENSE.md"
+
       - name: Package
         id: package
         shell: bash
@@ -81,7 +84,7 @@ jobs:
           vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
           # One path per line. Add more files here and each gets its own link below.
           files: |
-            ${{ env.DLL_PATH }}
+            ${{ env.MOD_DIR }}/LotsofLoot.dll
 
       - name: Build release notes
         id: notes
