@@ -45,15 +45,14 @@ public class LootRoomHelper(ConfigService configService, ItemHelper itemHelper, 
 
         foreach ((MongoId templateId, double relativeProbability) in configService.LotsofLootPresetConfig.MarkedRoomConfig.ExtraItems)
         {
-            var existingItem = spawnpoint.Template.Items.FirstOrDefault(item => item.Template == templateId);
+            var existingItemDistribution = spawnpointTemplateItems
+                .Where(item => item.Template == templateId && item.ComposedKey != null)
+                .Select(item => spawnpointItemDistribution.FirstOrDefault(distrib => distrib.ComposedKey?.Key == item.ComposedKey))
+                .FirstOrDefault(distrib => distrib != null);
 
             // If the item already exists, add the new probability up on top of the already existing one
-            if (existingItem != null && existingItem.ComposedKey != null)
+            if (existingItemDistribution != null)
             {
-                var existingItemDistribution = spawnpointItemDistribution.First(distrib =>
-                    distrib.ComposedKey?.Key == existingItem.ComposedKey
-                );
-
                 existingItemDistribution.RelativeProbability += relativeProbability;
 
                 if (logger.IsDebug())
