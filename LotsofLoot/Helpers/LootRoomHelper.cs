@@ -141,7 +141,7 @@ public class LootRoomHelper(ConfigService configService, ItemHelper itemHelper, 
         // Delicious bracket slop, my favorite
         foreach (SptLootItem item in spawnpoint.Template.Items)
         {
-            foreach ((MongoId templateId, double relativeProbability) in configService.LotsofLootPresetConfig.MarkedRoomConfig.ItemGroups)
+            foreach ((MongoId templateId, double relativeProbability) in configService.LotsofLootPresetConfig.RefRoomConfig.ItemGroups)
             {
                 if (itemHelper.IsOfBaseclass(item.Template, templateId))
                 {
