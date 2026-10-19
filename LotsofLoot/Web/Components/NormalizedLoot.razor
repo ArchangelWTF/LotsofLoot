@@ -1,0 +1,35 @@
+<ConfigSwitch Key="Pools.Containers.Normalized.Enabled"
+                  Label="Normalize relative probabilities"
+                  Tooltip="Normalizes loot spawns with a log function so that rarer items have a fairer chance being selected."
+                  @bind-Value="BindConfig.Enabled"
+                  OriginalValue="OriginalConfig.Enabled"
+                  DefaultValue="false"/>
+
+@if (BindConfig.Enabled)
+{
+    <ConfigSlider SliderType="double" Key="Pools.Containers.Normalized.Base"
+                  Label="Normalized log base"
+                  Tooltip="Sets the base of the normalization log function. Higher values make all probabilities closer to being the same."
+                  @bind-Value="BindConfig.LogBase"
+                  OriginalValue="OriginalConfig.LogBase"
+                  WarningText="The base is very sensitive to change, increasing by small numbers can make a large difference."
+                  Min="1.01"
+                  Max="50"
+                  Steps="0.01"
+                  DefaultValue="1.5d" />
+
+    <ConfigSlider SliderType="int" Key="Pools.Containers.Normalized.Min"
+                  Label="Normalized minimum probability"
+                  Tooltip="The minimum probability of an item for its probability to be normalized."
+                  @bind-Value="BindConfig.MinProbability"
+                  OriginalValue="OriginalConfig.MinProbability"
+                  Min="0"
+                  Max="10000"
+                  Steps="1"
+                  DefaultValue="0" />
+}
+
+@code {
+    [Parameter] public required NormalizedLootPresetConfig BindConfig { get; set; }
+    [Parameter] public required NormalizedLootPresetConfig OriginalConfig { get; set; }
+}

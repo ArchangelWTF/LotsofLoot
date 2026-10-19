@@ -161,6 +161,18 @@
       ]
     }
   },
+  "NormalizedLooseLootConfig":
+  {
+    "Enabled": false,
+    "LogBase": 1.5,
+    "MinProbability": 0
+  },
+  "NormalizedStaticLootConfig":
+  {
+    "Enabled": false,
+    "LogBase": 1.5,
+    "MinProbability": 0
+  },
   "ChangeRelativeProbabilityInPool": {
     "57347ca924597744596b4e71": 2
   },

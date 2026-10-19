@@ -22,18 +22,21 @@
                 <ChildContent>
                 <MudGrid>
                     <ConfigMongoIdDictionary Key="Pools.LooseLoot.ChangeRelativeProbabilityInPool"
-                                          Label="Relative probability in pool"
-                                          Tooltip="Multiplies an item's relative probability inside the pool it already belongs to, making it more likely to be picked over the other items in that same pool"
-                                          @bind-Value="configService.EditablePresetHolder.presetConfig.ChangeRelativeProbabilityInPool"
-                                          OriginalValue="configService.LotsofLootPresetConfig.ChangeRelativeProbabilityInPool"
-                                          DefaultValue="DefaultRelativeProbabilityInPool" />
+                                             Label="Relative probability in pool"
+                                             Tooltip="Multiplies an item's relative probability inside the pool it already belongs to, making it more likely to be picked over the other items in that same pool"
+                                             @bind-Value="configService.EditablePresetHolder.presetConfig.ChangeRelativeProbabilityInPool"
+                                             OriginalValue="configService.LotsofLootPresetConfig.ChangeRelativeProbabilityInPool"
+                                             DefaultValue="DefaultRelativeProbabilityInPool"/>
 
                     <ConfigMongoIdDictionary Key="Pools.LooseLoot.ChangeProbabilityOfPool"
-                                          Label="Probability of pool"
-                                          Tooltip="Multiplies the chance that the spawnpoint pool containing this item is rolled at all"
-                                          @bind-Value="configService.EditablePresetHolder.presetConfig.ChangeProbabilityOfPool"
-                                          OriginalValue="configService.LotsofLootPresetConfig.ChangeProbabilityOfPool"
-                                          DefaultValue="DefaultProbabilityOfPool" />
+                                             Label="Probability of pool"
+                                             Tooltip="Multiplies the chance that the spawnpoint pool containing this item is rolled at all"
+                                             @bind-Value="configService.EditablePresetHolder.presetConfig.ChangeProbabilityOfPool"
+                                             OriginalValue="configService.LotsofLootPresetConfig.ChangeProbabilityOfPool"
+                                             DefaultValue="DefaultProbabilityOfPool"/>
+
+                    <NormalizedLoot BindConfig="configService.EditablePresetHolder.presetConfig.NormalizedLooseLootConfig"
+                                    OriginalConfig="configService.LotsofLootPresetConfig.NormalizedLooseLootConfig"/>
                 </MudGrid>
                 </ChildContent>
             </MudExpansionPanel>
@@ -43,11 +46,14 @@
                 <ChildContent>
                 <MudGrid>
                     <ConfigMongoIdDictionary Key="Pools.Containers.FillChance"
-                                          Label="Container fill chance"
-                                          Tooltip="Relative chance multiplier that no items spawn in this container. 0 means items every time, 1 leaves the container untouched"
-                                          @bind-Value="configService.EditablePresetHolder.presetConfig.Containers"
-                                          OriginalValue="configService.LotsofLootPresetConfig.Containers"
-                                          DefaultValue="DefaultContainers" />
+                                             Label="Container fill chance"
+                                             Tooltip="Relative chance multiplier that no items spawn in this container. 0 means items every time, 1 leaves the container untouched"
+                                             @bind-Value="configService.EditablePresetHolder.presetConfig.Containers"
+                                             OriginalValue="configService.LotsofLootPresetConfig.Containers"
+                                             DefaultValue="DefaultContainers" />
+
+                    <NormalizedLoot BindConfig="configService.EditablePresetHolder.presetConfig.NormalizedStaticLootConfig"
+                                    OriginalConfig="configService.LotsofLootPresetConfig.NormalizedStaticLootConfig"/>
                 </MudGrid>
                 </ChildContent>
             </MudExpansionPanel>

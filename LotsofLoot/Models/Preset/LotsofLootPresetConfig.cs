@@ -27,6 +27,9 @@ public sealed class LotsofLootPresetConfig
     public required RefRoomPresetConfig RefRoomConfig { get; set; }
     public required LootInLooseContainerPresetConfig LootinLooseContainer { get; set; }
 
+    public required NormalizedLootPresetConfig NormalizedLooseLootConfig { get; set; }
+    public required NormalizedLootPresetConfig NormalizedStaticLootConfig { get; set; }
+
     /// <summary>
     /// Multiplies the spawn chance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
     /// </summary>

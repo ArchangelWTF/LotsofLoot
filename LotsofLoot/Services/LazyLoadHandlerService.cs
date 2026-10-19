@@ -66,6 +66,13 @@ public class LazyLoadHandlerService(
                     continue;
                 }
 
+                if (configService.LotsofLootPresetConfig.NormalizedStaticLootConfig.Enabled &&
+                    itemDistribution.RelativeProbability > configService.LotsofLootPresetConfig.NormalizedStaticLootConfig.MinProbability)
+                {
+                    itemDistribution.RelativeProbability = (float?)Math.Log(itemDistribution.RelativeProbability ?? 0 + 1,
+                        configService.LotsofLootPresetConfig.NormalizedStaticLootConfig.LogBase);
+                }
+
                 if (!configService.LotsofLootPresetConfig.Containers.TryGetValue(containerId, out double configRelativeProbability))
                 {
                     continue;
@@ -147,6 +154,13 @@ public class LazyLoadHandlerService(
 
         foreach (LooseLootItemDistribution itemDistribution in spawnpoint.ItemDistribution ?? [])
         {
+            if (configService.LotsofLootPresetConfig.NormalizedLooseLootConfig.Enabled &&
+                itemDistribution.RelativeProbability > configService.LotsofLootPresetConfig.NormalizedLooseLootConfig.MinProbability)
+            {
+                itemDistribution.RelativeProbability = Math.Log(itemDistribution.RelativeProbability ?? 0 + 1,
+                    configService.LotsofLootPresetConfig.NormalizedLooseLootConfig.LogBase);
+            }
+
             if (
                 itemDistribution.ComposedKey?.Key is null
                 || !modifiers.TryGetValue(itemDistribution.ComposedKey.Key, out PoolModifier match)
