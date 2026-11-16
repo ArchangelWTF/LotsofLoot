@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
           # The package this mod builds against is what it is compatible with
-          PKG=$(sed -n 's/.*Include="SPTarkov\.Server\.Core" Version="\([^"]*\)".*/\1/p' "$PROJECT")
+          PKG=$(sed -n 's/.*Include="SPTushonka\.Server\.Core" Version="\([^"]*\)".*/\1/p' "$PROJECT")
           COMPAT=$(echo "$PKG" | cut -d. -f1,2)
           DECLARED=$(sed -n 's/.*public Range SptVersion { get; init; } = new("\([^"]*\)").*/\1/p' "$METADATA")
           echo "Package $PKG -> compat SPT $COMPAT (metadata declares '$DECLARED')"
