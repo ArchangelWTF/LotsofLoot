@@ -23,7 +23,7 @@
                 <MudGrid>
                     <ConfigMongoIdDictionary Key="Pools.LooseLoot.ChangeRelativeProbabilityInPool"
                                           Label="Relative probability in pool"
-                                          Tooltip="Multiplies an item's relative probability inside the pool it already belongs to, making it more likely to be picked over the other items in that same pool"
+                                          Tooltip="Multiplies an item's relative probability in loose loot pools and inside loose containers and backpacks. 0 excludes the item from these pools. Applies to container contents even when item weights are disabled"
                                           @bind-Value="configService.EditablePresetHolder.presetConfig.ChangeRelativeProbabilityInPool"
                                           OriginalValue="configService.LotsofLootPresetConfig.ChangeRelativeProbabilityInPool"
                                           DefaultValue="DefaultRelativeProbabilityInPool" />

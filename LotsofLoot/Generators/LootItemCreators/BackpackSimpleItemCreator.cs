@@ -16,7 +16,6 @@ using SPTarkov.Server.Core.Services;
 using SPTarkov.Server.Core.Services.Items;
 using SPTarkov.Server.Core.Utils;
 using SPTarkov.Server.Core.Utils.Cloners;
-using SPTarkov.Server.Core.Utils.Collections;
 
 namespace LotsofLoot.Generators.LootItemCreators;
 
@@ -33,13 +32,6 @@ public class BackpackSimpleItemCreator(
 ) : ILootItemCreator
 {
     private static readonly Dictionary<string, List<MongoId>> _itemFilterIndexCache = [];
-    private static readonly HashSet<MongoId> _foreignCurrencies =
-    [
-        // Dollars
-        "5696686a4bdc2da3298b456a",
-        // Euros
-        "569668774bdc2da2298b4568",
-    ];
 
     public bool CanCreateItem(MongoId tpl)
     {
@@ -133,24 +125,8 @@ public class BackpackSimpleItemCreator(
             List<MongoId> expandedBlacklist = ExpandItemsWithChildItemIds(blacklist.ToList(), items);
             blacklist.UnionWith(expandedBlacklist);
 
-            // Add config blacklist
-            if (configService.LotsofLootPresetConfig.LootinLooseContainer.Blacklist.TryGetValue(tpl, out var configBlacklist))
-            {
-                blacklist.UnionWith(configBlacklist);
-            }
-
-            // Filter whitelist - single pass instead of multiple Where calls
-            whitelist = whitelist
-                .Where(itemTpl =>
-                    !blacklist.Contains(itemTpl)
-                    && !itemHelper.IsOfBaseclass(itemTpl, BaseClasses.BUILT_IN_INSERTS)
-                    && !itemFilterService.IsItemBlacklisted(itemTpl)
-                    && !itemFilterService.IsItemRewardBlacklisted(itemTpl)
-                    && itemHelper.IsValidItem(itemTpl)
-                    && items.TryGetValue(itemTpl, out var itm)
-                    && !string.IsNullOrEmpty(itm.Properties.Prefab?.Path)
-                )
-                .ToList();
+            // Cache only the container's structural filters. Preset and item validity checks must stay live.
+            whitelist = whitelist.Where(itemTpl => !blacklist.Contains(itemTpl)).Distinct().ToList();
 
             // Cache whitelist
             _itemFilterIndexCache[tpl] = whitelist;
@@ -160,34 +136,33 @@ public class BackpackSimpleItemCreator(
             whitelist = cachedWhiteList;
         }
 
-        if (whitelist.Count == 0)
+        var preset = configService.LotsofLootPresetConfig;
+        HashSet<MongoId> configBlacklist = [.. preset.LootinLooseContainer.Blacklist.GetValueOrDefault(tpl) ?? []];
+        var candidates = whitelist
+            .Where(itemTpl =>
+                !configBlacklist.Contains(itemTpl)
+                && !itemHelper.IsOfBaseclass(itemTpl, BaseClasses.BUILT_IN_INSERTS)
+                && !itemFilterService.IsItemBlacklisted(itemTpl)
+                && !itemFilterService.IsLootableItemBlacklisted(itemTpl)
+                && !itemFilterService.IsItemRewardBlacklisted(itemTpl)
+                && items.TryGetValue(itemTpl, out var itm)
+                && itemHelper.IsValidItem(itm)
+                && !string.IsNullOrEmpty(itm.Properties?.Prefab?.Path)
+            )
+            .Select(itemTpl => items[itemTpl]);
+
+        var itemArray = LotsofLootItemHelper.CreateLooseContainerLootPool(
+            candidates,
+            templateTable.Prices,
+            preset.ChangeRelativeProbabilityInPool,
+            preset.General.ItemWeights,
+            cloner
+        );
+
+        if (itemArray.Count == 0)
         {
             logger.Warning($"{tpl} whitelist is empty");
             return [];
-        }
-
-        // Build probability array with improved weight calculation
-        ProbabilityObjectArray<MongoId, int?> itemArray = new(cloner);
-        Dictionary<MongoId, double>? prices = templateTable.Prices;
-
-        foreach (var itemId in whitelist)
-        {
-            int itemWeight = 1;
-
-            if (itemId == "5449016a4bdc2d6f028b456f")
-            {
-                itemWeight = 500;
-            }
-            else if (_foreignCurrencies.Contains(itemId))
-            {
-                itemWeight = 100;
-            }
-            else if (prices.TryGetValue(itemId, out var price))
-            {
-                itemWeight = (int)Math.Round(1000 / Math.Pow(price, 1.0 / 3.0));
-            }
-
-            itemArray.Add(new ProbabilityObject<MongoId, int?>(itemId, itemWeight, null));
         }
 
         // Generate loot items
@@ -206,15 +181,15 @@ public class BackpackSimpleItemCreator(
         while (fill <= amount)
         {
             // Since we modify these with limits, check each loop if they are empty and if so break out from the while loop
-            if (itemArray.Count == 0 || whitelist.Count == 0)
+            if (itemArray.Count == 0)
             {
                 break;
             }
 
-            // Handle if we should draw an item from the ProbabilityObjectArray (Weighted) or from the whitelist
-            string drawnItemTpl = configService.LotsofLootPresetConfig.General.ItemWeights
+            // Explicit multipliers apply in both modes; ItemWeights controls the base price weighting.
+            string drawnItemTpl = preset.General.ItemWeights
                 ? itemArray.DrawAndRemove(1).FirstOrDefault()
-                : whitelist[randomUtil.GetInt(0, whitelist.Count - 1)];
+                : itemArray.Draw().FirstOrDefault();
 
             // Check limits if they exist
             if (limits != null)
@@ -227,14 +202,7 @@ public class BackpackSimpleItemCreator(
                     }
                     else
                     {
-                        if (configService.LotsofLootPresetConfig.General.ItemWeights)
-                        {
-                            itemArray = itemArray.Filter(i => !itemHelper.IsOfBaseclass(i.Key, BaseClasses.KEY_MECHANICAL));
-                        }
-                        else
-                        {
-                            whitelist = whitelist.Where(i => !itemHelper.IsOfBaseclass(i, BaseClasses.KEY_MECHANICAL)).ToList();
-                        }
+                        itemArray = itemArray.Filter(i => !itemHelper.IsOfBaseclass(i.Key, BaseClasses.KEY_MECHANICAL));
 
                         // Continue here as else we would still add this item, if the limit would be 3 it would put 4 in.
                         continue;
@@ -249,14 +217,7 @@ public class BackpackSimpleItemCreator(
                     }
                     else
                     {
-                        if (configService.LotsofLootPresetConfig.General.ItemWeights)
-                        {
-                            itemArray = itemArray.Filter(i => !itemHelper.IsOfBaseclass(i.Key, BaseClasses.KEYCARD));
-                        }
-                        else
-                        {
-                            whitelist = whitelist.Where(i => !itemHelper.IsOfBaseclass(i, BaseClasses.KEYCARD)).ToList();
-                        }
+                        itemArray = itemArray.Filter(i => !itemHelper.IsOfBaseclass(i.Key, BaseClasses.KEYCARD));
 
                         // Continue here as else we would still add this item, if the limit would be 3 it would put 4 in.
                         continue;

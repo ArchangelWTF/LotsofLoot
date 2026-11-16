@@ -28,7 +28,7 @@ public sealed class LotsofLootPresetConfig
     public required LootInLooseContainerPresetConfig LootinLooseContainer { get; set; }
 
     /// <summary>
-    /// Multiplies the spawn chance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
+    /// Multiplies an item's relative probability in loose loot pools and loose container/backpack contents. Zero excludes it.
     /// </summary>
     public required Dictionary<MongoId, double> ChangeRelativeProbabilityInPool { get; set; }
 

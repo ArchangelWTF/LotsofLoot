@@ -8,6 +8,8 @@ using SPTarkov.Server.Core.Models.Spt.Tables;
 using SPTarkov.Server.Core.Servers;
 using SPTarkov.Server.Core.Services;
 using SPTarkov.Server.Core.Services.Server;
+using SPTarkov.Server.Core.Utils.Cloners;
+using SPTarkov.Server.Core.Utils.Collections;
 
 namespace LotsofLoot.Helpers;
 
@@ -19,6 +21,58 @@ public class LotsofLootItemHelper(
     SeasonalEventService seasonalEventService
 )
 {
+    internal static ProbabilityObjectArray<MongoId, int?> CreateLooseContainerLootPool(
+        IEnumerable<TemplateItem> candidates,
+        IReadOnlyDictionary<MongoId, double> prices,
+        IReadOnlyDictionary<MongoId, double> multipliers,
+        bool useItemWeights,
+        ICloner cloner
+    )
+    {
+        ProbabilityObjectArray<MongoId, int?> pool = new(cloner);
+
+        foreach (var item in candidates)
+        {
+            // Read the current template, even when candidate IDs came from a cached container filter.
+            if (item.Properties?.QuestItem == true)
+            {
+                continue;
+            }
+
+            double multiplier = multipliers.GetValueOrDefault(item.Id, 1);
+            if (!double.IsFinite(multiplier) || multiplier <= 0)
+            {
+                continue;
+            }
+
+            double weight = 1;
+            if (useItemWeights)
+            {
+                if (item.Id == "5449016a4bdc2d6f028b456f")
+                {
+                    weight = 500;
+                }
+                else if (item.Id == "5696686a4bdc2da3298b456a" || item.Id == "569668774bdc2da2298b4568")
+                {
+                    weight = 100;
+                }
+                else if (prices.TryGetValue(item.Id, out var price) && double.IsFinite(price) && price > 0)
+                {
+                    weight = Math.Round(1000 / Math.Pow(price, 1.0 / 3.0));
+                }
+            }
+
+            // Keep fractional multipliers and remove disabled entries before either draw method sees them.
+            weight *= multiplier;
+            if (double.IsFinite(weight) && weight > 0)
+            {
+                pool.Add(new ProbabilityObject<MongoId, int?>(item.Id, weight, null));
+            }
+        }
+
+        return pool;
+    }
+
     public List<MongoId> FindAndReturnChildItemIdsByItems(Dictionary<MongoId, TemplateItem> items, MongoId rootItemId)
     {
         // 'Item (54009119af1c881c07000029)' Doesn't have a parent, return all of it's children instead.

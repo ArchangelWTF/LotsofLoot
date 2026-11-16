@@ -236,7 +236,8 @@
       ]
     }
   },
-  //Multiplies the spawnchance of a specific item in its loose loot pool, giving this item a higher chance of spawning.
+  //Multiplies an item's relative probability in loose loot pools and loose container/backpack contents. 0 excludes it.
+  //Container contents use this multiplier even when ItemWeights is false.
   "ChangeRelativeProbabilityInPool": {
     //Graphics card
     "57347ca924597744596b4e71": 2
