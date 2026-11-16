@@ -1,4 +1,5 @@
 ﻿using LotsofLoot.Models.Generator;
+using LotsofLoot.Models.Preset;
 using SPTarkov.DI.Annotations;
 using SPTarkov.Server.Core.Models.Common;
 using SPTarkov.Server.Core.Models.Eft.Common;
@@ -21,6 +22,43 @@ public class LotsofLootItemHelper(
     SeasonalEventService seasonalEventService
 )
 {
+    internal static void NormalizeLootProbabilities<T>(
+        IEnumerable<T> distribution,
+        NormalizedLootPresetConfig config,
+        Func<T, double?> getWeight,
+        Action<T, double> setWeight
+    )
+    {
+        if (!config.IsActive)
+        {
+            return;
+        }
+
+        var strength = Math.Min(config.Strength, 1);
+        var threshold = Math.Max(config.MinProbability, 0);
+        var eligible = distribution
+            .Select(item => (Item: item, Weight: getWeight(item).GetValueOrDefault()))
+            .Where(entry => double.IsFinite(entry.Weight) && entry.Weight > threshold)
+            .ToList();
+
+        if (eligible.Count < 2)
+        {
+            return;
+        }
+
+        var maximum = eligible.Max(entry => entry.Weight);
+        var logMaximum = Math.Log(maximum);
+        foreach (var (item, weight) in eligible)
+        {
+            // Interpolate in log space toward the largest weight. The ratio between two weights
+            // becomes (a / b)^(1 - strength), so increasing strength makes their odds more equal.
+            // Keeping the largest weight avoids reducing positive static weights toward zero.
+            var logWeight = Math.Log(weight);
+            var normalized = strength == 1 ? maximum : Math.Exp(logWeight + strength * (logMaximum - logWeight));
+            setWeight(item, Math.Clamp(normalized, weight, maximum));
+        }
+    }
+
     internal static ProbabilityObjectArray<MongoId, int?> CreateLooseContainerLootPool(
         IEnumerable<TemplateItem> candidates,
         IReadOnlyDictionary<MongoId, double> prices,

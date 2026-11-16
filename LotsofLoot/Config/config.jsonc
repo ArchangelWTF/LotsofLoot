@@ -236,6 +236,19 @@
       ]
     }
   },
+  //Makes positive weights in loose spawnpoint pools more equal. Per-item multipliers apply afterward.
+  //Strength: 0 = original odds, 1 = equal odds. Only weights above MinProbability are normalized.
+  "NormalizedLooseLootConfig": {
+    "Enabled": false,
+    "Strength": 0.5,
+    "MinProbability": 0
+  },
+  //Independently normalizes static container item pools. Zero-weight items remain excluded.
+  "NormalizedStaticLootConfig": {
+    "Enabled": false,
+    "Strength": 0.5,
+    "MinProbability": 0
+  },
   //Multiplies an item's relative probability in loose loot pools and loose container/backpack contents. 0 excludes it.
   //Container contents use this multiplier even when ItemWeights is false.
   "ChangeRelativeProbabilityInPool": {

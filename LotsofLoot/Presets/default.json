@@ -161,6 +161,16 @@
       ]
     }
   },
+  "NormalizedLooseLootConfig": {
+    "Enabled": false,
+    "Strength": 0.5,
+    "MinProbability": 0
+  },
+  "NormalizedStaticLootConfig": {
+    "Enabled": false,
+    "Strength": 0.5,
+    "MinProbability": 0
+  },
   "ChangeRelativeProbabilityInPool": {
     "57347ca924597744596b4e71": 2
   },

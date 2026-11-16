@@ -34,6 +34,10 @@
                                           @bind-Value="configService.EditablePresetHolder.presetConfig.ChangeProbabilityOfPool"
                                           OriginalValue="configService.LotsofLootPresetConfig.ChangeProbabilityOfPool"
                                           DefaultValue="DefaultProbabilityOfPool" />
+
+                    <NormalizedLoot KeyPrefix="Pools.LooseLoot.Normalized"
+                                    BindConfig="configService.EditablePresetHolder.presetConfig.NormalizedLooseLootConfig"
+                                    OriginalConfig="configService.LotsofLootPresetConfig.NormalizedLooseLootConfig" />
                 </MudGrid>
                 </ChildContent>
             </MudExpansionPanel>
@@ -48,6 +52,10 @@
                                           @bind-Value="configService.EditablePresetHolder.presetConfig.Containers"
                                           OriginalValue="configService.LotsofLootPresetConfig.Containers"
                                           DefaultValue="DefaultContainers" />
+
+                    <NormalizedLoot KeyPrefix="Pools.Containers.Normalized"
+                                    BindConfig="configService.EditablePresetHolder.presetConfig.NormalizedStaticLootConfig"
+                                    OriginalConfig="configService.LotsofLootPresetConfig.NormalizedStaticLootConfig" />
                 </MudGrid>
                 </ChildContent>
             </MudExpansionPanel>

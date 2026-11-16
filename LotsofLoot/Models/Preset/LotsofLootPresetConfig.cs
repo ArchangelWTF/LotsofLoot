@@ -27,6 +27,10 @@ public sealed class LotsofLootPresetConfig
     public required RefRoomPresetConfig RefRoomConfig { get; set; }
     public required LootInLooseContainerPresetConfig LootinLooseContainer { get; set; }
 
+    // Optional so existing presets acquire the new settings without changing their loot behavior.
+    public NormalizedLootPresetConfig NormalizedLooseLootConfig { get; set; } = new();
+    public NormalizedLootPresetConfig NormalizedStaticLootConfig { get; set; } = new();
+
     /// <summary>
     /// Multiplies an item's relative probability in loose loot pools and loose container/backpack contents. Zero excludes it.
     /// </summary>

@@ -1,0 +1,35 @@
+<ConfigSwitch Key="@($"{KeyPrefix}.Enabled")"
+              Label="Normalize relative probabilities"
+              Tooltip="Gives rarer items a fairer chance within each pool. Entries with zero probability remain excluded."
+              @bind-Value="BindConfig.Enabled"
+              OriginalValue="OriginalConfig.Enabled"
+              DefaultValue="false" />
+
+@if (BindConfig.Enabled)
+{
+    <ConfigSlider SliderType="double" Key="@($"{KeyPrefix}.Strength")"
+                  Label="Normalization strength"
+                  Tooltip="0 keeps the original odds. 1 gives all eligible items equal odds. Values between them progressively favor rarer items."
+                  @bind-Value="BindConfig.Strength"
+                  OriginalValue="OriginalConfig.Strength"
+                  Min="0"
+                  Max="1"
+                  Steps="0.01"
+                  DefaultValue="0.5d" />
+
+    <ConfigSlider SliderType="int" Key="@($"{KeyPrefix}.MinProbability")"
+                  Label="Minimum weight to normalize"
+                  Tooltip="Only items with a positive relative weight above this threshold are normalized. 0 includes every positive weight."
+                  @bind-Value="BindConfig.MinProbability"
+                  OriginalValue="OriginalConfig.MinProbability"
+                  Min="0"
+                  Max="10000"
+                  Steps="1"
+                  DefaultValue="0" />
+}
+
+@code {
+    [Parameter] public required string KeyPrefix { get; set; }
+    [Parameter] public required NormalizedLootPresetConfig BindConfig { get; set; }
+    [Parameter] public required NormalizedLootPresetConfig OriginalConfig { get; set; }
+}

@@ -72,14 +72,24 @@ public class LazyLoadHandlerService(
                 }
 
                 //Todo: Does this even work as intended? Check?
-                itemDistribution.RelativeProbability = MathF.Round(
-                    (float)((itemDistribution.RelativeProbability ?? 0) * configRelativeProbability)
-                );
+                var adjustedProbability = (float)((itemDistribution.RelativeProbability ?? 0) * configRelativeProbability);
+                itemDistribution.RelativeProbability = configService.LotsofLootPresetConfig.NormalizedStaticLootConfig.IsActive
+                    ? adjustedProbability
+                    : MathF.Round(adjustedProbability);
                 if (logger.IsDebug())
                 {
                     logger.Debug($"Changed container {containerId} chance to {itemDistribution.RelativeProbability}");
                 }
             }
+
+            // Keep fractional weights when normalizing, including in containers with explicit multipliers.
+            // Containers without an explicit multiplier are included too.
+            LotsofLootItemHelper.NormalizeLootProbabilities(
+                lootDetails.ItemDistribution,
+                configService.LotsofLootPresetConfig.NormalizedStaticLootConfig,
+                item => item.RelativeProbability,
+                (item, weight) => item.RelativeProbability = (float)weight
+            );
         }
 
         sw.Stop();
@@ -111,6 +121,15 @@ public class LazyLoadHandlerService(
 
     private void ChangeRelativeProbabilityInPool(string locationId, Spawnpoint spawnpoint)
     {
+        // Run independently of per-item overrides. Apply those overrides afterward so a zero
+        // multiplier still excludes the item and explicit boosts retain their configured effect.
+        LotsofLootItemHelper.NormalizeLootProbabilities(
+            spawnpoint.ItemDistribution ?? [],
+            configService.LotsofLootPresetConfig.NormalizedLooseLootConfig,
+            item => item.RelativeProbability,
+            (item, weight) => item.RelativeProbability = weight
+        );
+
         var config = configService.LotsofLootPresetConfig.ChangeRelativeProbabilityInPool;
 
         if (config.Count == 0)
