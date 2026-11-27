@@ -60,7 +60,7 @@ public sealed class MarkedRoom(ConfigService config, ICloner cloner, RandomUtil 
             Math.Round(Math.Max(0.0, randomUtil.GetNormallyDistributedRandomNumber(expectedCount * meanScale, std * stdScale)));
 
         var markedRoomRandomCount = markedRoomDesiredCount - guaranteedMarkedRoomPoints.Count;
-        if (markedRoomDesiredCount > 0 && markedRoomArray.Count > 0)
+        if (markedRoomRandomCount > 0 && markedRoomArray.Count > 0)
         {
             if (!config.LotsofLootPresetConfig.General.AllowLootOverlay)
             {

@@ -61,7 +61,7 @@ public sealed class RefRoom(ConfigService config, ICloner cloner, RandomUtil ran
             Math.Round(Math.Max(0.0, randomUtil.GetNormallyDistributedRandomNumber(expectedCount * meanScale, std * stdScale)));
 
         var refRoomRandomCount = refRoomDesiredCount - guaranteedRefRoomPoints.Count;
-        if (refRoomDesiredCount > 0 && refRoomArray.Count > 0)
+        if (refRoomRandomCount > 0 && refRoomArray.Count > 0)
         {
             if (!config.LotsofLootPresetConfig.General.AllowLootOverlay)
             {
