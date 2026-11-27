@@ -43,8 +43,17 @@ public class LootRoomHelper(ConfigService configService, ItemHelper itemHelper, 
         var spawnpointTemplateItems = spawnpoint.Template.Items.ToList();
         var spawnpointItemDistribution = spawnpoint.ItemDistribution.ToList();
 
-        foreach ((MongoId templateId, double relativeProbability) in configService.LotsofLootPresetConfig.MarkedRoomConfig.ExtraItems)
+        var preset = configService.LotsofLootPresetConfig;
+
+        foreach ((MongoId templateId, double extraProbability) in preset.MarkedRoomConfig.ExtraItems)
         {
+            // The pool multipliers already ran, so the extras need them too. Otherwise an item set to 0 still spawns in the marked room.
+            double relativeProbability = extraProbability * preset.ChangeRelativeProbabilityInPool.GetValueOrDefault(templateId, 1);
+            if (!double.IsFinite(relativeProbability) || relativeProbability <= 0)
+            {
+                continue;
+            }
+
             var existingItemDistribution = spawnpointTemplateItems
                 .Where(item => item.Template == templateId && item.ComposedKey != null)
                 .Select(item => spawnpointItemDistribution.FirstOrDefault(distrib => distrib.ComposedKey?.Key == item.ComposedKey))
