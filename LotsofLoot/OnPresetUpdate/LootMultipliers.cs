@@ -21,7 +21,7 @@ public sealed class LootMultipliers(LocationConfig locationConfig, LotsOfLootLog
 
         foreach ((string map, bool reduceLoot) in _originalReduceScavLoot)
         {
-            scavMaps[map]!.ReduceLootByPercent = reduceLoot && preset.General.ReduceScavRaidLoot;
+            scavMaps[map]!.ReduceLootByPercent = reduceLoot && !preset.General.KeepFullScavRaidLoot;
         }
 
         foreach ((string map, double multiplier) in preset.LooseLootMultiplier)

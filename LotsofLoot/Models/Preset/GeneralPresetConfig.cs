@@ -52,8 +52,8 @@ public sealed class GeneralPresetConfig
     public required double ReduceLowLooseLootRollsAmount { get; set; }
 
     /// <summary>
-    ///     Whether SPT may reduce loot in scav raids that start part way through
+    ///     Whether scav raids that start part way through keep the full loot multipliers
     /// </summary>
     // Not required so presets saved before this setting still load
-    public bool ReduceScavRaidLoot { get; set; }
+    public bool KeepFullScavRaidLoot { get; set; }
 }

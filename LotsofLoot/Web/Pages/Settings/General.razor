@@ -88,11 +88,11 @@
                   DefaultValue="0.45d"/>
                   }
 
-                <ConfigSwitch Key="General.ReduceScavRaidLoot"
-                  Label="Reduce loot in late scav raids"
-                  Tooltip="Lets SPT reduce loot in scav raids that start part way through. Disabled keeps the full loot multipliers in every scav raid"
-                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.ReduceScavRaidLoot"
-                  OriginalValue="configService.LotsofLootPresetConfig.General.ReduceScavRaidLoot"
+                <ConfigSwitch Key="General.KeepFullScavRaidLoot"
+                  Label="Full loot in late scav raids"
+                  Tooltip="Stops SPT from reducing loot in scav raids that start part way through"
+                  @bind-Value="configService.EditablePresetHolder.presetConfig.General.KeepFullScavRaidLoot"
+                  OriginalValue="configService.LotsofLootPresetConfig.General.KeepFullScavRaidLoot"
                   DefaultValue="false"/>
             </MudGrid>
         </MudPaper>
