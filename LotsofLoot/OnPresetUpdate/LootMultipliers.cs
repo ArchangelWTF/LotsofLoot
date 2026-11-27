@@ -9,8 +9,21 @@ namespace LotsofLoot.OnPresetUpdate;
 [Injectable(InjectionType.Singleton)]
 public sealed class LootMultipliers(LocationConfig locationConfig, LotsOfLootLogger logger) : IOnPresetUpdate
 {
+    private Dictionary<string, bool>? _originalReduceScavLoot;
+
     public void Apply(LotsofLootPresetConfig preset)
     {
+        // SPT scales the loot multipliers down when a scav raid starts late. A map the server config already exempts stays exempt.
+        var scavMaps = locationConfig.ScavRaidTimeSettings.Maps;
+        _originalReduceScavLoot ??= scavMaps
+            .Where(m => m.Value is not null)
+            .ToDictionary(m => m.Key, m => m.Value!.ReduceLootByPercent);
+
+        foreach ((string map, bool reduceLoot) in _originalReduceScavLoot)
+        {
+            scavMaps[map]!.ReduceLootByPercent = reduceLoot && preset.General.ReduceScavRaidLoot;
+        }
+
         foreach ((string map, double multiplier) in preset.LooseLootMultiplier)
         {
             locationConfig.LooseLootMultiplier[map] = multiplier;

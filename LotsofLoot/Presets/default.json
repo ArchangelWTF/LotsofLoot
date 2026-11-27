@@ -12,7 +12,8 @@
     },
     "LootContainersRandom": true,
     "ReduceLowLooseLootRolls": false,
-    "ReduceLowLooseLootRollsAmount": 0.45
+    "ReduceLowLooseLootRollsAmount": 0.45,
+    "ReduceScavRaidLoot": false
   },
   "LooseLootMultiplier": {
     "bigmap": 7.5,

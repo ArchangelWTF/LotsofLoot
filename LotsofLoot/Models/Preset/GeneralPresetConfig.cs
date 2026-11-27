@@ -50,4 +50,10 @@ public sealed class GeneralPresetConfig
     /// allow low rolls to stay low (more randomness).
     /// </summary>
     public required double ReduceLowLooseLootRollsAmount { get; set; }
+
+    /// <summary>
+    ///     Whether SPT may reduce loot in scav raids that start part way through
+    /// </summary>
+    // Not required so presets saved before this setting still load
+    public bool ReduceScavRaidLoot { get; set; }
 }

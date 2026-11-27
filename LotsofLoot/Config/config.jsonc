@@ -26,7 +26,9 @@
     //Raises the lower end of SPT's loose loot rolls for more consistent loose loot spawns
     "ReduceLowLooseLootRolls": false,
     //Sets the strength of the correction for low loot rolls. Lower values increase consistency; higher values keep more natural variation
-    "ReduceLowLooseLootRollsAmount": 0.45
+    "ReduceLowLooseLootRollsAmount": 0.45,
+    //Lets SPT reduce loot in scav raids that start part way through. Set to false to keep the full loot multipliers in every scav raid.
+    "ReduceScavRaidLoot": false
   },
   //Loose loot multiplier, higher number = more
   "LooseLootMultiplier": {
